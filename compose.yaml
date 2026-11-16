@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-pastisiap}
+      POSTGRES_USER: ${DB_USERNAME:-pastisiap}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pastisiap}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-pastisiap} -d ${DB_NAME:-pastisiap}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-pastisiap}
+      DB_USERNAME: ${DB_USERNAME:-pastisiap}
+      DB_PASSWORD: ${DB_PASSWORD:-pastisiap}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      STORAGE_ROOT: /app/storage
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    volumes:
+      - ./storage:/app/storage
+
+volumes:
+  postgres_data:

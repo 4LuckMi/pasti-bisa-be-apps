@@ -1,0 +1,173 @@
+{
+  "info": {
+    "_postman_id": "a78c7407-7ac3-4c63-a720-f637c4e1a4d1",
+    "name": "PastiSiap Backend (implemented endpoints)",
+    "description": "Collection untuk endpoint yang sudah tersedia di repo saat ini. Jalankan Get CSRF Token sebelum request POST. Postman akan menyimpan cookie session secara otomatis. Endpoint bisnis yang belum diimplementasikan tidak dicantumkan.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "csrfToken", "value": "", "type": "string" },
+    { "key": "testEmail", "value": "", "type": "string" },
+    { "key": "testPassword", "value": "PastiSiapLocal123!", "type": "string" },
+    { "key": "registeredUserId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health and API docs",
+      "item": [
+        {
+          "name": "API health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/health",
+            "description": "Public health endpoint aplikasi."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('service reports UP', function () { pm.expect(pm.response.json().status).to.eql('UP'); });"
+            ] }
+          }]
+        },
+        {
+          "name": "Actuator health (includes database check)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/actuator/health",
+            "description": "Status health Spring Boot dan koneksi database."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('health is UP', function () { pm.expect(pm.response.json().status).to.eql('UP'); });"
+            ] }
+          }]
+        },
+        {
+          "name": "OpenAPI JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api-docs",
+            "description": "OpenAPI spec dari controller yang tersedia."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('OpenAPI document returned', function () { pm.expect(pm.response.json().openapi).to.be.a('string'); });"
+            ] }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Identity and session",
+      "description": "Kirim request secara berurutan: Get CSRF Token → Register Customer → Login → Get current profile → Logout. Cookie JSESSIONID dikelola Postman cookie jar.",
+      "item": [
+        {
+          "name": "Get CSRF Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/csrf",
+            "description": "Wajib dipanggil sebelum POST register/login/logout. Response menyimpan token ke collection variable csrfToken."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('csrfToken', body.token);",
+              "pm.collectionVariables.set('csrfHeader', body.headerName);",
+              "pm.test('CSRF token received', function () { pm.expect(body.token).to.be.a('string').and.not.empty; });"
+            ] }
+          }]
+        },
+        {
+          "name": "Register Customer",
+          "event": [{
+            "listen": "prerequest",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.collectionVariables.set('testEmail', 'postman+' + Date.now() + '@example.com');"
+            ] }
+          }, {
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('registeredUserId', body.id);",
+              "pm.test('profile does not expose password', function () { pm.expect(body).not.to.have.property('password'); pm.expect(body).not.to.have.property('passwordHash'); });"
+            ] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"displayName\": \"Postman Customer\",\n  \"password\": \"{{testPassword}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "description": "Membuat akun CUSTOMER untuk pengujian lokal. Email dibuat unik setiap kali request dikirim. Password contoh hanya untuk lokal."
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-TOKEN", "value": "{{csrfToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "description": "Login membuat session server. Jalankan Register Customer terlebih dahulu atau isi testEmail dengan akun yang sudah ada."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('profile returned', function () { pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get('testEmail')); });"
+            ] }
+          }]
+        },
+        {
+          "name": "Get current profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/me",
+            "description": "Memerlukan session hasil Login."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('profile belongs to logged-in customer', function () { pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get('testEmail')); });"
+            ] }
+          }]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-CSRF-TOKEN", "value": "{{csrfToken}}" }],
+            "url": "{{baseUrl}}/api/v1/auth/logout",
+            "description": "Menghapus session login. Memerlukan token CSRF dan cookie session."
+          },
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": [
+              "pm.test('HTTP 204', function () { pm.response.to.have.status(204); });"
+            ] }
+          }]
+        }
+      ]
+    }
+  ]
+}
