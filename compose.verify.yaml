@@ -1,0 +1,37 @@
+services:
+  verify-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: learning_verify
+      POSTGRES_USER: verify
+      POSTGRES_PASSWORD: verify_local_only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U verify -d learning_verify"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    tmpfs:
+      - /var/lib/postgresql/data
+  verify:
+    build:
+      context: .
+      dockerfile: Dockerfile.verify
+    image: pastisiap-learning-verify
+    working_dir: /workspace
+    depends_on:
+      verify-db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://verify-db:5432/learning_verify
+      DB_USERNAME: verify
+      DB_PASSWORD: verify_local_only
+      STORAGE_ROOT: /tmp/pastisiap-verify-storage
+    volumes:
+      - ./pom.xml:/workspace/pom.xml:ro
+      - ./src:/workspace/src:ro
+      - verify_target:/workspace/target
+      - verify_maven:/root/.m2
+    command: ["mvn", "-B", "-ntp", "-Dtest=ApiRequestLoggingTests,StudentDtoTests,LearningIntegrationTests,ContentRulesTests,ContentStorageTests", "test"]
+volumes:
+  verify_target:
+  verify_maven:

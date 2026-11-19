@@ -1,0 +1,1051 @@
+[
+  {
+    "method": "get",
+    "path": "/api/v1/health",
+    "title": "Health aplikasi",
+    "group": "Publik dan identity",
+    "auth": "public",
+    "response": "ServiceStatus",
+    "description": "Memeriksa proses API dan waktu UTC. Ini bukan pemeriksaan lengkap semua dependency.",
+    "status": 200,
+    "index": 1,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/csrf",
+    "title": "Ambil token CSRF",
+    "group": "Publik dan identity",
+    "auth": "public",
+    "response": "CsrfResponse",
+    "description": "Membuat/menggunakan session dan memberikan headerName serta token untuk mutasi.",
+    "status": 200,
+    "notes": [
+      "Simpan cookie dari respons; kirim token dengan cookie session yang sama. Token contoh dalam dokumen tidak dapat dipakai."
+    ],
+    "index": 2,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/auth/register",
+    "title": "Registrasi password",
+    "group": "Publik dan identity",
+    "auth": "public",
+    "response": "AuthResponse",
+    "description": "Membuat SISWA dengan role CUSTOMER dan login otomatis.",
+    "status": 201,
+    "request": "RegisterRequest",
+    "errors": [
+      "409 EMAIL_ALREADY_REGISTERED"
+    ],
+    "notes": [
+      "Password 12–72 karakter, displayName 2–120, email valid maksimal 320. Tidak menerima pilihan role/userType/premium.",
+      "Respons membuat/merotasi cookie session. Tidak ada accessToken atau refreshToken."
+    ],
+    "index": 3,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/auth/login",
+    "title": "Login password",
+    "group": "Publik dan identity",
+    "auth": "public",
+    "response": "AuthResponse",
+    "description": "Memverifikasi email/password lalu membentuk session.",
+    "status": 200,
+    "request": "LoginRequest",
+    "errors": [
+      "401 INVALID_CREDENTIALS"
+    ],
+    "notes": [
+      "Login password untuk akun SSO tanpa password tidak tersedia. Email dinormalisasi oleh service."
+    ],
+    "index": 4,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/auth/logout",
+    "title": "Logout",
+    "group": "Publik dan identity",
+    "auth": "csrf",
+    "response": null,
+    "description": "Ditangani filter Spring Security; menghapus session saat ini.",
+    "status": 204,
+    "manual": true,
+    "notes": [
+      "Body respons kosong; jangan memanggil response.json(). Logout juga bisa mengembalikan 204 jika tidak ada autentikasi aktif, selama CSRF valid."
+    ],
+    "index": 5,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current",
+    "title": "Ringkasan akun aktif",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "UserProfileResponse",
+    "description": "Membaca akun dari principal session, tanpa user ID dari client.",
+    "status": 200,
+    "index": 6,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/profile",
+    "title": "Profil dan target siswa",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "StudentProfileResponse",
+    "description": "Membaca sekolah, kelas, target dan skor sasaran.",
+    "status": 200,
+    "notes": [
+      "Field sekolah/target boleh null sebelum pengguna melengkapinya. Role tersedia pada ringkasan akun, bukan response profil ini."
+    ],
+    "index": 7,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/users/current/profile",
+    "title": "Update profil dan target",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "StudentProfileResponse",
+    "description": "Memperbarui data profil sesuai form lengkap.",
+    "status": 200,
+    "request": "UpdateStudentProfileRequest",
+    "errors": [
+      "400 INVALID_REQUEST untuk kategori target tidak didukung"
+    ],
+    "notes": [
+      "Walaupun method PATCH, displayName, schoolName, schoolGrade, targetCategory dan targetInstitution tetap wajib.",
+      "targetCategory dipetakan ke targetKind: UTBK→CAMPUS, CPNS→CIVIL_SERVICE, KEDINASAN→ACADEMY, SEKOLAH→SCHOOL.",
+      "targetProgram dan targetScore boleh null; targetScore 0–1000. leaderboardOptIn, email, roles dan userType tidak dapat diubah lewat body ini."
+    ],
+    "index": 8,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/tryouts",
+    "title": "Katalog tryout",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "TryoutResponse",
+    "description": "Membaca paket TRYOUT aktif, jumlah soal dan riwayat ringkas untuk versi blueprint aktif.",
+    "status": 200,
+    "array": true,
+    "category": true,
+    "notes": [
+      "Array kosong valid. Riwayat ringkas tidak menghitung seluruh versi blueprint lama dari paket yang sama.",
+      "Beberapa key sengaja snake_case, sesuai DTO legacy."
+    ],
+    "index": 9,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/tryouts/{id}",
+    "title": "Detail dan kesiapan katalog",
+    "group": "Profil dan read API siswa",
+    "auth": "customer",
+    "response": "TryoutDetail",
+    "description": "Menampilkan durasi, metode/skala dan kapasitas pool section.",
+    "status": 200,
+    "notes": [
+      "ready mengukur stok global, bukan ketersediaan personal setelah exposure harian. Start dapat tetap menolak POOL_NOT_READY.",
+      "id adalah blueprint/package ID, bukan blueprint_version_id."
+    ],
+    "index": 10,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/practice/topics",
+    "title": "Topik practice",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "PracticeTopicResponse",
+    "description": "Daftar topik aktif dan hitungan soal terbit yang tidak diarsipkan.",
+    "status": 200,
+    "array": true,
+    "category": true,
+    "notes": [
+      "Topik dengan question_count=0 dapat muncul. Ketersediaan final diverifikasi pada start."
+    ],
+    "index": 11,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/tryout-quota",
+    "title": "Kuota harian WIB",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "QuotaResponse",
+    "description": "Menghitung pemakaian dan sisa dua start tryout per tanggal Asia/Jakarta.",
+    "status": 200,
+    "notes": [
+      "Practice tidak memakai kuota ini. Gratis dan Premium memakai batas teknis yang sama pada implementasi saat ini."
+    ],
+    "index": 12,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts",
+    "title": "Riwayat sesi sendiri",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "AttemptHistoryResponse",
+    "description": "Maksimal 100 attempt terbaru milik akun, termasuk TRYOUT dan PRACTICE.",
+    "status": 200,
+    "array": true,
+    "notes": [
+      "Belum ada parameter pagination/filter per paket pada endpoint ini.",
+      "details adalah string berisi JSON atau null; berbeda dengan object details pada endpoint result.",
+      "total_score dan finalized_at dapat null untuk sesi yang belum selesai."
+    ],
+    "index": 13,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/subscription",
+    "title": "Daftar subscription sendiri",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "SubscriptionResponse",
+    "description": "Mengembalikan periode langganan dan active berdasarkan entitlement grant yang masih berlaku.",
+    "status": 200,
+    "array": true,
+    "notes": [
+      "Tanpa langganan mengembalikan []. Contoh item aktif bersifat ilustrasi; belum ada API pembelian/grant.",
+      "Bukan satu objek boolean premium; active dibaca server dari interval grant yang tidak dicabut."
+    ],
+    "index": 14,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/leaderboard",
+    "title": "Baca leaderboard",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "LeaderboardResponse",
+    "description": "Maksimal 100 entry dari cohort aktif yang belum berakhir dan user masih opt-in.",
+    "status": 200,
+    "array": true,
+    "category": true,
+    "notes": [
+      "Array kosong adalah respons normal tanpa cohort/entry yang diprovisikan. Contoh item hanya ilustrasi kontrak.",
+      "Sesi acak tidak otomatis ditambahkan ke leaderboard."
+    ],
+    "index": 15,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/attempts",
+    "title": "Mulai tryout",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "SessionResponse",
+    "description": "Membuat attempt TRYOUT dari blueprint aktif, atau mengembalikan replay/sesi aktif.",
+    "status": 200,
+    "request": "StartTryoutRequest",
+    "idempotency": true,
+    "errors": [
+      "400 IDEMPOTENCY_KEY_REQUIRED",
+      "409 IDEMPOTENCY_CONFLICT",
+      "409 DAILY_QUOTA_EXHAUSTED",
+      "409 POOL_NOT_READY",
+      "409 OVERLAPPING_SECTIONS",
+      "409 UNSUPPORTED_SCORING_POLICY",
+      "409 UNSUPPORTED_BLUEPRINT_FILTER"
+    ],
+    "notes": [
+      "Key 8–128 karakter dari huruf, angka, titik, underscore, colon atau hyphen. Key sama + body berbeda ditolak.",
+      "Jika sesi aktif ada, response bisa berupa sesi berbeda dari paket yang diminta. Selalu baca attemptId/mode/status response.",
+      "Pool kurang rollback seluruh start dan tidak memakai kuota; start berhasil memakai satu kuota."
+    ],
+    "index": 16,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/practice/attempts",
+    "title": "Mulai practice",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "SessionResponse",
+    "description": "Memulai latihan dalam satu topik, memakai blueprint internal dan pool yang sama.",
+    "status": 200,
+    "request": "StartPracticeRequest",
+    "idempotency": true,
+    "example": {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "tryoutId": "00000000-0000-4000-8000-000000000070",
+      "mode": "PRACTICE",
+      "status": "IN_PROGRESS",
+      "terminalReason": null,
+      "serverNow": "2026-11-19T07:00:00Z",
+      "startedAt": "2026-11-19T07:00:00Z",
+      "deadlineAt": "2026-11-19T07:06:00Z",
+      "questions": [
+        {
+          "position": 1,
+          "answered": false,
+          "flagged": false,
+          "revision": 0
+        },
+        {
+          "position": 2,
+          "answered": false,
+          "flagged": false,
+          "revision": 0
+        },
+        {
+          "position": 3,
+          "answered": false,
+          "flagged": false,
+          "revision": 0
+        }
+      ]
+    },
+    "errors": [
+      "400 IDEMPOTENCY_KEY_REQUIRED",
+      "409 IDEMPOTENCY_CONFLICT",
+      "409 POOL_NOT_READY"
+    ],
+    "notes": [
+      "questionCount wajib dikirim 1–50. Durasi saat ini questionCount × 120 detik; tidak mengambil quota tryout.",
+      "Satu sesi aktif dibagi dengan tryout. tryoutId response adalah ID blueprint internal practice."
+    ],
+    "index": 17,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts/active",
+    "title": "Resume sesi aktif",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "SessionResponse",
+    "description": "Mengembalikan sesi IN_PROGRESS/FINALIZING, atau memfinalisasi sesi yang sudah kedaluwarsa.",
+    "status": 200,
+    "notes": [
+      "Jika tidak ada sesi, HTTP 200 dengan body kosong. Client perlu memeriksa body sebelum parsing JSON."
+    ],
+    "index": 18,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts/{id}",
+    "title": "Navigator dan status sesi",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "SessionResponse",
+    "description": "Membaca deadline server, status dan daftar nomor/flag/revision milik pengguna.",
+    "status": 200,
+    "notes": [
+      "GET ini dapat mengubah sesi kedaluwarsa menjadi FINALIZING dan membuat job scoring."
+    ],
+    "index": 19,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts/{attemptId}/questions/{position}",
+    "title": "Baca satu soal dalam sesi",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "session",
+    "response": "AttemptQuestionResponse",
+    "description": "Membaca versi soal dan urutan opsi snapshot milik pengguna.",
+    "status": 200,
+    "notes": [
+      "position dimulai dari 1. selectedOptionId adalah UUID opsi, bukan huruf display.",
+      "Sebelum score tersedia, options[].correct, correct dan explanation bernilai null. Tidak mengirim score_weight.",
+      "Setelah scoring, correct null juga dapat berarti soal belum dijawab. Response siswa tidak berisi sumber PDF/kunci file."
+    ],
+    "index": 20,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts/{attemptId}/questions/{position}/assets/{assetId}",
+    "title": "Baca asset privat soal",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "session",
+    "response": null,
+    "description": "Memeriksa kepemilikan attempt dan relasi asset dengan versi soal sebelum mengirim binary.",
+    "status": 200,
+    "binary": true,
+    "mime": "application/pdf atau MIME file",
+    "notes": [
+      "200 binary dengan Content-Disposition inline dan Cache-Control no-store.",
+      "404 asset tidak ditemukan dapat memiliki body kosong, bukan ApiError. File IMPORT_SOURCE selalu dikecualikan.",
+      "Tidak ada endpoint upload/attach asset baru pada flow siswa."
+    ],
+    "index": 21,
+    "runtimeController": true
+  },
+  {
+    "method": "put",
+    "path": "/api/v1/users/current/attempts/{id}/answers/{position}",
+    "title": "Simpan jawaban/revision",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "AnswerResponse",
+    "description": "Autosave jawaban terakhir dengan optimistic revision.",
+    "status": 200,
+    "request": "AnswerRequest",
+    "errors": [
+      "400 INVALID_OPTION",
+      "409 REVISION_CONFLICT",
+      "409 ATTEMPT_CLOSED"
+    ],
+    "notes": [
+      "expectedRevision wajib >=0. Awal 0, sukses menjadi 1; stale revision ditolak.",
+      "selectedOptionId null berarti mengosongkan pilihan. flagged tidak dikirim/null dianggap false.",
+      "Update parsial flagged saja tetap dapat mengosongkan pilihan; kirim selectedOptionId yang ingin dipertahankan."
+    ],
+    "index": 22,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/users/current/attempts/{id}/finalize",
+    "title": "Submit atau abandon",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "SessionResponse",
+    "description": "Menutup attempt dan membuat job scoring idempoten.",
+    "status": 200,
+    "request": "FinalizeRequest",
+    "example": {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "tryoutId": "00000000-0000-4000-8000-000000000002",
+      "mode": "TRYOUT",
+      "status": "FINALIZING",
+      "terminalReason": "SUBMITTED",
+      "serverNow": "2026-11-19T07:05:00Z",
+      "startedAt": "2026-11-19T07:00:00Z",
+      "deadlineAt": "2026-11-19T08:30:00Z",
+      "questions": [
+        {
+          "position": 1,
+          "answered": false,
+          "flagged": false,
+          "revision": 0
+        },
+        {
+          "position": 2,
+          "answered": false,
+          "flagged": false,
+          "revision": 0
+        },
+        {
+          "position": 3,
+          "answered": false,
+          "flagged": false,
+          "revision": 0
+        }
+      ]
+    },
+    "notes": [
+      "Body boleh kosong atau {}; abandon false/null berarti submit. abandon true berarti keluar/abandon.",
+      "Jika deadline lewat, terminalReason TIMED_OUT mengalahkan parameter abandon.",
+      "Status normal berikutnya FINALIZING, bukan nilai langsung. Request berulang tidak membuat hasil/job ganda."
+    ],
+    "index": 23,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts/{id}/result",
+    "title": "Status dan hasil scoring",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "ResultResponse",
+    "description": "Membaca status attempt dan score terbaru.",
+    "status": 200,
+    "notes": [
+      "Sebelum hasil: totalScore/method/policyVersion/details null dan sections kosong. Jangan menganggap null sebagai nilai nol.",
+      "status bisa IN_PROGRESS/FINALIZING/COMPLETED. Belum ada status API FAILED khusus scoring; telusuri job/log jika lama."
+    ],
+    "index": 24,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/attempts/{id}/review",
+    "title": "Review seluruh soal",
+    "group": "Lifecycle tryout dan practice",
+    "auth": "customer",
+    "response": "AttemptQuestionResponse",
+    "description": "Mengembalikan semua nomor snapshot beserta jawaban/kunci/pembahasan setelah COMPLETED.",
+    "status": 200,
+    "array": true,
+    "example": [
+      {
+        "position": 1,
+        "stem": {
+          "text": "Berapa hasil 2 + 3?"
+        },
+        "options": [
+          {
+            "id": "00000000-0000-4000-8000-000000000011",
+            "code": "A",
+            "content": {
+              "text": "4"
+            },
+            "correct": false
+          },
+          {
+            "id": "00000000-0000-4000-8000-000000000012",
+            "code": "B",
+            "content": {
+              "text": "5"
+            },
+            "correct": true
+          }
+        ],
+        "selectedOptionId": "00000000-0000-4000-8000-000000000012",
+        "flagged": false,
+        "revision": 1,
+        "correct": true,
+        "explanation": "Dua ditambah tiga sama dengan lima."
+      }
+    ],
+    "errors": [
+      "409 RESULT_PROCESSING"
+    ],
+    "notes": [
+      "Array ini bukan master soal terbaru. Jumlah contoh dipersingkat menjadi satu item untuk keterbacaan."
+    ],
+    "index": 25,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/taxonomy",
+    "title": "Taksonomi aktif untuk petugas",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "TaxonomyResponse",
+    "description": "Mengambil kategori, exam type, subtes dan topik dalam bentuk baris datar.",
+    "status": 200,
+    "array": true,
+    "notes": [
+      "Satu subtes dengan beberapa topik muncul beberapa baris. topicId/topicName boleh null jika subtes belum mempunyai topik.",
+      "Belum tersedia taxonomy CRUD."
+    ],
+    "index": 26,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/imports",
+    "title": "Upload sumber PDF",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "ImportResponse",
+    "description": "Menyimpan sumber privat dan enqueue IMPORT_PDF di luar thread ekstraksi HTTP.",
+    "status": 202,
+    "multipart": true,
+    "example": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "status": "QUEUED",
+      "fileId": "00000000-0000-4000-8000-000000000021",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "sourceTitle": "Contoh PDF PastiSiap",
+      "sourceYear": 2026,
+      "pageCount": null,
+      "candidateCount": 0,
+      "validCount": 0,
+      "invalidCount": 0,
+      "errorCode": null,
+      "jobStatus": "QUEUED",
+      "jobErrorCode": null,
+      "createdAt": "2026-11-19T07:00:00Z"
+    },
+    "errors": [
+      "400 PDF_REQUIRED",
+      "400 INVALID_PDF_SIGNATURE",
+      "400 INVALID_CONTENT_SCOPE",
+      "413 FILE_TOO_LARGE / HTTP_413"
+    ],
+    "notes": [
+      "Multipart file + metadata; part metadata wajib application/json. Body metadata mengikuti ImportMetadata.",
+      "Maksimal 25MB, request 26MB. PDF invalid/encrypted/page limit dapat baru gagal pada worker; 202 bukan jaminan konten valid.",
+      "Checksum sama dalam uploader/subtest/topic yang sama mengembalikan batch lama, termasuk bila sourceTitle/sourceYear input berbeda. Tidak otomatis membuat ulang batch yang FAILED."
+    ],
+    "index": 27,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/imports",
+    "title": "Daftar riwayat impor",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "ImportResponse",
+    "description": "Daftar batch seluruh petugas, terbaru dahulu.",
+    "status": 200,
+    "array": true,
+    "page": true,
+    "notes": [
+      "Bukan hanya unggahan akun sendiri. Daftar berupa array tanpa total count/pagination envelope."
+    ],
+    "index": 28,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/imports/{id}",
+    "title": "Status batch dan job",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "ImportResponse",
+    "description": "Memantau status impor, jumlah kandidat dan error/status job.",
+    "status": 200,
+    "notes": [
+      "READY berarti semua kandidat dinilai lengkap oleh validator; belum otomatis terbit.",
+      "Batch status dan jobStatus berbeda. Batch FAILED dapat bersamaan dengan job RETRY_WAIT."
+    ],
+    "index": 29,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/imports/{id}/candidates",
+    "title": "Daftar kandidat ekstraksi",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "CandidateResponse",
+    "description": "Membaca kandidat, koreksi, validationErrors dan questionId jika sudah disimpan.",
+    "status": 200,
+    "array": true,
+    "page": true,
+    "notes": [
+      "extractedContent bisa belum lengkap dan tidak memenuhi batas request QuestionContent; tampilkan error untuk perbaikan.",
+      "sourceItemNo adalah nomor asal yang dinormalisasi per halaman untuk dedup, tidak selalu nomor cetak asli PDF."
+    ],
+    "index": 30,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/staff/imports/{id}/candidates/{candidateId}",
+    "title": "Koreksi satu kandidat",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": null,
+    "description": "Menulis draft_content dan menghitung ulang validationErrors/batch counts.",
+    "status": 200,
+    "request": "QuestionContent",
+    "errors": [
+      "409 CANDIDATE_ALREADY_SAVED"
+    ],
+    "notes": [
+      "200 body kosong. Kirim seluruh konten, bukan JSON Patch.",
+      "Hasil ekstraksi asli tetap tersimpan. Kandidat yang sudah menjadi master tidak dapat dikoreksi lewat endpoint ini.",
+      "Bean validation body berlaku; kunci/pembahasan yang belum valid tetap ditandai oleh validator publikasi."
+    ],
+    "index": 31,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/imports/{id}/candidates/{candidateId}/save",
+    "title": "Kandidat menjadi draft master",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Membuat keluarga question dan versi DRAFT dari koreksi terakhir atau ekstraksi asli.",
+    "status": 200,
+    "notes": [
+      "Request berulang pada kandidat yang sudah disimpan mengembalikan master yang sama.",
+      "Save bukan publish; draft belum lengkap masih dapat dibuat, kemudian publish menolak konten tidak lengkap."
+    ],
+    "index": 32,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/imports/{id}/source",
+    "title": "Download PDF sumber",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": null,
+    "description": "Membaca file asli yang dapat berisi kunci untuk review petugas.",
+    "status": 200,
+    "binary": true,
+    "mime": "application/pdf",
+    "notes": [
+      "200 binary; Content-Disposition attachment; filename=source.pdf; Cache-Control no-store.",
+      "Semua QUESTION_STAFF dapat membaca batch yang valid, bukan hanya uploader. File tidak tersedia dapat menghasilkan error internal yang harus dilacak log."
+    ],
+    "index": 33,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/questions",
+    "title": "Buat soal manual",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Membuat master DRAFT tanpa perlu upload PDF.",
+    "status": 201,
+    "request": "CreateQuestionRequest",
+    "example": {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "versionId": "00000000-0000-4000-8000-000000000008",
+      "code": "Q-00000000-0000-4000-8000-000000000007",
+      "version": 1,
+      "status": "DRAFT",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "sourceYear": 2026,
+      "sourceTitle": "Soal manual contoh",
+      "sourcePage": null,
+      "content": {
+        "stemText": "Berapa hasil 2 + 3?",
+        "options": [
+          {
+            "code": "A",
+            "text": "4",
+            "correct": false,
+            "weight": 0
+          },
+          {
+            "code": "B",
+            "text": "5",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "shuffleAllowed": false
+      }
+    },
+    "errors": [
+      "400 INVALID_CONTENT_SCOPE"
+    ],
+    "notes": [
+      "subtestId/topicId harus satu lingkup aktif. Konten body harus memenuhi validasi request; aturan lengkap publikasi tetap diperiksa saat publish."
+    ],
+    "index": 34,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/questions",
+    "title": "Cari master soal",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Daftar question yang belum diarsipkan beserta versi paling baru.",
+    "status": 200,
+    "array": true,
+    "page": true,
+    "notes": [
+      "Filter opsional subtestId dan search. Search mencocokkan kode atau stem pada versi yang tersimpan.",
+      "Versi terbaru yang dikembalikan bisa DRAFT walaupun versi PUBLISHED lama masih dipakai sesi baru."
+    ],
+    "index": 35,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/questions/{id}",
+    "title": "Detail master terbaru",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Detail versi paling baru dengan konten/kunci/bobot dan provenance sumber.",
+    "status": 200,
+    "notes": [
+      "Bukan endpoint untuk memilih nomor versi historis. Detail by ID masih dapat dibaca setelah archive."
+    ],
+    "index": 36,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/questions/{id}/versions",
+    "title": "Buat versi draft baru",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Menambahkan versi berikutnya tanpa menimpa versi PUBLISHED sebelumnya.",
+    "status": 200,
+    "request": "QuestionContent",
+    "example": {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "versionId": "00000000-0000-4000-8000-000000000080",
+      "code": "Q-00000000-0000-4000-8000-000000000007",
+      "version": 2,
+      "status": "DRAFT",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "sourceYear": 2026,
+      "sourceTitle": "Contoh PDF PastiSiap",
+      "sourcePage": 1,
+      "content": {
+        "stemText": "Berapa hasil 2 + 3?",
+        "options": [
+          {
+            "code": "A",
+            "text": "4",
+            "correct": false,
+            "weight": 0
+          },
+          {
+            "code": "B",
+            "text": "5",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "shuffleAllowed": false
+      }
+    },
+    "notes": [
+      "Endpoint ini tidak idempoten: pengiriman ulang membuat versi berikutnya lagi.",
+      "Tidak ada endpoint update draft di tempat pada implementasi sekarang; publish selalu menargetkan versi terbaru."
+    ],
+    "index": 37,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/questions/{id}/publish",
+    "title": "Publish versi terbaru",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Memvalidasi sumber/stem/opsi/kunci/bobot/pembahasan lalu menerbitkan DRAFT terbaru.",
+    "status": 200,
+    "example": {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "versionId": "00000000-0000-4000-8000-000000000008",
+      "code": "Q-00000000-0000-4000-8000-000000000007",
+      "version": 1,
+      "status": "PUBLISHED",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "sourceYear": 2026,
+      "sourceTitle": "Contoh PDF PastiSiap",
+      "sourcePage": 1,
+      "content": {
+        "stemText": "Berapa hasil 2 + 3?",
+        "options": [
+          {
+            "code": "A",
+            "text": "4",
+            "correct": false,
+            "weight": 0
+          },
+          {
+            "code": "B",
+            "text": "5",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "shuffleAllowed": false
+      }
+    },
+    "errors": [
+      "409 QUESTION_INCOMPLETE"
+    ],
+    "notes": [
+      "Wajib tepat satu opsi correct, kode opsi unik A–E, 2–5 opsi, pembahasan dan source title.",
+      "Jika versi terbaru sudah PUBLISHED, respons versi yang sama. Draft baru tidak otomatis diterbitkan worker."
+    ],
+    "index": 38,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/questions/{id}/archive",
+    "title": "Arsip keluarga soal",
+    "group": "Bank soal dan impor",
+    "auth": "staff",
+    "response": null,
+    "description": "Menetapkan archived_at agar soal tidak masuk pemilihan sesi baru.",
+    "status": 200,
+    "notes": [
+      "200 body kosong. Pengulangan tidak mengubah timestamp arsip yang sudah ada.",
+      "Snapshot sesi lama tetap dapat dibaca; tidak menghapus versi/hasil. Belum ada endpoint unarchive."
+    ],
+    "index": 39,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/oauth2/authorization/google",
+    "title": "Mulai login Google",
+    "group": "OAuth dan infrastruktur",
+    "auth": "public",
+    "response": null,
+    "description": "Mengarahkan browser ke Google; hanya aktif bila profil oauth dikonfigurasi.",
+    "status": 302,
+    "manual": true,
+    "redirect": true,
+    "location": "https://accounts.google.com/o/oauth2/v2/auth?...",
+    "notes": [
+      "Tidak ada body JSON request. Selesaikan login dan consent dalam browser; bukan request credential password ke backend.",
+      "Cookie/state OAuth harus tetap pada browser/session yang sama."
+    ],
+    "index": 40,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/login/oauth2/code/google",
+    "title": "Callback Google",
+    "group": "OAuth dan infrastruktur",
+    "auth": "public",
+    "response": null,
+    "description": "Endpoint filter OIDC menerima authorization code dan state dari Google.",
+    "status": 302,
+    "manual": true,
+    "redirect": true,
+    "location": "nilai OAUTH_SUCCESS_REDIRECT",
+    "notes": [
+      "Parameter code/state dibuat provider/Spring, bukan nilai yang dibuat frontend secara manual.",
+      "Sukses membuat session lalu redirect. Gagal OAuth mengikuti handler/redirect Security, tidak selalu ApiError JSON."
+    ],
+    "index": 41,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/actuator/health",
+    "title": "Health komponen",
+    "group": "OAuth dan infrastruktur",
+    "auth": "public",
+    "response": null,
+    "description": "Health deployment dengan detail komponen disembunyikan.",
+    "status": 200,
+    "manual": true,
+    "example": {
+      "status": "UP"
+    },
+    "notes": [
+      "Status tidak sehat dapat memberi HTTP 503. Endpoint /api/v1/health hanya status aplikasi sederhana."
+    ],
+    "index": 42,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/actuator/info",
+    "title": "Info Actuator",
+    "group": "OAuth dan infrastruktur",
+    "auth": "session",
+    "response": null,
+    "description": "Endpoint info yang diekspos konfigurasi Actuator.",
+    "status": 200,
+    "manual": true,
+    "example": {},
+    "notes": [
+      "Dapat kosong karena contributor info tidak seluruhnya aktif. Tidak dijamin mengembalikan info.app sebagai JSON.",
+      "Di luar prefix /api/, request anonim dapat mengikuti redirect OAuth atau respons Security berbeda, tergantung profil."
+    ],
+    "index": 43,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/actuator",
+    "title": "Discovery Actuator",
+    "group": "OAuth dan infrastruktur",
+    "auth": "session",
+    "response": null,
+    "description": "Discovery links Actuator untuk endpoint yang diekspos.",
+    "status": 200,
+    "manual": true,
+    "example": {
+      "_links": {
+        "self": {
+          "href": "http://localhost:8080/actuator",
+          "templated": false
+        },
+        "health": {
+          "href": "http://localhost:8080/actuator/health",
+          "templated": false
+        },
+        "health-path": {
+          "href": "http://localhost:8080/actuator/health/{*path}",
+          "templated": true
+        },
+        "info": {
+          "href": "http://localhost:8080/actuator/info",
+          "templated": false
+        }
+      }
+    },
+    "notes": [
+      "Bukan API data siswa. Host/links mengikuti deployment. Penjagaan anonim sama seperti /actuator/info."
+    ],
+    "index": 44,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/swagger-ui.html",
+    "title": "Buka Swagger UI",
+    "group": "OAuth dan infrastruktur",
+    "auth": "public",
+    "response": null,
+    "description": "Redirect ke halaman Swagger UI untuk mencoba endpoint.",
+    "status": 302,
+    "manual": true,
+    "redirect": true,
+    "location": "/swagger-ui/index.html",
+    "notes": [
+      "Resource HTML/JS/CSS internal Swagger tidak diinventarisasi satu per satu. UI memakai cookie/CSRF yang sama; bukan bypass security."
+    ],
+    "index": 45,
+    "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/api-docs",
+    "title": "OpenAPI runtime",
+    "group": "OAuth dan infrastruktur",
+    "auth": "public",
+    "response": null,
+    "description": "Membaca spesifikasi controller yang dibangkitkan Springdoc.",
+    "status": 200,
+    "manual": true,
+    "example": {
+      "openapi": "3.1.0",
+      "info": {
+        "title": "OpenAPI definition",
+        "version": "v0"
+      },
+      "paths": {},
+      "components": {}
+    },
+    "notes": [
+      "Contoh struktur dipersingkat; file runtime lengkap ada pada openapi-runtime.json.",
+      "Endpoint filter logout/OAuth dan Actuator dilengkapi pada openapi.json dokumentasi ini."
+    ],
+    "index": 46,
+    "runtimeController": false
+  }
+]

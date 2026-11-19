@@ -1,5 +1,6 @@
 package com.pasti_bisa.backend.shared.security;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/csrf")
 public class CsrfController {
 	@GetMapping
-	public CsrfResponse token(CsrfToken csrfToken) {
+	public CsrfResponse token(@Parameter(hidden = true) CsrfToken csrfToken) {
 		return new CsrfResponse(csrfToken.getHeaderName(), csrfToken.getToken());
 	}
 
