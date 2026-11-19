@@ -1,10 +1,9 @@
 package com.pasti_bisa.backend.modules.identity.application;
 
 import java.util.Locale;
-import java.util.UUID;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pasti_bisa.backend.modules.identity.domain.CustomerAccount;
@@ -24,6 +23,10 @@ public class IdentityService {
 		String normalizedEmail = email.trim();
 		String canonicalEmail = normalizedEmail.toLowerCase(Locale.ROOT);
 		return users.createCustomer(normalizedEmail, canonicalEmail, displayName.trim(), passwordEncoder.encode(password));
+	}
+
+	public boolean passwordMatches(String rawPassword, String passwordHash) {
+		return passwordEncoder.matches(rawPassword, passwordHash);
 	}
 
 	@Transactional(readOnly = true)

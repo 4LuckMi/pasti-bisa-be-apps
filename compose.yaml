@@ -17,18 +17,44 @@ services:
 
   api:
     build: .
+    image: pasti-bisa-backend-api
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       SERVER_PORT: 8080
+      SESSION_TIMEOUT: ${SESSION_TIMEOUT:-30m}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-pastisiap}
       DB_USERNAME: ${DB_USERNAME:-pastisiap}
       DB_PASSWORD: ${DB_PASSWORD:-pastisiap}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      OAUTH_REDIRECT_URI: ${OAUTH_REDIRECT_URI:-http://localhost:8080/login/oauth2/code/google}
+      OAUTH_SUCCESS_REDIRECT: ${OAUTH_SUCCESS_REDIRECT:-/}
       STORAGE_ROOT: /app/storage
     ports:
       - "${SERVER_PORT:-8080}:8080"
+    volumes:
+      - ./storage:/app/storage
+
+  worker:
+    image: pasti-bisa-backend-api
+    depends_on:
+      api:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: worker
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-pastisiap}
+      DB_USERNAME: ${DB_USERNAME:-pastisiap}
+      DB_PASSWORD: ${DB_PASSWORD:-pastisiap}
+      STORAGE_ROOT: /app/storage
+      WORKER_ENABLED: "true"
+      JAVA_TOOL_OPTIONS: -Xmx512m
+    mem_limit: 768m
     volumes:
       - ./storage:/app/storage
 

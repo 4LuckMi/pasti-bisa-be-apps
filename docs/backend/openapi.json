@@ -1,0 +1,5686 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PastiSiap Backend - documented implementation",
+    "version": "2026-11-19",
+    "description": "Kontrak berdasarkan source dan runtime V6; semua contoh sintetis. Perilaku/catatan tiap endpoint ada di 03-api-reference.md. Tidak menyatakan semua roadmap PRD telah diimplementasikan."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Docker development"
+    }
+  ],
+  "paths": {
+    "/api/v1/users/current/attempts/{id}/answers/{position}": {
+      "put": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "answer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "position",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerRequest"
+              },
+              "example": {
+                "selectedOptionId": "00000000-0000-4000-8000-000000000012",
+                "flagged": false,
+                "expectedRevision": 0
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerResponse"
+                },
+                "example": {
+                  "position": 1,
+                  "selectedOptionId": "00000000-0000-4000-8000-000000000012",
+                  "flagged": false,
+                  "revision": 1,
+                  "receivedAt": "2026-11-19T07:01:00Z"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Simpan jawaban/revision",
+        "description": "Autosave jawaban terakhir dengan optimistic revision.\n\nexpectedRevision wajib >=0. Awal 0, sukses menjadi 1; stale revision ditolak.\n\nselectedOptionId null berarti mengosongkan pilihan. flagged tidak dikirim/null dianggap false.\n\nUpdate parsial flagged saja tetap dapat mengosongkan pilihan; kirim selectedOptionId yang ingin dipertahankan.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/users/current/attempts/{id}/finalize": {
+      "post": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "finish",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizeRequest"
+              },
+              "example": {
+                "abandon": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "example": {
+                  "attemptId": "00000000-0000-4000-8000-000000000006",
+                  "tryoutId": "00000000-0000-4000-8000-000000000002",
+                  "mode": "TRYOUT",
+                  "status": "FINALIZING",
+                  "terminalReason": "SUBMITTED",
+                  "serverNow": "2026-11-19T07:05:00Z",
+                  "startedAt": "2026-11-19T07:00:00Z",
+                  "deadlineAt": "2026-11-19T08:30:00Z",
+                  "questions": [
+                    {
+                      "position": 1,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 2,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 3,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Submit atau abandon",
+        "description": "Menutup attempt dan membuat job scoring idempoten.\n\nBody boleh kosong atau {}; abandon false/null berarti submit. abandon true berarti keluar/abandon.\n\nJika deadline lewat, terminalReason TIMED_OUT mengalahkan parameter abandon.\n\nStatus normal berikutnya FINALIZING, bukan nilai langsung. Request berulang tidak membuat hasil/job ganda.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/staff/questions": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "questions",
+        "parameters": [
+          {
+            "name": "subtestId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StaffQuestionResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000007",
+                    "versionId": "00000000-0000-4000-8000-000000000008",
+                    "code": "Q-00000000-0000-4000-8000-000000000007",
+                    "version": 1,
+                    "status": "DRAFT",
+                    "subtestId": "00000000-0000-4000-8000-000000000004",
+                    "topicId": "00000000-0000-4000-8000-000000000005",
+                    "sourceYear": 2026,
+                    "sourceTitle": "Contoh PDF PastiSiap",
+                    "sourcePage": 1,
+                    "content": {
+                      "stemText": "Berapa hasil 2 + 3?",
+                      "options": [
+                        {
+                          "code": "A",
+                          "text": "4",
+                          "correct": false,
+                          "weight": 0
+                        },
+                        {
+                          "code": "B",
+                          "text": "5",
+                          "correct": true,
+                          "weight": 1
+                        }
+                      ],
+                      "explanation": "Dua ditambah tiga sama dengan lima.",
+                      "shuffleAllowed": false
+                    }
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cari master soal",
+        "description": "Daftar question yang belum diarsipkan beserta versi paling baru.\n\nFilter opsional subtestId dan search. Search mencocokkan kode atau stem pada versi yang tersimpan.\n\nVersi terbaru yang dikembalikan bisa DRAFT walaupun versi PUBLISHED lama masih dipakai sesi baru.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      },
+      "post": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionRequest"
+              },
+              "example": {
+                "subtestId": "00000000-0000-4000-8000-000000000004",
+                "topicId": "00000000-0000-4000-8000-000000000005",
+                "sourceTitle": "Soal manual contoh",
+                "sourceYear": 2026,
+                "content": {
+                  "stemText": "Berapa hasil 2 + 3?",
+                  "options": [
+                    {
+                      "code": "A",
+                      "text": "4",
+                      "correct": false,
+                      "weight": 0
+                    },
+                    {
+                      "code": "B",
+                      "text": "5",
+                      "correct": true,
+                      "weight": 1
+                    }
+                  ],
+                  "explanation": "Dua ditambah tiga sama dengan lima.",
+                  "shuffleAllowed": false
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffQuestionResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000007",
+                  "versionId": "00000000-0000-4000-8000-000000000008",
+                  "code": "Q-00000000-0000-4000-8000-000000000007",
+                  "version": 1,
+                  "status": "DRAFT",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceYear": 2026,
+                  "sourceTitle": "Soal manual contoh",
+                  "sourcePage": null,
+                  "content": {
+                    "stemText": "Berapa hasil 2 + 3?",
+                    "options": [
+                      {
+                        "code": "A",
+                        "text": "4",
+                        "correct": false,
+                        "weight": 0
+                      },
+                      {
+                        "code": "B",
+                        "text": "5",
+                        "correct": true,
+                        "weight": 1
+                      }
+                    ],
+                    "explanation": "Dua ditambah tiga sama dengan lima.",
+                    "shuffleAllowed": false
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Buat soal manual",
+        "description": "Membuat master DRAFT tanpa perlu upload PDF.\n\nsubtestId/topicId harus satu lingkup aktif. Konten body harus memenuhi validasi request; aturan lengkap publikasi tetap diperiksa saat publish.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ]
+      }
+    },
+    "/api/v1/staff/questions/{id}/versions": {
+      "post": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "version",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionContent"
+              },
+              "example": {
+                "stemText": "Berapa hasil 2 + 3?",
+                "options": [
+                  {
+                    "code": "A",
+                    "text": "4",
+                    "correct": false,
+                    "weight": 0
+                  },
+                  {
+                    "code": "B",
+                    "text": "5",
+                    "correct": true,
+                    "weight": 1
+                  }
+                ],
+                "explanation": "Dua ditambah tiga sama dengan lima.",
+                "shuffleAllowed": false
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffQuestionResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000007",
+                  "versionId": "00000000-0000-4000-8000-000000000080",
+                  "code": "Q-00000000-0000-4000-8000-000000000007",
+                  "version": 2,
+                  "status": "DRAFT",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceYear": 2026,
+                  "sourceTitle": "Contoh PDF PastiSiap",
+                  "sourcePage": 1,
+                  "content": {
+                    "stemText": "Berapa hasil 2 + 3?",
+                    "options": [
+                      {
+                        "code": "A",
+                        "text": "4",
+                        "correct": false,
+                        "weight": 0
+                      },
+                      {
+                        "code": "B",
+                        "text": "5",
+                        "correct": true,
+                        "weight": 1
+                      }
+                    ],
+                    "explanation": "Dua ditambah tiga sama dengan lima.",
+                    "shuffleAllowed": false
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Buat versi draft baru",
+        "description": "Menambahkan versi berikutnya tanpa menimpa versi PUBLISHED sebelumnya.\n\nEndpoint ini tidak idempoten: pengiriman ulang membuat versi berikutnya lagi.\n\nTidak ada endpoint update draft di tempat pada implementasi sekarang; publish selalu menargetkan versi terbaru.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/staff/questions/{id}/publish": {
+      "post": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "publish",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffQuestionResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000007",
+                  "versionId": "00000000-0000-4000-8000-000000000008",
+                  "code": "Q-00000000-0000-4000-8000-000000000007",
+                  "version": 1,
+                  "status": "PUBLISHED",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceYear": 2026,
+                  "sourceTitle": "Contoh PDF PastiSiap",
+                  "sourcePage": 1,
+                  "content": {
+                    "stemText": "Berapa hasil 2 + 3?",
+                    "options": [
+                      {
+                        "code": "A",
+                        "text": "4",
+                        "correct": false,
+                        "weight": 0
+                      },
+                      {
+                        "code": "B",
+                        "text": "5",
+                        "correct": true,
+                        "weight": 1
+                      }
+                    ],
+                    "explanation": "Dua ditambah tiga sama dengan lima.",
+                    "shuffleAllowed": false
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Publish versi terbaru",
+        "description": "Memvalidasi sumber/stem/opsi/kunci/bobot/pembahasan lalu menerbitkan DRAFT terbaru.\n\nWajib tepat satu opsi correct, kode opsi unik A–E, 2–5 opsi, pembahasan dan source title.\n\nJika versi terbaru sudah PUBLISHED, respons versi yang sama. Draft baru tidak otomatis diterbitkan worker.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/staff/questions/{id}/archive": {
+      "post": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "archive",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Arsip keluarga soal",
+        "description": "Menetapkan archived_at agar soal tidak masuk pemilihan sesi baru.\n\n200 body kosong. Pengulangan tidak mengubah timestamp arsip yang sudah ada.\n\nSnapshot sesi lama tetap dapat dibaca; tidak menghapus versi/hasil. Belum ada endpoint unarchive.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/staff/imports": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "imports",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ImportResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000020",
+                    "status": "READY",
+                    "fileId": "00000000-0000-4000-8000-000000000021",
+                    "subtestId": "00000000-0000-4000-8000-000000000004",
+                    "topicId": "00000000-0000-4000-8000-000000000005",
+                    "sourceTitle": "Contoh PDF PastiSiap",
+                    "sourceYear": 2026,
+                    "pageCount": 1,
+                    "candidateCount": 2,
+                    "validCount": 2,
+                    "invalidCount": 0,
+                    "errorCode": null,
+                    "jobStatus": "SUCCEEDED",
+                    "jobErrorCode": null,
+                    "createdAt": "2026-11-19T07:00:00Z"
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Daftar riwayat impor",
+        "description": "Daftar batch seluruh petugas, terbaru dahulu.\n\nBukan hanya unggahan akun sendiri. Daftar berupa array tanpa total count/pagination envelope.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      },
+      "post": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "upload",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "metadata": {
+                    "$ref": "#/components/schemas/ImportMetadata"
+                  }
+                },
+                "required": [
+                  "file",
+                  "metadata"
+                ]
+              },
+              "encoding": {
+                "metadata": {
+                  "contentType": "application/json"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000020",
+                  "status": "QUEUED",
+                  "fileId": "00000000-0000-4000-8000-000000000021",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceTitle": "Contoh PDF PastiSiap",
+                  "sourceYear": 2026,
+                  "pageCount": null,
+                  "candidateCount": 0,
+                  "validCount": 0,
+                  "invalidCount": 0,
+                  "errorCode": null,
+                  "jobStatus": "QUEUED",
+                  "jobErrorCode": null,
+                  "createdAt": "2026-11-19T07:00:00Z"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Upload sumber PDF",
+        "description": "Menyimpan sumber privat dan enqueue IMPORT_PDF di luar thread ekstraksi HTTP.\n\nMultipart file + metadata; part metadata wajib application/json. Body metadata mengikuti ImportMetadata.\n\nMaksimal 25MB, request 26MB. PDF invalid/encrypted/page limit dapat baru gagal pada worker; 202 bukan jaminan konten valid.\n\nChecksum sama dalam uploader/subtest/topic yang sama mengembalikan batch lama, termasuk bila sourceTitle/sourceYear input berbeda. Tidak otomatis membuat ulang batch yang FAILED.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ]
+      }
+    },
+    "/api/v1/staff/imports/{id}/candidates/{candidateId}/save": {
+      "post": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "save",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "candidateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffQuestionResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000007",
+                  "versionId": "00000000-0000-4000-8000-000000000008",
+                  "code": "Q-00000000-0000-4000-8000-000000000007",
+                  "version": 1,
+                  "status": "DRAFT",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceYear": 2026,
+                  "sourceTitle": "Contoh PDF PastiSiap",
+                  "sourcePage": 1,
+                  "content": {
+                    "stemText": "Berapa hasil 2 + 3?",
+                    "options": [
+                      {
+                        "code": "A",
+                        "text": "4",
+                        "correct": false,
+                        "weight": 0
+                      },
+                      {
+                        "code": "B",
+                        "text": "5",
+                        "correct": true,
+                        "weight": 1
+                      }
+                    ],
+                    "explanation": "Dua ditambah tiga sama dengan lima.",
+                    "shuffleAllowed": false
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Kandidat menjadi draft master",
+        "description": "Membuat keluarga question dan versi DRAFT dari koreksi terakhir atau ekstraksi asli.\n\nRequest berulang pada kandidat yang sudah disimpan mengembalikan master yang sama.\n\nSave bukan publish; draft belum lengkap masih dapat dibuat, kemudian publish menolak konten tidak lengkap.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/practice/attempts": {
+      "post": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "practice",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartPracticeRequest"
+              },
+              "example": {
+                "topicId": "00000000-0000-4000-8000-000000000005",
+                "questionCount": 3
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "example": {
+                  "attemptId": "00000000-0000-4000-8000-000000000006",
+                  "tryoutId": "00000000-0000-4000-8000-000000000070",
+                  "mode": "PRACTICE",
+                  "status": "IN_PROGRESS",
+                  "terminalReason": null,
+                  "serverNow": "2026-11-19T07:00:00Z",
+                  "startedAt": "2026-11-19T07:00:00Z",
+                  "deadlineAt": "2026-11-19T07:06:00Z",
+                  "questions": [
+                    {
+                      "position": 1,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 2,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 3,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Mulai practice",
+        "description": "Memulai latihan dalam satu topik, memakai blueprint internal dan pool yang sama.\n\nquestionCount wajib dikirim 1–50. Durasi saat ini questionCount × 120 detik; tidak mengambil quota tryout.\n\nSatu sesi aktif dibagi dengan tryout. tryoutId response adalah ID blueprint internal practice.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Publik dan identity"
+        ],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "example": {
+                "email": "siswa@example.com",
+                "displayName": "Nama Siswa",
+                "password": "PasswordAman123!"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "user": {
+                    "id": "00000000-0000-4000-8000-000000000001",
+                    "email": "siswa@example.com",
+                    "displayName": "Nama Siswa",
+                    "userType": "SISWA",
+                    "roles": [
+                      "CUSTOMER"
+                    ]
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Registrasi password",
+        "description": "Membuat SISWA dengan role CUSTOMER dan login otomatis.\n\nPassword 12–72 karakter, displayName 2–120, email valid maksimal 320. Tidak menerima pilihan role/userType/premium.\n\nRespons membuat/merotasi cookie session. Tidak ada accessToken atau refreshToken.",
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Publik dan identity"
+        ],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "siswa@example.com",
+                "password": "PasswordAman123!"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "user": {
+                    "id": "00000000-0000-4000-8000-000000000001",
+                    "email": "siswa@example.com",
+                    "displayName": "Nama Siswa",
+                    "userType": "SISWA",
+                    "roles": [
+                      "CUSTOMER"
+                    ]
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Login password",
+        "description": "Memverifikasi email/password lalu membentuk session.\n\nLogin password untuk akun SSO tanpa password tidak tersedia. Email dinormalisasi oleh service.",
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ]
+      }
+    },
+    "/api/v1/attempts": {
+      "post": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "start",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartTryoutRequest"
+              },
+              "example": {
+                "tryoutId": "00000000-0000-4000-8000-000000000002"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "example": {
+                  "attemptId": "00000000-0000-4000-8000-000000000006",
+                  "tryoutId": "00000000-0000-4000-8000-000000000002",
+                  "mode": "TRYOUT",
+                  "status": "IN_PROGRESS",
+                  "terminalReason": null,
+                  "serverNow": "2026-11-19T07:00:00Z",
+                  "startedAt": "2026-11-19T07:00:00Z",
+                  "deadlineAt": "2026-11-19T08:30:00Z",
+                  "questions": [
+                    {
+                      "position": 1,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 2,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 3,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Mulai tryout",
+        "description": "Membuat attempt TRYOUT dari blueprint aktif, atau mengembalikan replay/sesi aktif.\n\nKey 8–128 karakter dari huruf, angka, titik, underscore, colon atau hyphen. Key sama + body berbeda ditolak.\n\nJika sesi aktif ada, response bisa berupa sesi berbeda dari paket yang diminta. Selalu baca attemptId/mode/status response.\n\nPool kurang rollback seluruh start dan tidak memakai kuota; start berhasil memakai satu kuota.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/users/current/profile": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "get",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentProfileResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "email": "siswa@example.com",
+                  "displayName": "Nama Siswa",
+                  "userType": "SISWA",
+                  "schoolName": "SMA Negeri 1 Bandung",
+                  "schoolGrade": "XII",
+                  "leaderboardOptIn": false,
+                  "targetScore": 800,
+                  "targetKind": "CAMPUS",
+                  "targetInstitution": "Universitas Contoh",
+                  "targetProgram": "Informatika"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Profil dan target siswa",
+        "description": "Membaca sekolah, kelas, target dan skor sasaran.\n\nField sekolah/target boleh null sebelum pengguna melengkapinya. Role tersedia pada ringkasan akun, bukan response profil ini.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": []
+      },
+      "patch": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudentProfileRequest"
+              },
+              "example": {
+                "displayName": "Nama Siswa",
+                "schoolName": "SMA Negeri 1 Bandung",
+                "schoolGrade": "XII",
+                "targetCategory": "UTBK",
+                "targetInstitution": "Universitas Contoh",
+                "targetProgram": "Informatika",
+                "targetScore": 800
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentProfileResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "email": "siswa@example.com",
+                  "displayName": "Nama Siswa",
+                  "userType": "SISWA",
+                  "schoolName": "SMA Negeri 1 Bandung",
+                  "schoolGrade": "XII",
+                  "leaderboardOptIn": false,
+                  "targetScore": 800,
+                  "targetKind": "CAMPUS",
+                  "targetInstitution": "Universitas Contoh",
+                  "targetProgram": "Informatika"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update profil dan target",
+        "description": "Memperbarui data profil sesuai form lengkap.\n\nWalaupun method PATCH, displayName, schoolName, schoolGrade, targetCategory dan targetInstitution tetap wajib.\n\ntargetCategory dipetakan ke targetKind: UTBK→CAMPUS, CPNS→CIVIL_SERVICE, KEDINASAN→ACADEMY, SEKOLAH→SCHOOL.\n\ntargetProgram dan targetScore boleh null; targetScore 0–1000. leaderboardOptIn, email, roles dan userType tidak dapat diubah lewat body ini.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ]
+      }
+    },
+    "/api/v1/staff/imports/{id}/candidates/{candidateId}": {
+      "patch": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "correct",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "candidateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionContent"
+              },
+              "example": {
+                "stemText": "Berapa hasil 2 + 3?",
+                "options": [
+                  {
+                    "code": "A",
+                    "text": "4",
+                    "correct": false,
+                    "weight": 0
+                  },
+                  {
+                    "code": "B",
+                    "text": "5",
+                    "correct": true,
+                    "weight": 1
+                  }
+                ],
+                "explanation": "Dua ditambah tiga sama dengan lima.",
+                "shuffleAllowed": false
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "400": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Koreksi satu kandidat",
+        "description": "Menulis draft_content dan menghitung ulang validationErrors/batch counts.\n\n200 body kosong. Kirim seluruh konten, bukan JSON Patch.\n\nHasil ekstraksi asli tetap tersimpan. Kandidat yang sudah menjadi master tidak dapat dikoreksi lewat endpoint ini.\n\nBean validation body berlaku; kunci/pembahasan yang belum valid tetap ditandai oleh validator publikasi.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/users/current": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000001",
+                  "email": "siswa@example.com",
+                  "displayName": "Nama Siswa",
+                  "userType": "SISWA",
+                  "roles": [
+                    "CUSTOMER"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ringkasan akun aktif",
+        "description": "Membaca akun dari principal session, tanpa user ID dari client.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": []
+      }
+    },
+    "/api/v1/users/current/tryout-quota": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "quota",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotaResponse"
+                },
+                "example": {
+                  "dateWib": "2026-11-19",
+                  "used": 1,
+                  "limit": 2,
+                  "remaining": 1
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Kuota harian WIB",
+        "description": "Menghitung pemakaian dan sisa dua start tryout per tanggal Asia/Jakarta.\n\nPractice tidak memakai kuota ini. Gratis dan Premium memakai batas teknis yang sama pada implementasi saat ini.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": []
+      }
+    },
+    "/api/v1/users/current/subscription": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "subscriptions",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriptionResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000040",
+                    "starts_at": "2026-11-01T00:00:00Z",
+                    "ends_at": "2026-12-01T00:00:00Z",
+                    "status": "ACTIVE",
+                    "active": true
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Daftar subscription sendiri",
+        "description": "Mengembalikan periode langganan dan active berdasarkan entitlement grant yang masih berlaku.\n\nTanpa langganan mengembalikan []. Contoh item aktif bersifat ilustrasi; belum ada API pembelian/grant.\n\nBukan satu objek boolean premium; active dibaca server dari interval grant yang tidak dicabut.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": []
+      }
+    },
+    "/api/v1/users/current/attempts": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "history",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttemptHistoryResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000006",
+                    "tryout_id": "00000000-0000-4000-8000-000000000002",
+                    "tryout_title": "Tryout UTBK - Contoh",
+                    "mode": "TRYOUT",
+                    "status": "COMPLETED",
+                    "started_at": "2026-11-19T07:00:00Z",
+                    "finalized_at": "2026-11-19T07:05:00Z",
+                    "total_score": 33.3333,
+                    "details": "{\"label\":\"Indeks latihan PastiSiap; bukan skor resmi\",\"correct\":1,\"wrong\":0,\"empty\":2}"
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Riwayat sesi sendiri",
+        "description": "Maksimal 100 attempt terbaru milik akun, termasuk TRYOUT dan PRACTICE.\n\nBelum ada parameter pagination/filter per paket pada endpoint ini.\n\ndetails adalah string berisi JSON atau null; berbeda dengan object details pada endpoint result.\n\ntotal_score dan finalized_at dapat null untuk sesi yang belum selesai.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": []
+      }
+    },
+    "/api/v1/users/current/attempts/{id}": {
+      "get": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "get_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "example": {
+                  "attemptId": "00000000-0000-4000-8000-000000000006",
+                  "tryoutId": "00000000-0000-4000-8000-000000000002",
+                  "mode": "TRYOUT",
+                  "status": "IN_PROGRESS",
+                  "terminalReason": null,
+                  "serverNow": "2026-11-19T07:00:00Z",
+                  "startedAt": "2026-11-19T07:00:00Z",
+                  "deadlineAt": "2026-11-19T08:30:00Z",
+                  "questions": [
+                    {
+                      "position": 1,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 2,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 3,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Navigator dan status sesi",
+        "description": "Membaca deadline server, status dan daftar nomor/flag/revision milik pengguna.\n\nGET ini dapat mengubah sesi kedaluwarsa menjadi FINALIZING dan membuat job scoring.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/users/current/attempts/{id}/review": {
+      "get": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "review",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttemptQuestionResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "position": 1,
+                    "stem": {
+                      "text": "Berapa hasil 2 + 3?"
+                    },
+                    "options": [
+                      {
+                        "id": "00000000-0000-4000-8000-000000000011",
+                        "code": "A",
+                        "content": {
+                          "text": "4"
+                        },
+                        "correct": false
+                      },
+                      {
+                        "id": "00000000-0000-4000-8000-000000000012",
+                        "code": "B",
+                        "content": {
+                          "text": "5"
+                        },
+                        "correct": true
+                      }
+                    ],
+                    "selectedOptionId": "00000000-0000-4000-8000-000000000012",
+                    "flagged": false,
+                    "revision": 1,
+                    "correct": true,
+                    "explanation": "Dua ditambah tiga sama dengan lima."
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Review seluruh soal",
+        "description": "Mengembalikan semua nomor snapshot beserta jawaban/kunci/pembahasan setelah COMPLETED.\n\nArray ini bukan master soal terbaru. Jumlah contoh dipersingkat menjadi satu item untuk keterbacaan.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/users/current/attempts/{id}/result": {
+      "get": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "result",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultResponse"
+                },
+                "example": {
+                  "attemptId": "00000000-0000-4000-8000-000000000006",
+                  "status": "COMPLETED",
+                  "terminalReason": "SUBMITTED",
+                  "method": "BINARY",
+                  "policyVersion": "DEMO_BINARY:1",
+                  "totalScore": 33.3333,
+                  "details": {
+                    "label": "Indeks latihan PastiSiap; bukan skor resmi",
+                    "correct": 1,
+                    "wrong": 0,
+                    "empty": 2
+                  },
+                  "sections": [
+                    {
+                      "subtestId": "00000000-0000-4000-8000-000000000004",
+                      "correct": 1,
+                      "wrong": 0,
+                      "empty": 2,
+                      "points": 1,
+                      "maxPoints": 3,
+                      "accuracy": 33.3333
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Status dan hasil scoring",
+        "description": "Membaca status attempt dan score terbaru.\n\nSebelum hasil: totalScore/method/policyVersion/details null dan sections kosong. Jangan menganggap null sebagai nilai nol.\n\nstatus bisa IN_PROGRESS/FINALIZING/COMPLETED. Belum ada status API FAILED khusus scoring; telusuri job/log jika lama.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/users/current/attempts/{attemptId}/questions/{position}": {
+      "get": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "question",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "position",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttemptQuestionResponse"
+                },
+                "example": {
+                  "position": 1,
+                  "stem": {
+                    "text": "Berapa hasil 2 + 3?"
+                  },
+                  "options": [
+                    {
+                      "id": "00000000-0000-4000-8000-000000000011",
+                      "code": "A",
+                      "content": {
+                        "text": "4"
+                      },
+                      "correct": null
+                    },
+                    {
+                      "id": "00000000-0000-4000-8000-000000000012",
+                      "code": "B",
+                      "content": {
+                        "text": "5"
+                      },
+                      "correct": null
+                    }
+                  ],
+                  "selectedOptionId": null,
+                  "flagged": false,
+                  "revision": 0,
+                  "correct": null,
+                  "explanation": null
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Baca satu soal dalam sesi",
+        "description": "Membaca versi soal dan urutan opsi snapshot milik pengguna.\n\nposition dimulai dari 1. selectedOptionId adalah UUID opsi, bukan huruf display.\n\nSebelum score tersedia, options[].correct, correct dan explanation bernilai null. Tidak mengirim score_weight.\n\nSetelah scoring, correct null juga dapat berarti soal belum dijawab. Response siswa tidak berisi sumber PDF/kunci file.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login"
+      }
+    },
+    "/api/v1/users/current/attempts/{attemptId}/questions/{position}/assets/{assetId}": {
+      "get": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "readAsset",
+        "parameters": [
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "position",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary file",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Asset tidak ditemukan; body dapat kosong"
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Baca asset privat soal",
+        "description": "Memeriksa kepemilikan attempt dan relasi asset dengan versi soal sebelum mengirim binary.\n\n200 binary dengan Content-Disposition inline dan Cache-Control no-store.\n\n404 asset tidak ditemukan dapat memiliki body kosong, bukan ApiError. File IMPORT_SOURCE selalu dikecualikan.\n\nTidak ada endpoint upload/attach asset baru pada flow siswa.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login"
+      }
+    },
+    "/api/v1/users/current/attempts/active": {
+      "get": {
+        "tags": [
+          "Lifecycle tryout dan practice"
+        ],
+        "operationId": "active",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                },
+                "example": {
+                  "attemptId": "00000000-0000-4000-8000-000000000006",
+                  "tryoutId": "00000000-0000-4000-8000-000000000002",
+                  "mode": "TRYOUT",
+                  "status": "IN_PROGRESS",
+                  "terminalReason": null,
+                  "serverNow": "2026-11-19T07:00:00Z",
+                  "startedAt": "2026-11-19T07:00:00Z",
+                  "deadlineAt": "2026-11-19T08:30:00Z",
+                  "questions": [
+                    {
+                      "position": 1,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 2,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    },
+                    {
+                      "position": 3,
+                      "answered": false,
+                      "flagged": false,
+                      "revision": 0
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Resume sesi aktif",
+        "description": "Mengembalikan sesi IN_PROGRESS/FINALIZING, atau memfinalisasi sesi yang sudah kedaluwarsa.\n\nJika tidak ada sesi, HTTP 200 dengan body kosong. Client perlu memeriksa body sebelum parsing JSON.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER",
+        "parameters": []
+      }
+    },
+    "/api/v1/tryouts": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "tryouts",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Kode kategori; contoh UTBK. Opsional, bukan object query."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TryoutResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000002",
+                    "code": "DEMO_TRYOUT",
+                    "title": "Tryout UTBK - Contoh",
+                    "category": "UTBK",
+                    "exam_type": "Tes Numerik Contoh",
+                    "blueprint_version_id": "00000000-0000-4000-8000-000000000003",
+                    "duration_seconds": 5400,
+                    "question_count": 3,
+                    "attempt_count": 0,
+                    "latest_score": null,
+                    "latest_completed_at": null
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Katalog tryout",
+        "description": "Membaca paket TRYOUT aktif, jumlah soal dan riwayat ringkas untuk versi blueprint aktif.\n\nArray kosong valid. Riwayat ringkas tidak menghitung seluruh versi blueprint lama dari paket yang sama.\n\nBeberapa key sengaja snake_case, sesuai DTO legacy.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login"
+      }
+    },
+    "/api/v1/tryouts/{id}": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "detail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TryoutDetail"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000002",
+                  "title": "Tryout UTBK - Contoh",
+                  "category": "UTBK",
+                  "durationSeconds": 5400,
+                  "scoringMethod": "BINARY",
+                  "scale": 100,
+                  "demo": true,
+                  "ready": true,
+                  "sections": [
+                    {
+                      "id": "00000000-0000-4000-8000-000000000023",
+                      "subtestId": "00000000-0000-4000-8000-000000000004",
+                      "name": "Penalaran Numerik Contoh",
+                      "position": 1,
+                      "questionCount": 3,
+                      "available": 12
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detail dan kesiapan katalog",
+        "description": "Menampilkan durasi, metode/skala dan kapasitas pool section.\n\nready mengukur stok global, bukan ketersediaan personal setelah exposure harian. Start dapat tetap menolak POOL_NOT_READY.\n\nid adalah blueprint/package ID, bukan blueprint_version_id.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role CUSTOMER"
+      }
+    },
+    "/api/v1/staff/taxonomy": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "taxonomy",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaxonomyResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "categoryId": "00000000-0000-4000-8000-000000000024",
+                    "categoryCode": "UTBK",
+                    "categoryName": "UTBK",
+                    "examTypeId": "00000000-0000-4000-8000-000000000025",
+                    "examTypeCode": "DEMO",
+                    "examTypeName": "Tes Numerik Contoh",
+                    "subtestId": "00000000-0000-4000-8000-000000000004",
+                    "subtestName": "Penalaran Numerik Contoh",
+                    "topicId": "00000000-0000-4000-8000-000000000005",
+                    "topicName": "Aritmetika Dasar Contoh"
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Taksonomi aktif untuk petugas",
+        "description": "Mengambil kategori, exam type, subtes dan topik dalam bentuk baris datar.\n\nSatu subtes dengan beberapa topik muncul beberapa baris. topicId/topicName boleh null jika subtes belum mempunyai topik.\n\nBelum tersedia taxonomy CRUD.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF",
+        "parameters": []
+      }
+    },
+    "/api/v1/staff/questions/{id}": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "question_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffQuestionResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000007",
+                  "versionId": "00000000-0000-4000-8000-000000000008",
+                  "code": "Q-00000000-0000-4000-8000-000000000007",
+                  "version": 1,
+                  "status": "DRAFT",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceYear": 2026,
+                  "sourceTitle": "Contoh PDF PastiSiap",
+                  "sourcePage": 1,
+                  "content": {
+                    "stemText": "Berapa hasil 2 + 3?",
+                    "options": [
+                      {
+                        "code": "A",
+                        "text": "4",
+                        "correct": false,
+                        "weight": 0
+                      },
+                      {
+                        "code": "B",
+                        "text": "5",
+                        "correct": true,
+                        "weight": 1
+                      }
+                    ],
+                    "explanation": "Dua ditambah tiga sama dengan lima.",
+                    "shuffleAllowed": false
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detail master terbaru",
+        "description": "Detail versi paling baru dengan konten/kunci/bobot dan provenance sumber.\n\nBukan endpoint untuk memilih nomor versi historis. Detail by ID masih dapat dibaca setelah archive.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/staff/imports/{id}": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "get_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResponse"
+                },
+                "example": {
+                  "id": "00000000-0000-4000-8000-000000000020",
+                  "status": "READY",
+                  "fileId": "00000000-0000-4000-8000-000000000021",
+                  "subtestId": "00000000-0000-4000-8000-000000000004",
+                  "topicId": "00000000-0000-4000-8000-000000000005",
+                  "sourceTitle": "Contoh PDF PastiSiap",
+                  "sourceYear": 2026,
+                  "pageCount": 1,
+                  "candidateCount": 2,
+                  "validCount": 2,
+                  "invalidCount": 0,
+                  "errorCode": null,
+                  "jobStatus": "SUCCEEDED",
+                  "jobErrorCode": null,
+                  "createdAt": "2026-11-19T07:00:00Z"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Status batch dan job",
+        "description": "Memantau status impor, jumlah kandidat dan error/status job.\n\nREADY berarti semua kandidat dinilai lengkap oleh validator; belum otomatis terbit.\n\nBatch status dan jobStatus berbeda. Batch FAILED dapat bersamaan dengan job RETRY_WAIT.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/staff/imports/{id}/source": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "source",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary file",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Download PDF sumber",
+        "description": "Membaca file asli yang dapat berisi kunci untuk review petugas.\n\n200 binary; Content-Disposition attachment; filename=source.pdf; Cache-Control no-store.\n\nSemua QUESTION_STAFF dapat membaca batch yang valid, bukan hanya uploader. File tidak tersedia dapat menghasilkan error internal yang harus dilacak log.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/staff/imports/{id}/candidates": {
+      "get": {
+        "tags": [
+          "Bank soal dan impor"
+        ],
+        "operationId": "candidates",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CandidateResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000022",
+                    "sourcePage": 1,
+                    "sourceItemNo": 1,
+                    "extractedContent": {
+                      "stemText": "Berapa hasil 2 + 3?",
+                      "options": [
+                        {
+                          "code": "A",
+                          "text": "4",
+                          "correct": false,
+                          "weight": 0
+                        },
+                        {
+                          "code": "B",
+                          "text": "5",
+                          "correct": true,
+                          "weight": 1
+                        }
+                      ],
+                      "explanation": "Dua ditambah tiga sama dengan lima.",
+                      "shuffleAllowed": false
+                    },
+                    "draftContent": null,
+                    "validationErrors": [],
+                    "questionId": null
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Daftar kandidat ekstraksi",
+        "description": "Membaca kandidat, koreksi, validationErrors dan questionId jika sudah disimpan.\n\nextractedContent bisa belum lengkap dan tidak memenuhi batas request QuestionContent; tampilkan error untuk perbaikan.\n\nsourceItemNo adalah nomor asal yang dinormalisasi per halaman untuk dedup, tidak selalu nomor cetak asli PDF.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session + role QUESTION_STAFF"
+      }
+    },
+    "/api/v1/practice/topics": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "topics",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Kode kategori; contoh UTBK. Opsional, bukan object query."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PracticeTopicResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "00000000-0000-4000-8000-000000000005",
+                    "topic": "Aritmetika Dasar Contoh",
+                    "subtest_code": "NUMERIK",
+                    "subtest": "Penalaran Numerik Contoh",
+                    "category": "UTBK",
+                    "question_count": 12
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Topik practice",
+        "description": "Daftar topik aktif dan hitungan soal terbit yang tidak diarsipkan.\n\nTopik dengan question_count=0 dapat muncul. Ketersediaan final diverifikasi pada start.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login"
+      }
+    },
+    "/api/v1/leaderboard": {
+      "get": {
+        "tags": [
+          "Profil dan read API siswa"
+        ],
+        "operationId": "leaderboard",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Kode kategori; contoh UTBK. Opsional, bukan object query."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeaderboardResponse"
+                  }
+                },
+                "example": [
+                  {
+                    "rank": 1,
+                    "display_name": "Siswa Contoh",
+                    "total_score": 80,
+                    "category": "UTBK",
+                    "period_start": "2026-11-01T00:00:00Z",
+                    "period_end": "2026-12-01T00:00:00Z"
+                  }
+                ]
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "401": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Baca leaderboard",
+        "description": "Maksimal 100 entry dari cohort aktif yang belum berakhir dan user masih opt-in.\n\nArray kosong adalah respons normal tanpa cohort/entry yang diprovisikan. Contoh item hanya ilustrasi kontrak.\n\nSesi acak tidak otomatis ditambahkan ke leaderboard.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login"
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Publik dan identity"
+        ],
+        "operationId": "get_3",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceStatus"
+                },
+                "example": {
+                  "status": "UP",
+                  "service": "pastisiap-backend",
+                  "timestamp": "2026-11-19T07:00:00Z"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health aplikasi",
+        "description": "Memeriksa proses API dan waktu UTC. Ini bukan pemeriksaan lengkap semua dependency.",
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": []
+      }
+    },
+    "/api/v1/csrf": {
+      "get": {
+        "tags": [
+          "Publik dan identity"
+        ],
+        "operationId": "token",
+        "responses": {
+          "200": {
+            "description": "Success DTO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfResponse"
+                },
+                "example": {
+                  "headerName": "X-CSRF-TOKEN",
+                  "token": "example-csrf-token"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ambil token CSRF",
+        "description": "Membuat/menggunakan session dan memberikan headerName serta token untuk mutasi.\n\nSimpan cookie dari respons; kirim token dengan cookie session yang sama. Token contoh dalam dokumen tidak dapat dipakai.",
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": []
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "documented_post__api_v1_auth_logout",
+        "summary": "Logout",
+        "description": "Ditangani filter Spring Security; menghapus session saat ini.\n\nBody respons kosong; jangan memanggil response.json(). Logout juga bisa mengembalikan 204 jika tidak ada autentikasi aktif, selama CSRF valid.",
+        "tags": [
+          "Publik dan identity"
+        ],
+        "security": [],
+        "x-access-policy": "Session CSRF; tidak memerlukan autentikasi aktif untuk menghapus session",
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token dari GET /api/v1/csrf dengan cookie session yang sama, termasuk login/register."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "403": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lihat kode/kondisi pada API reference; bentuk error binary/security non-API dapat berbeda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/authorization/google": {
+      "get": {
+        "operationId": "documented_get__oauth2_authorization_google",
+        "summary": "Mulai login Google",
+        "description": "Mengarahkan browser ke Google; hanya aktif bila profil oauth dikonfigurasi.\n\nTidak ada body JSON request. Selesaikan login dan consent dalam browser; bukan request credential password ke backend.\n\nCookie/state OAuth harus tetap pada browser/session yang sama.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Redirect",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "https://accounts.google.com/o/oauth2/v2/auth?..."
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login/oauth2/code/google": {
+      "get": {
+        "operationId": "documented_get__login_oauth2_code_google",
+        "summary": "Callback Google",
+        "description": "Endpoint filter OIDC menerima authorization code dan state dari Google.\n\nParameter code/state dibuat provider/Spring, bukan nilai yang dibuat frontend secara manual.\n\nSukses membuat session lalu redirect. Gagal OAuth mengikuti handler/redirect Security, tidak selalu ApiError JSON.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Redirect",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "nilai OAUTH_SUCCESS_REDIRECT"
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/health": {
+      "get": {
+        "operationId": "documented_get__actuator_health",
+        "summary": "Health komponen",
+        "description": "Health deployment dengan detail komponen disembunyikan.\n\nStatus tidak sehat dapat memberi HTTP 503. Endpoint /api/v1/health hanya status aplikasi sederhana.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "UP"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          },
+          "503": {
+            "description": "Health DOWN/OUT_OF_SERVICE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "status": "DOWN"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator/info": {
+      "get": {
+        "operationId": "documented_get__actuator_info",
+        "summary": "Info Actuator",
+        "description": "Endpoint info yang diekspos konfigurasi Actuator.\n\nDapat kosong karena contributor info tidak seluruhnya aktif. Tidak dijamin mengembalikan info.app sebagai JSON.\n\nDi luar prefix /api/, request anonim dapat mengikuti redirect OAuth atau respons Security berbeda, tergantung profil.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {}
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actuator": {
+      "get": {
+        "operationId": "documented_get__actuator",
+        "summary": "Discovery Actuator",
+        "description": "Discovery links Actuator untuk endpoint yang diekspos.\n\nBukan API data siswa. Host/links mengikuti deployment. Penjagaan anonim sama seperti /actuator/info.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-access-policy": "Session login",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "_links": {
+                    "self": {
+                      "href": "http://localhost:8080/actuator",
+                      "templated": false
+                    },
+                    "health": {
+                      "href": "http://localhost:8080/actuator/health",
+                      "templated": false
+                    },
+                    "health-path": {
+                      "href": "http://localhost:8080/actuator/health/{*path}",
+                      "templated": true
+                    },
+                    "info": {
+                      "href": "http://localhost:8080/actuator/info",
+                      "templated": false
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/swagger-ui.html": {
+      "get": {
+        "operationId": "documented_get__swagger_ui_html",
+        "summary": "Buka Swagger UI",
+        "description": "Redirect ke halaman Swagger UI untuk mencoba endpoint.\n\nResource HTML/JS/CSS internal Swagger tidak diinventarisasi satu per satu. UI memakai cookie/CSRF yang sama; bukan bypass security.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Redirect",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/swagger-ui/index.html"
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-docs": {
+      "get": {
+        "operationId": "documented_get__api_docs",
+        "summary": "OpenAPI runtime",
+        "description": "Membaca spesifikasi controller yang dibangkitkan Springdoc.\n\nContoh struktur dipersingkat; file runtime lengkap ada pada openapi-runtime.json.\n\nEndpoint filter logout/OAuth dan Actuator dilengkapi pada openapi.json dokumentasi ini.",
+        "tags": [
+          "OAuth dan infrastruktur"
+        ],
+        "security": [],
+        "x-access-policy": "Publik",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "openapi": "3.1.0",
+                  "info": {
+                    "title": "OpenAPI definition",
+                    "version": "v0"
+                  },
+                  "paths": {},
+                  "components": {}
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Korelasi request dan log server"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnswerRequest": {
+        "type": "object",
+        "properties": {
+          "selectedOptionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "flagged": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "expectedRevision"
+        ]
+      },
+      "AnswerResponse": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "selectedOptionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "flagged": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FinalizeRequest": {
+        "type": "object",
+        "properties": {
+          "abandon": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "Navigation": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answered": {
+            "type": "boolean"
+          },
+          "flagged": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SessionResponse": {
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tryoutId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "terminalReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serverNow": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Navigation"
+            }
+          }
+        }
+      },
+      "CreateQuestionRequest": {
+        "type": "object",
+        "properties": {
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "topicId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "sourceTitle": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 0
+          },
+          "sourceYear": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "maximum": 2200,
+            "minimum": 1900
+          },
+          "content": {
+            "$ref": "#/components/schemas/QuestionContent"
+          }
+        },
+        "required": [
+          "content",
+          "sourceTitle",
+          "subtestId"
+        ]
+      },
+      "OptionDraft": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "[A-E]"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 0
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "number",
+            "maximum": 1000,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "code",
+          "text",
+          "weight",
+          "correct"
+        ]
+      },
+      "QuestionContent": {
+        "type": "object",
+        "properties": {
+          "stemText": {
+            "type": "string",
+            "maxLength": 20000,
+            "minLength": 0
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionDraft"
+            },
+            "maxItems": 5,
+            "minItems": 2
+          },
+          "explanation": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 20000,
+            "minLength": 0
+          },
+          "shuffleAllowed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "options",
+          "stemText",
+          "shuffleAllowed"
+        ]
+      },
+      "StaffQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "topicId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "sourceYear": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "sourceTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourcePage": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "content": {
+            "$ref": "#/components/schemas/QuestionContent"
+          }
+        }
+      },
+      "ImportMetadata": {
+        "type": "object",
+        "properties": {
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "topicId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "sourceTitle": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 0
+          },
+          "sourceYear": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "maximum": 2200,
+            "minimum": 1900
+          }
+        },
+        "required": [
+          "sourceTitle",
+          "subtestId"
+        ]
+      },
+      "ImportResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "fileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "topicId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "sourceTitle": {
+            "type": "string"
+          },
+          "sourceYear": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "pageCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "candidateCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "invalidCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errorCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jobStatus": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jobErrorCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StartPracticeRequest": {
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionCount": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 50,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "topicId",
+          "questionCount"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320,
+            "minLength": 0
+          },
+          "displayName": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 72,
+            "minLength": 12
+          }
+        },
+        "required": [
+          "displayName",
+          "email",
+          "password"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserProfileResponse"
+          }
+        }
+      },
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "userType": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320,
+            "minLength": 0
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 72,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "StartTryoutRequest": {
+        "type": "object",
+        "properties": {
+          "tryoutId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tryoutId"
+        ]
+      },
+      "UpdateStudentProfileRequest": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2
+          },
+          "schoolName": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 0
+          },
+          "schoolGrade": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 0
+          },
+          "targetCategory": {
+            "type": "string",
+            "maxLength": 24,
+            "minLength": 0,
+            "enum": [
+              "UTBK",
+              "CPNS",
+              "KEDINASAN",
+              "SEKOLAH"
+            ]
+          },
+          "targetInstitution": {
+            "type": "string",
+            "maxLength": 180,
+            "minLength": 0
+          },
+          "targetProgram": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 180,
+            "minLength": 0
+          },
+          "targetScore": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "maximum": 1000,
+            "minimum": 0
+          }
+        },
+        "required": [
+          "displayName",
+          "schoolGrade",
+          "schoolName",
+          "targetCategory",
+          "targetInstitution"
+        ]
+      },
+      "StudentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "userType": {
+            "type": "string"
+          },
+          "schoolName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "schoolGrade": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "leaderboardOptIn": {
+            "type": "boolean"
+          },
+          "targetScore": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "targetKind": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "targetInstitution": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "targetProgram": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "QuotaResponse": {
+        "type": "object",
+        "properties": {
+          "dateWib": {
+            "type": "string",
+            "format": "date"
+          },
+          "used": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "remaining": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SubscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AttemptHistoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tryout_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tryout_title": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finalized_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "total_score": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "details": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "AttemptQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stem": {},
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionResponse"
+            }
+          },
+          "selectedOptionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "flagged": {
+            "type": "boolean"
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correct": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "explanation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "OptionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "content": {},
+          "correct": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "ResultResponse": {
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "terminalReason": {
+            "type": "string"
+          },
+          "method": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "policyVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "totalScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "details": {},
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectionResult"
+            }
+          }
+        }
+      },
+      "SectionResult": {
+        "type": "object",
+        "properties": {
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "correct": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wrong": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "empty": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "points": {
+            "type": "number"
+          },
+          "maxPoints": {
+            "type": "number"
+          },
+          "accuracy": {
+            "type": "number"
+          }
+        }
+      },
+      "TryoutResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "exam_type": {
+            "type": "string"
+          },
+          "blueprint_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "question_count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "attempt_count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "latest_score": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "latest_completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "SectionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "questionCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "available": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "TryoutDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scoringMethod": {
+            "type": "string"
+          },
+          "scale": {
+            "type": "number"
+          },
+          "demo": {
+            "type": "boolean"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SectionResponse"
+            }
+          }
+        }
+      },
+      "TaxonomyResponse": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "categoryCode": {
+            "type": "string"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "examTypeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "examTypeCode": {
+            "type": "string"
+          },
+          "examTypeName": {
+            "type": "string"
+          },
+          "subtestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subtestName": {
+            "type": "string"
+          },
+          "topicId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "topicName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CandidateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourcePage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sourceItemNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "extractedContent": {
+            "$ref": "#/components/schemas/QuestionContent"
+          },
+          "draftContent": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QuestionContent"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validationErrors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "questionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "PracticeTopicResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "subtest_code": {
+            "type": "string"
+          },
+          "subtest": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "question_count": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "LeaderboardResponse": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "total_score": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ServiceStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CsrfResponse": {
+        "type": "object",
+        "properties": {
+          "headerName": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "CategoryQuery": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          }
+        },
+        "description": "Model binding query opsional; dikirim sebagai ?category=UTBK, bukan body atau parameter query object."
+      },
+      "ApiError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "fieldErrors",
+          "requestId"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "fieldErrors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID",
+        "description": "Session login aplikasi. Browser/Postman cookie jar mengirimnya; bukan access token Google/JWT."
+      }
+    }
+  }
+}
