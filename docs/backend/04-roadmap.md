@@ -1,6 +1,6 @@
 # Status fitur dan pekerjaan berikutnya
 
-[Indeks dokumentasi](README.md) · Snapshot 20 November 2026.
+[Indeks dokumentasi](README.md) · Snapshot 21 November 2026.
 
 Status **tersedia** berarti ada implementasi kode/use case. Status ini tidak sama dengan telah diuji
 pada seluruh skenario produksi, seluruh format PDF atau seluruh provider eksternal.
@@ -10,7 +10,7 @@ pada seluruh skenario produksi, seluruh format PDF atau seluruh provider ekstern
 | Area | Implementasi | Bukti/acuan |
 |---|---|---|
 | Runtime | Java 25, Spring Boot, PostgreSQL, Docker API/worker | Dockerfile, compose.yaml |
-| Migrasi | Flyway V1–V7, 41 tabel, relasi dan guard cross-row | Migration dan metadata dictionary |
+| Migrasi | Flyway V1–V9, 45 tabel dan view pool; FK scope sumber/sheet/master serta snapshot immutable | Migration dan metadata dictionary |
 | Identity password | Register/login, BCrypt, session, logout, profil | IdentityController dan service/repository |
 | Google SSO | OIDC provider, email verified, provisioning/linking | PastiSiapOidcUserService, OAuthAccountProvisioningService |
 | Tipe dan role | SISWA default, CUSTOMER/QUESTION_STAFF/PLATFORM_ADMIN | V4, user_role dan method security |
@@ -26,6 +26,8 @@ pada seluruh skenario produksi, seluruh format PDF atau seluruh provider ekstern
 | Hasil/review | Poll hasil, kunci/pembahasan setelah scoring | result/review dan AttemptQuestionService |
 | Riwayat pribadi | Filter mode/paket/topik, pagination offset/limit hingga 100 per request | findHistory |
 | Upload PDF | Disk privat, checksum, provenance, dedup per uploader/scope | LocalImportFileStorage dan ContentImportService |
+| Upload Excel | XLSX per sheet/subtes, set jenis/tahun, template/mapping, staging, koreksi, simpan DRAFT dan revisi stale guard | WorkbookImportService, WorkbookRepository dan PoiWorkbookParser |
+| Sumber dan variasi | Membership N:M, sumber per section, kuota difficulty dan tiga repeatPolicy, stok bersama untuk katalog/admin/start | QuestionPoolRepository, view dan function V9 |
 | Ekstraksi | PDF teks/scan OCR, kandidat dengan flag, template konservatif | PdfBoxExtractor dan TemplateQuestionParser |
 | Bank soal | Manual draft, kandidat→draft, publish, versi baru, archive | ContentController dan repository |
 | Petugas lanjutan | Filter kategori/jenis/subtes/topik/tahun/status/batch, total pagination, versi historis, edit draft/revision, bulk save dan retry | QuestionBankController/Service |
@@ -41,16 +43,16 @@ pada seluruh skenario produksi, seluruh format PDF atau seluruh provider ekstern
 
 | Area | Yang sudah ada | Yang belum tersedia |
 |---|---|---|
-| Subscription | Tabel dan read API status/grant | Order, checkout, webhook payment, refund dan entitlement provisioning |
-| Leaderboard | Tabel/cohort integrity dan read API | Pembentukan cohort/form, enrollment, ranking job dan policy tie-break produk |
-| Admin | 40 endpoint akun/produk/operasi | Integrasi FE, MFA/invitation email, provider rekonsiliasi/refund dan regrade/cohort |
+| Subscription | Paket aktif dan ringkasan membership dari snapshot order/grant; read API legacy | Checkout, webhook payment, eksekusi refund dan entitlement provisioning |
+| Leaderboard | Cohort read, preview server 3 + ownRank, full pagination/filter premium dan consent | Pembentukan cohort/form, enrollment, ranking job dan policy tie-break produk |
+| Admin | 42 endpoint akun/produk/operasi termasuk metadata sumber soal | Integrasi FE, MFA/invitation email, provider rekonsiliasi/refund dan regrade/cohort |
 | Petugas | Upload, kandidat, master, pencarian, versi dan retry | Integrasi FE endpoint baru, retry per halaman dan lampiran kunci terpisah |
 | Refund | Kasus idempoten PENDING_PROVIDER dan guard nominal/order | Eksekusi provider, signature/callback dan transisi sukses terverifikasi |
 | Asset soal | Relasi question_asset dan baca file privat per attempt | Upload/attach asset gambar baru serta authoring rich content |
 | Reset/verifikasi email | Tabel token | Endpoint, pengiriman email, konsumsi token dan expiry flow |
 | Audit | Sebagian mutasi konten menulis audit_event | Audit seluruh auth/koreksi/perubahan sensitif dan UI audit |
 | Google login | Logic dan konfigurasi provider, redirect tersedia | Uji callback/consent end-to-end dengan akun Google dan domain deployment yang dipilih |
-| Hak langganan | Query active grant dan kolom entitlement_snapshot | Policy akses premium pada permintaan baru dan snapshot hak yang benar-benar diisi use case |
+| Hak langganan | Query active paid grant, snapshot benefits untuk akses leaderboard, kolom entitlement_snapshot | Snapshot hak pada attempt yang benar-benar diisi start use case |
 
 `entitlement_snapshot` saat start sekarang memakai default database; jangan menganggap hak premium sudah
 dibekukan/ditegakkan oleh start service. Pembahasan dan riwayat sendiri tetap tersedia sesuai policy awal PRD.
@@ -68,14 +70,14 @@ Ini rencana teknis untuk direview, bukan fitur yang sudah aktif atau janji jadwa
 | 4 | Integrasi layar admin/petugas | Hubungkan endpoint baru ke FE, QA loading/error/pagination dan alur dukungan beralasan |
 | 5 | Kualitas bank soal dan rich assets | PDF nyata multikolom/rumus/gambar, upload asset, sumber pada review siswa, update draft yang jelas dan preview petugas |
 | 6 | Commerce/entitlement | Vendor gateway dipilih, signature webhook, event idempoten, snapshot order, grant/refund, akses server-side |
-| 7 | Leaderboard kompetisi | Form/cohort sebanding, consent opt-in, policy attempt/tie-break dan job ranking |
+| 7 | Leaderboard kompetisi | Pembentukan form/cohort sebanding, policy attempt/tie-break dan job ranking; consent/read API sudah ada |
 | 8 | Operasional produksi | HTTPS/proxy, CORS/origin, backup+restore DB/file, metrics/alerts, scan/CDR upload dan retention/orphan cleanup |
 
 ## Catatan kontrak yang perlu dipertahankan atau diputuskan
 
 - CamelCase dan beberapa snake_case masih bercampur demi kompatibilitas. Perubahan berikutnya perlu keputusan
   versi API/deprecation, bukan mengganti key frontend diam-diam.
-- `PATCH profile` sekarang mewajibkan beberapa field seperti form lengkap; belum partial update per field.
+- `PATCH profile` sudah partial; validasi sekolah/kelas mengikuti kategori target. FE tetap perlu menampilkan fieldErrors.
 - `details` di history adalah string JSON, sedangkan `details` di result adalah object JSON.
 - Beberapa endpoint void mengembalikan 200 body kosong; logout 204. Jangan memaksakan envelope baru tanpa review.
 - `GET .../attempts/active` tanpa sesi memberi 200 body kosong. UI harus menangani respons kosong.
@@ -90,7 +92,7 @@ Ini rencana teknis untuk direview, bukan fitur yang sudah aktif atau janji jadwa
 
 ## Bukti pengujian dan batasnya
 
-Suite terisolasi terbaru: **28 tests passed, 0 failure/error/skip** pada PostgreSQL
+Suite terisolasi terbaru: **46 tests passed, 0 failure/error/skip** pada PostgreSQL
 terpisah, termasuk OCR Tesseract nyata. Mencakup parser/scoring, DTO, logging/CSRF, file limits/path, migrasi,
 concurrent idempotent start, kuota, revision, ownership, timeout, import/publish, immutable version dan lease lama.
 Smoke Docker API+worker juga menyelesaikan practice sampai COMPLETED dengan quota tryout tetap nol.
@@ -105,3 +107,25 @@ Tes internal membuktikan pemisahan tiga role, sesi dicabut saat role/status beru
 sesi lama, dua suspend admin bersamaan menyisakan satu admin aktif, revisi draft stale ditolak, versi publish
 lama tetap utuh, blueprint kurang stok ditahan, attempt lama tidak ikut berganti komposisi, harga lama tetap,
 retry impor tidak membuat job kedua, dan refund pending tidak dianggap sukses/pendapatan dikurangi.
+
+Tes read siswa mencakup 103 attempt tanpa terpotong batas legacy, isolasi kategori/akun, rentang WIB,
+partial PATCH/validasi CPNS vs UTBK, audit consent, katalog berhalaman, snapshot hak/harga, revoke grant,
+preview yang tidak dapat dilewati offset, ownRank, opt-out, cohort masa depan, processing gagal yang
+berhenti polling, serta schema OpenAPI dashboard siswa/admin yang terpisah.
+
+Delapan tes Excel membuktikan parsing XLSX nyata, file tidak berubah setelah dibaca, formula/bobot invalid
+menjadi row error, header/sheet tersembunyi/expanded ZIP/macro ditolak, mapping lintas jenis ditolak,
+upload identik idempoten, save/revisi mempertahankan jumlah master, stale bulk save rollback seluruhnya dan edit draft lalu publish tidak melewati baseline,
+master dapat dipakai dua sumber, sumber blueprint terbit immutable, alokasi EASY/MEDIUM terpenuhi,
+NEVER_SEEN menghasilkan dua sesi tanpa master berulang, snapshot sesi lama tetap sama, dan workbook rusak
+berhenti FAILED tanpa lima percobaan otomatis. Setelah perubahan terakhir delapan tes ini dijalankan ulang
+dan lulus. Excel kaya gambar/objek serta format essay/multi-answer belum didukung.
+
+Empat tes akun dummy memverifikasi login password admin/petugas dengan userType INTERNAL dan role tepat,
+akses silang ditolak 403, seed ulang tidak mengganti hash/auth_revision, password salah tidak mereset akun,
+status/role yang diubah tidak dipulihkan diam-diam, serta bentrok email CUSTOMER tidak diberi role internal
+dan membatalkan seluruh transaksi seed. Akun hanya dibuat oleh tool development eksplisit; normal startup tidak memuatnya.
+
+Cakupan petugas saat ini **39 operasi**. Alur PDF/bank soal sudah dipakai FE; UI Excel masih perlu dihubungkan
+ke API workbook baru. Upload asset/gambar terstruktur, retry per halaman, dan variasi essay/multi-answer
+tetap pekerjaan lanjutan, sehingga cakupan ini tidak berarti seluruh fitur bank soal masa depan sudah selesai.

@@ -24,7 +24,8 @@ import com.pasti_bisa.backend.shared.web.BusinessException;
 public class JdbcExamRepository implements ExamRepository {
     private final NamedParameterJdbcTemplate jdbc;
     private final JsonMapper json;
-    public JdbcExamRepository(NamedParameterJdbcTemplate jdbc, JsonMapper json) { this.jdbc = jdbc; this.json = json; }
+    private final com.pasti_bisa.backend.modules.exam.application.QuestionPoolRepository pool;
+    public JdbcExamRepository(NamedParameterJdbcTemplate jdbc, JsonMapper json,com.pasti_bisa.backend.modules.exam.application.QuestionPoolRepository pool) { this.jdbc = jdbc; this.json = json;this.pool=pool; }
     private MapSqlParameterSource p(String name, Object value) { return new MapSqlParameterSource(name, value); }
     private static Instant instant(ResultSet rs, String column) throws SQLException {
         var timestamp = rs.getTimestamp(column); return timestamp == null ? null : timestamp.toInstant();
@@ -125,40 +126,9 @@ public class JdbcExamRepository implements ExamRepository {
     }
     private record PracticeTopic(UUID subtestId, UUID examTypeId, String name) {}
 
-    @Override public List<Section> sections(UUID versionId) {
-        return jdbc.query("SELECT id,subtest_id,position,item_count,filters FROM blueprint_section WHERE blueprint_version_id=:id ORDER BY position",
-                p("id", versionId), (rs, row) -> {
-                    JsonNode filter = json.readTree(rs.getString("filters"));
-                    for (String key : filter.propertyNames()) if (!List.of("topicId", "sourceYear").contains(key))
-                        throw new BusinessException(409,"UNSUPPORTED_BLUEPRINT_FILTER","Blueprint contains an unsupported filter");
-                    return new Section(rs.getObject("id", UUID.class),rs.getObject("subtest_id", UUID.class),rs.getInt("position"),rs.getInt("item_count"),
-                            filter.hasNonNull("topicId") ? UUID.fromString(filter.get("topicId").asString()) : null,
-                            filter.hasNonNull("sourceYear") ? filter.get("sourceYear").asInt() : null);
-                });
-    }
-
-    @Override public List<PoolItem> pool(UUID userId, Section section, boolean excludeToday, LocalDate day) {
-        return jdbc.query("""
-                SELECT q.id AS question_id, version.id AS version_id, version.shuffle_allowed
-                FROM question q
-                JOIN LATERAL (SELECT id, shuffle_allowed, source_year FROM question_version WHERE question_id=q.id
-                              AND status='PUBLISHED' ORDER BY version DESC LIMIT 1) version ON TRUE
-                LEFT JOIN LATERAL (SELECT max(a.started_at) AS last_seen FROM attempt_item seen JOIN attempt a ON a.id=seen.attempt_id
-                                   WHERE seen.question_id=q.id AND a.user_id=:userId) exposure ON TRUE
-                WHERE q.subtest_id=:subtestId AND q.archived_at IS NULL
-                  AND EXISTS(SELECT 1 FROM subtest s WHERE s.id=q.subtest_id AND s.active)
-                  AND (q.topic_id IS NULL OR EXISTS(SELECT 1 FROM topic t WHERE t.id=q.topic_id AND t.active))
-                  AND (:topicId::uuid IS NULL OR q.topic_id=:topicId::uuid)
-                  AND (:sourceYear::integer IS NULL OR version.source_year=:sourceYear::integer)
-                  AND (NOT :excludeToday OR NOT EXISTS (
-                      SELECT 1 FROM attempt_item seen JOIN attempt a ON a.id=seen.attempt_id
-                      WHERE seen.question_id=q.id AND a.user_id=:userId
-                        AND (a.started_at AT TIME ZONE 'Asia/Jakarta')::date=:day))
-                ORDER BY exposure.last_seen ASC NULLS FIRST, random() LIMIT :count
-                """, p("userId",userId).addValue("subtestId",section.subtestId()).addValue("topicId",section.topicId())
-                    .addValue("sourceYear",section.sourceYear(),java.sql.Types.INTEGER).addValue("excludeToday",excludeToday)
-                    .addValue("day",day).addValue("count",section.count()),
-                (rs,row)->new PoolItem(rs.getObject("question_id",UUID.class),rs.getObject("version_id",UUID.class),rs.getBoolean("shuffle_allowed")));
+    @Override public List<Section> sections(UUID versionId) { return pool.sections(versionId); }
+    @Override public List<PoolItem> pool(UUID userId,Section section,boolean excludeToday,LocalDate day) {
+        return pool.select(userId,section,excludeToday,day);
     }
     @Override public List<Option> options(UUID versionId) {
         return jdbc.query("SELECT id,option_code,correct_key,score_weight FROM question_option WHERE question_version_id=:id ORDER BY original_position",
@@ -296,7 +266,9 @@ public class JdbcExamRepository implements ExamRepository {
                 p("id",result.scoreId()),(rs,row)->new SectionResult(rs.getObject("subtest_id",UUID.class),rs.getInt("correct_count"),rs.getInt("wrong_count"),
                     rs.getInt("empty_count"),rs.getBigDecimal("points"),rs.getBigDecimal("max_points"),rs.getBigDecimal("accuracy")));
         return new ResultResponse(id,result.status(),result.reason(),result.method(),result.version(),result.total(),
-                result.details()==null?null:json.readTree(result.details()),sections,result.finalizedAt());
+                result.details()==null?null:json.readTree(result.details()),sections,result.finalizedAt(),
+                com.pasti_bisa.backend.modules.exam.application.ScoringProgress.from(result.status(),jdbc.query("SELECT status FROM job WHERE dedup_key=:key AND type='SCORE_ATTEMPT'",
+                    p("key","score:"+id),(rs,row)->rs.getString(1)).stream().findFirst().orElse(null)));
     }
     private record ResultRow(String status,String reason,UUID scoreId,String version,BigDecimal total,String details,String method,Instant finalizedAt) {}
     @Override public TryoutDetail detail(UUID id) {
@@ -306,15 +278,7 @@ public class JdbcExamRepository implements ExamRepository {
                 JOIN exam_category c ON c.id=e.category_id WHERE b.id=:id
                 """,p("id",id),(rs,row)->new DetailFields(rs.getString("title"),rs.getBoolean("demo"),rs.getString("code")));
         List<SectionResponse> sections=sections(blueprint.id()).stream().map(section->{
-            long available=jdbc.queryForObject("""
-                    SELECT COUNT(*) FROM question q JOIN LATERAL (
-                      SELECT source_year FROM question_version WHERE question_id=q.id AND status='PUBLISHED' ORDER BY version DESC LIMIT 1
-                    ) v ON TRUE
-                    WHERE q.subtest_id=:subtestId AND q.archived_at IS NULL AND (:topicId::uuid IS NULL OR q.topic_id=:topicId::uuid)
-                      AND EXISTS(SELECT 1 FROM subtest s WHERE s.id=q.subtest_id AND s.active)
-                      AND (q.topic_id IS NULL OR EXISTS(SELECT 1 FROM topic t WHERE t.id=q.topic_id AND t.active))
-                      AND (:year::integer IS NULL OR v.source_year=:year::integer)
-                    """,p("subtestId",section.subtestId()).addValue("topicId",section.topicId()).addValue("year",section.sourceYear(),java.sql.Types.INTEGER),Long.class);
+            long available=pool.available(section.id());
             String name=jdbc.queryForObject("SELECT name FROM subtest WHERE id=:id",p("id",section.subtestId()),String.class);
             return new SectionResponse(section.id(),section.subtestId(),name,section.position(),section.count(),available);
         }).toList();

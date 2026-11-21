@@ -185,6 +185,91 @@
       "key": "operationReason",
       "value": "Pemeriksaan operasional pada lingkungan development",
       "type": "string"
+    },
+    {
+      "key": "cohortId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "historyOffset",
+      "value": "0",
+      "type": "string"
+    },
+    {
+      "key": "pageLimit",
+      "value": "12",
+      "type": "string"
+    },
+    {
+      "key": "questionSetId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "questionSetCode",
+      "value": "UTBK_2025_A",
+      "type": "string"
+    },
+    {
+      "key": "sourceYear",
+      "value": "2025",
+      "type": "string"
+    },
+    {
+      "key": "workbookBatchId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workbookCandidateId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workbookSourceItemCode",
+      "value": "Q001",
+      "type": "string"
+    },
+    {
+      "key": "workbookTopicIdJson",
+      "value": "null",
+      "type": "string"
+    },
+    {
+      "key": "workbookSheetMappings",
+      "value": "[]",
+      "type": "string"
+    },
+    {
+      "key": "workbookCandidateIdsJson",
+      "value": "[]",
+      "type": "string"
+    },
+    {
+      "key": "workbookSavedQuestionIdsJson",
+      "value": "[]",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin.demo@pastisiap.test",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "staffEmail",
+      "value": "staff.demo@pastisiap.test",
+      "type": "string"
+    },
+    {
+      "key": "staffPassword",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -2780,7 +2865,7 @@
               }
             ],
             "url": "{{baseUrl}}/api/v1/admin/jobs/{{jobId}}/retry",
-            "description": "Hanya FAILED dan jenis IMPORT_PDF/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
+            "description": "Hanya FAILED dan jenis IMPORT_PDF/IMPORT_XLSX/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"{{operationReason}}\"\n}",
@@ -2821,7 +2906,7 @@
                   }
                 ],
                 "url": "{{baseUrl}}/api/v1/admin/jobs/{{jobId}}/retry",
-                "description": "Hanya FAILED dan jenis IMPORT_PDF/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
+                "description": "Hanya FAILED dan jenis IMPORT_PDF/IMPORT_XLSX/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"reason\": \"{{operationReason}}\"\n}",
@@ -3158,10 +3243,10 @@
               }
             ],
             "url": "{{baseUrl}}/api/v1/admin/blueprints/{{blueprintId}}/versions",
-            "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
+            "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit. questionSetIds membatasi pool ke kumpulan sumber aktif dari examType yang sama; kosong mempertahankan pool legacy. Jangan gabungkan dengan sourceYear. difficultyQuotas berisi EASY/MEDIUM/HARD unik dengan jumlah tepat questionCount. repeatPolicy=UNSEEN_TODAY (default tryout), NEVER_SEEN, atau RECYCLE_OLDEST. Tidak menurunkan jumlah/komposisi saat stok personal habis: 409 POOL_NOT_READY tanpa kuota terpakai.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"{{policyId}}\",\n  \"sections\": [\n    {\n      \"subtestId\": \"{{subtestId}}\",\n      \"questionCount\": 3,\n      \"topicId\": \"{{topicId}}\",\n      \"sourceYear\": 2026\n    }\n  ],\n  \"reason\": \"{{operationReason}}\"\n}",
+              "raw": "{\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"{{policyId}}\",\n  \"sections\": [\n    {\n      \"subtestId\": \"{{subtestId}}\",\n      \"questionCount\": 3,\n      \"topicId\": \"{{topicId}}\",\n      \"sourceYear\": null,\n      \"questionSetIds\": [\n        \"{{questionSetId}}\"\n      ],\n      \"difficultyQuotas\": [\n        {\n          \"difficulty\": \"EASY\",\n          \"count\": 1\n        },\n        {\n          \"difficulty\": \"MEDIUM\",\n          \"count\": 2\n        }\n      ],\n      \"repeatPolicy\": \"UNSEEN_TODAY\"\n    }\n  ],\n  \"reason\": \"{{operationReason}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3200,10 +3285,10 @@
                   }
                 ],
                 "url": "{{baseUrl}}/api/v1/admin/blueprints/{{blueprintId}}/versions",
-                "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
+                "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit. questionSetIds membatasi pool ke kumpulan sumber aktif dari examType yang sama; kosong mempertahankan pool legacy. Jangan gabungkan dengan sourceYear. difficultyQuotas berisi EASY/MEDIUM/HARD unik dengan jumlah tepat questionCount. repeatPolicy=UNSEEN_TODAY (default tryout), NEVER_SEEN, atau RECYCLE_OLDEST. Tidak menurunkan jumlah/komposisi saat stok personal habis: 409 POOL_NOT_READY tanpa kuota terpakai.\n\nRole: PLATFORM_ADMIN. Login menggunakan folder Identity, lalu ambil CSRF dari cookie yang sama. managedUserId harus dipilih eksplisit; tidak mengambil ID admin yang sedang login. Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"{{policyId}}\",\n  \"sections\": [\n    {\n      \"subtestId\": \"{{subtestId}}\",\n      \"questionCount\": 3,\n      \"topicId\": \"{{topicId}}\",\n      \"sourceYear\": 2026\n    }\n  ],\n  \"reason\": \"{{operationReason}}\"\n}",
+                  "raw": "{\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"{{policyId}}\",\n  \"sections\": [\n    {\n      \"subtestId\": \"{{subtestId}}\",\n      \"questionCount\": 3,\n      \"topicId\": \"{{topicId}}\",\n      \"sourceYear\": null,\n      \"questionSetIds\": [\n        \"{{questionSetId}}\"\n      ],\n      \"difficultyQuotas\": [\n        {\n          \"difficulty\": \"EASY\",\n          \"count\": 1\n        },\n        {\n          \"difficulty\": \"MEDIUM\",\n          \"count\": 2\n        }\n      ],\n      \"repeatPolicy\": \"UNSEEN_TODAY\"\n    }\n  ],\n  \"reason\": \"{{operationReason}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3221,7 +3306,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000003\",\n  \"version\": 1,\n  \"status\": \"ACTIVE\",\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n  \"sections\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000023\",\n      \"position\": 1,\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"subtestName\": \"Penalaran Numerik\",\n      \"questionCount\": 3,\n      \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n      \"sourceYear\": 2026,\n      \"available\": 12\n    }\n  ],\n  \"ready\": true\n}"
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000003\",\n  \"version\": 1,\n  \"status\": \"ACTIVE\",\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n  \"sections\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000023\",\n      \"position\": 1,\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"subtestName\": \"Penalaran Numerik\",\n      \"questionCount\": 3,\n      \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n      \"sourceYear\": null,\n      \"available\": 12,\n      \"questionSetIds\": [\n        \"00000000-0000-4000-8000-000000000100\"\n      ],\n      \"difficultyQuotas\": [\n        {\n          \"difficulty\": \"EASY\",\n          \"count\": 1\n        },\n        {\n          \"difficulty\": \"MEDIUM\",\n          \"count\": 2\n        }\n      ],\n      \"repeatPolicy\": \"UNSEEN_TODAY\"\n    }\n  ],\n  \"ready\": true\n}"
             }
           ]
         },
@@ -3305,7 +3390,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"blueprint\": {\n    \"id\": \"00000000-0000-4000-8000-000000000002\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"code\": \"TRYOUT_UTBK_01\",\n    \"title\": \"Tryout UTBK 01\",\n    \"status\": \"ACTIVE\",\n    \"activeVersionId\": \"00000000-0000-4000-8000-000000000003\"\n  },\n  \"versions\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000003\",\n      \"version\": 1,\n      \"status\": \"ACTIVE\",\n      \"durationSeconds\": 5400,\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"sections\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000023\",\n          \"position\": 1,\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"subtestName\": \"Penalaran Numerik\",\n          \"questionCount\": 3,\n          \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n          \"sourceYear\": 2026,\n          \"available\": 12\n        }\n      ],\n      \"ready\": true\n    }\n  ]\n}"
+              "body": "{\n  \"blueprint\": {\n    \"id\": \"00000000-0000-4000-8000-000000000002\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"code\": \"TRYOUT_UTBK_01\",\n    \"title\": \"Tryout UTBK 01\",\n    \"status\": \"ACTIVE\",\n    \"activeVersionId\": \"00000000-0000-4000-8000-000000000003\"\n  },\n  \"versions\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000003\",\n      \"version\": 1,\n      \"status\": \"ACTIVE\",\n      \"durationSeconds\": 5400,\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"sections\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000023\",\n          \"position\": 1,\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"subtestName\": \"Penalaran Numerik\",\n          \"questionCount\": 3,\n          \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n          \"sourceYear\": null,\n          \"available\": 12,\n          \"questionSetIds\": [\n            \"00000000-0000-4000-8000-000000000100\"\n          ],\n          \"difficultyQuotas\": [\n            {\n              \"difficulty\": \"EASY\",\n              \"count\": 1\n            },\n            {\n              \"difficulty\": \"MEDIUM\",\n              \"count\": 2\n            }\n          ],\n          \"repeatPolicy\": \"UNSEEN_TODAY\"\n        }\n      ],\n      \"ready\": true\n    }\n  ]\n}"
             }
           ]
         },
@@ -3886,7 +3971,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"blueprint\": {\n    \"id\": \"00000000-0000-4000-8000-000000000002\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"code\": \"TRYOUT_UTBK_01\",\n    \"title\": \"Tryout UTBK 01\",\n    \"status\": \"ACTIVE\",\n    \"activeVersionId\": \"00000000-0000-4000-8000-000000000003\"\n  },\n  \"versions\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000003\",\n      \"version\": 1,\n      \"status\": \"ACTIVE\",\n      \"durationSeconds\": 5400,\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"sections\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000023\",\n          \"position\": 1,\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"subtestName\": \"Penalaran Numerik\",\n          \"questionCount\": 3,\n          \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n          \"sourceYear\": 2026,\n          \"available\": 12\n        }\n      ],\n      \"ready\": true\n    }\n  ]\n}"
+              "body": "{\n  \"blueprint\": {\n    \"id\": \"00000000-0000-4000-8000-000000000002\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"code\": \"TRYOUT_UTBK_01\",\n    \"title\": \"Tryout UTBK 01\",\n    \"status\": \"ACTIVE\",\n    \"activeVersionId\": \"00000000-0000-4000-8000-000000000003\"\n  },\n  \"versions\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000003\",\n      \"version\": 1,\n      \"status\": \"ACTIVE\",\n      \"durationSeconds\": 5400,\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"sections\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000023\",\n          \"position\": 1,\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"subtestName\": \"Penalaran Numerik\",\n          \"questionCount\": 3,\n          \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n          \"sourceYear\": null,\n          \"available\": 12,\n          \"questionSetIds\": [\n            \"00000000-0000-4000-8000-000000000100\"\n          ],\n          \"difficultyQuotas\": [\n            {\n              \"difficulty\": \"EASY\",\n              \"count\": 1\n            },\n            {\n              \"difficulty\": \"MEDIUM\",\n              \"count\": 2\n            }\n          ],\n          \"repeatPolicy\": \"UNSEEN_TODAY\"\n        }\n      ],\n      \"ready\": true\n    }\n  ]\n}"
             }
           ]
         },
@@ -4359,7 +4444,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"blueprint\": {\n    \"id\": \"00000000-0000-4000-8000-000000000002\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"code\": \"TRYOUT_UTBK_01\",\n    \"title\": \"Tryout UTBK 01\",\n    \"status\": \"ACTIVE\",\n    \"activeVersionId\": \"00000000-0000-4000-8000-000000000003\"\n  },\n  \"versions\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000003\",\n      \"version\": 1,\n      \"status\": \"ACTIVE\",\n      \"durationSeconds\": 5400,\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"sections\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000023\",\n          \"position\": 1,\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"subtestName\": \"Penalaran Numerik\",\n          \"questionCount\": 3,\n          \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n          \"sourceYear\": 2026,\n          \"available\": 12\n        }\n      ],\n      \"ready\": true\n    }\n  ]\n}"
+              "body": "{\n  \"blueprint\": {\n    \"id\": \"00000000-0000-4000-8000-000000000002\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"code\": \"TRYOUT_UTBK_01\",\n    \"title\": \"Tryout UTBK 01\",\n    \"status\": \"ACTIVE\",\n    \"activeVersionId\": \"00000000-0000-4000-8000-000000000003\"\n  },\n  \"versions\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000003\",\n      \"version\": 1,\n      \"status\": \"ACTIVE\",\n      \"durationSeconds\": 5400,\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"sections\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000023\",\n          \"position\": 1,\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"subtestName\": \"Penalaran Numerik\",\n          \"questionCount\": 3,\n          \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n          \"sourceYear\": null,\n          \"available\": 12,\n          \"questionSetIds\": [\n            \"00000000-0000-4000-8000-000000000100\"\n          ],\n          \"difficultyQuotas\": [\n            {\n              \"difficulty\": \"EASY\",\n              \"count\": 1\n            },\n            {\n              \"difficulty\": \"MEDIUM\",\n              \"count\": 2\n            }\n          ],\n          \"repeatPolicy\": \"UNSEEN_TODAY\"\n        }\n      ],\n      \"ready\": true\n    }\n  ]\n}"
             }
           ]
         },
@@ -4402,7 +4487,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000003\",\n  \"version\": 1,\n  \"status\": \"ACTIVE\",\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n  \"sections\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000023\",\n      \"position\": 1,\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"subtestName\": \"Penalaran Numerik\",\n      \"questionCount\": 3,\n      \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n      \"sourceYear\": 2026,\n      \"available\": 12\n    }\n  ],\n  \"ready\": true\n}"
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000003\",\n  \"version\": 1,\n  \"status\": \"ACTIVE\",\n  \"durationSeconds\": 5400,\n  \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n  \"sections\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000023\",\n      \"position\": 1,\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"subtestName\": \"Penalaran Numerik\",\n      \"questionCount\": 3,\n      \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n      \"sourceYear\": null,\n      \"available\": 12,\n      \"questionSetIds\": [\n        \"00000000-0000-4000-8000-000000000100\"\n      ],\n      \"difficultyQuotas\": [\n        {\n          \"difficulty\": \"EASY\",\n          \"count\": 1\n        },\n        {\n          \"difficulty\": \"MEDIUM\",\n          \"count\": 2\n        }\n      ],\n      \"repeatPolicy\": \"UNSEEN_TODAY\"\n    }\n  ],\n  \"ready\": true\n}"
             }
           ]
         },
@@ -4446,6 +4531,1516 @@
               ],
               "cookie": [],
               "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000090\",\n      \"actorId\": \"00000000-0000-4000-8000-000000000090\",\n      \"action\": \"USER_STATUS_CHANGED\",\n      \"entityType\": \"USER\",\n      \"entityId\": \"00000000-0000-4000-8000-000000000090\",\n      \"reason\": \"Pemeriksaan operasional berdasarkan tiket dukungan contoh\",\n      \"requestId\": \"example-request-id\",\n      \"occurredAt\": \"2026-11-20T07:00:00Z\",\n      \"before\": {},\n      \"after\": {}\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Student screens - current contracts",
+      "description": "API backend untuk FE terbaru. Endpoint lama tetap tersedia. Pilih cohortId dari daftar cohort sebelum membaca peringkat. Collection tidak membuat pembayaran atau ranking palsu.",
+      "item": [
+        {
+          "name": "GET Dashboard sesuai kategori",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users/current/dashboard?category={{category}}&mode=TRYOUT",
+            "description": "Filter category dan mode. Menghitung seluruh sesi milik akun, bukan 100 baris pertama. scoreGroups memisahkan examType dan policyVersion; jangan menggabungkan rerata kelompok berbeda. Trend maksimal 12 per kelompok, urut waktu naik. elapsedSeconds adalah wall time sesi yang dibatasi deadline dan waktu server, bukan waktu interaksi aktif. Streak memakai tanggal penyelesaian WIB; skor/penyelesaian mengecualikan abandon.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/users/current/dashboard?category={{category}}&mode=TRYOUT",
+                "description": "Filter category dan mode. Menghitung seluruh sesi milik akun, bukan 100 baris pertama. scoreGroups memisahkan examType dan policyVersion; jangan menggabungkan rerata kelompok berbeda. Trend maksimal 12 per kelompok, urut waktu naik. elapsedSeconds adalah wall time sesi yang dibatasi deadline dan waktu server, bukan waktu interaksi aktif. Streak memakai tanggal penyelesaian WIB; skor/penyelesaian mengecualikan abandon.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"category\": \"UTBK\",\n  \"mode\": \"TRYOUT\",\n  \"totalTryouts\": 10,\n  \"totalPractices\": 0,\n  \"completed\": 8,\n  \"elapsedSeconds\": 3600,\n  \"currentStreakDays\": 1,\n  \"scoreGroups\": [\n    {\n      \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n      \"examType\": \"TPS\",\n      \"policyVersion\": \"DEMO_BINARY:1\",\n      \"count\": 8,\n      \"average\": 80,\n      \"trend\": [\n        {\n          \"attemptId\": \"00000000-0000-4000-8000-000000000006\",\n          \"completedAt\": \"2026-11-21T07:00:00Z\",\n          \"score\": 80\n        }\n      ]\n    }\n  ],\n  \"recentActivity\": [\n    {\n      \"attemptId\": \"00000000-0000-4000-8000-000000000006\",\n      \"tryoutId\": \"00000000-0000-4000-8000-000000000002\",\n      \"title\": \"Tryout UTBK Contoh\",\n      \"category\": \"UTBK\",\n      \"mode\": \"TRYOUT\",\n      \"status\": \"COMPLETED\",\n      \"terminalReason\": \"SUBMITTED\",\n      \"topicId\": null,\n      \"topicName\": null,\n      \"startedAt\": \"2026-11-21T06:50:00Z\",\n      \"finalizedAt\": \"2026-11-21T07:00:00Z\",\n      \"totalScore\": 80,\n      \"questionCount\": 3,\n      \"durationSeconds\": 5400,\n      \"processing\": {\n        \"state\": \"READY\",\n        \"poll\": false,\n        \"retryAfterSeconds\": 0,\n        \"errorCode\": null\n      }\n    }\n  ],\n  \"quota\": {\n    \"dateWib\": \"2026-11-19\",\n    \"used\": 1,\n    \"limit\": 2,\n    \"remaining\": 1\n  },\n  \"membership\": {\n    \"tier\": \"PREMIUM\",\n    \"startsAt\": \"2026-11-01T00:00:00Z\",\n    \"endsAt\": \"2026-12-01T00:00:00Z\",\n    \"plan\": {\n      \"id\": \"00000000-0000-4000-8000-000000000060\",\n      \"code\": \"PREMIUM_MONTH_R1\",\n      \"name\": \"Premium 1 bulan\",\n      \"months\": 1,\n      \"amountMinor\": 39000,\n      \"currency\": \"IDR\"\n    },\n    \"benefits\": {\n      \"fullLeaderboard\": true\n    },\n    \"leaderboardPreviewLimit\": 3,\n    \"dailyTryoutLimit\": 2\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Riwayat berhalaman",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users/current/learning-history?category={{category}}&period=ALL&limit={{pageLimit}}&offset={{historyOffset}}",
+            "description": "Filter category, mode, status, search, tryoutId atau topicId; from/to tanggal WIB inklusif menurut startedAt. period=WEEK berarti hari ini dan enam hari sebelumnya; MONTH berarti awal bulan sampai hari ini. period tidak dapat digabung dengan rentang tanggal. total dan summary dihitung pada seluruh hasil filter, offset default 0, limit default 6 maksimal 100.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));",
+                  "pm.test(\"Pagination tersedia\", () => { const p = pm.response.json(); pm.expect(p.items).to.be.an(\"array\"); pm.expect(p.total).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/users/current/learning-history?category={{category}}&period=ALL&limit={{pageLimit}}&offset={{historyOffset}}",
+                "description": "Filter category, mode, status, search, tryoutId atau topicId; from/to tanggal WIB inklusif menurut startedAt. period=WEEK berarti hari ini dan enam hari sebelumnya; MONTH berarti awal bulan sampai hari ini. period tidak dapat digabung dengan rentang tanggal. total dan summary dihitung pada seluruh hasil filter, offset default 0, limit default 6 maksimal 100.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"attemptId\": \"00000000-0000-4000-8000-000000000006\",\n      \"tryoutId\": \"00000000-0000-4000-8000-000000000002\",\n      \"title\": \"Tryout UTBK Contoh\",\n      \"category\": \"UTBK\",\n      \"mode\": \"TRYOUT\",\n      \"status\": \"COMPLETED\",\n      \"terminalReason\": \"SUBMITTED\",\n      \"topicId\": null,\n      \"topicName\": null,\n      \"startedAt\": \"2026-11-21T06:50:00Z\",\n      \"finalizedAt\": \"2026-11-21T07:00:00Z\",\n      \"totalScore\": 80,\n      \"questionCount\": 3,\n      \"durationSeconds\": 5400,\n      \"processing\": {\n        \"state\": \"READY\",\n        \"poll\": false,\n        \"retryAfterSeconds\": 0,\n        \"errorCode\": null\n      }\n    }\n  ],\n  \"total\": 10,\n  \"offset\": 0,\n  \"limit\": 6,\n  \"summary\": {\n    \"total\": 10,\n    \"completed\": 8,\n    \"inProgress\": 1,\n    \"scoring\": 1,\n    \"scoringFailed\": 0\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Ringkasan hak premium",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users/current/membership",
+            "description": "FREE/PREMIUM berasal dari grant aktif yang belum dicabut dan order PAID. fullLeaderboard memakai benefits_snapshot, bukan konfigurasi paket saat ini. plan name merupakan label versi paket; harga, kode dan months dari snapshot order. Menonaktifkan penjualan paket tidak mencabut hak yang sudah dibeli.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/users/current/membership",
+                "description": "FREE/PREMIUM berasal dari grant aktif yang belum dicabut dan order PAID. fullLeaderboard memakai benefits_snapshot, bukan konfigurasi paket saat ini. plan name merupakan label versi paket; harga, kode dan months dari snapshot order. Menonaktifkan penjualan paket tidak mencabut hak yang sudah dibeli.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"tier\": \"PREMIUM\",\n  \"startsAt\": \"2026-11-01T00:00:00Z\",\n  \"endsAt\": \"2026-12-01T00:00:00Z\",\n  \"plan\": {\n    \"id\": \"00000000-0000-4000-8000-000000000060\",\n    \"code\": \"PREMIUM_MONTH_R1\",\n    \"name\": \"Premium 1 bulan\",\n    \"months\": 1,\n    \"amountMinor\": 39000,\n    \"currency\": \"IDR\"\n  },\n  \"benefits\": {\n    \"fullLeaderboard\": true\n  },\n  \"leaderboardPreviewLimit\": 3,\n  \"dailyTryoutLimit\": 2\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Daftar paket aktif",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/plans?limit={{pageLimit}}&offset=0",
+            "description": "Harga integer amountMinor dan currency dari database. Hanya versi paket active. Default limit 12 maksimal 100. Tidak membuat checkout atau pembayaran.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));",
+                  "const first = pm.response.json().items?.[0]; if (first) pm.collectionVariables.set(\"planId\", first.id);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/plans?limit={{pageLimit}}&offset=0",
+                "description": "Harga integer amountMinor dan currency dari database. Hanya versi paket active. Default limit 12 maksimal 100. Tidak membuat checkout atau pembayaran.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000060\",\n      \"code\": \"PREMIUM_MONTH_R1\",\n      \"familyCode\": \"PREMIUM_MONTH\",\n      \"revision\": 1,\n      \"name\": \"Premium 1 bulan\",\n      \"months\": 1,\n      \"amountMinor\": 39000,\n      \"currency\": \"IDR\",\n      \"benefits\": {\n        \"fullLeaderboard\": true\n      }\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Detail versi paket aktif",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/plans/{{planId}}",
+            "description": "ID versi paket aktif; paket nonaktif/tidak ditemukan mendapat 404. Gunakan harga dan mata uang dari server.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/plans/{{planId}}",
+                "description": "ID versi paket aktif; paket nonaktif/tidak ditemukan mendapat 404. Gunakan harga dan mata uang dari server.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000060\",\n  \"code\": \"PREMIUM_MONTH_R1\",\n  \"familyCode\": \"PREMIUM_MONTH\",\n  \"revision\": 1,\n  \"name\": \"Premium 1 bulan\",\n  \"months\": 1,\n  \"amountMinor\": 39000,\n  \"currency\": \"IDR\",\n  \"benefits\": {\n    \"fullLeaderboard\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Katalog tryout berhalaman",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/catalog/tryouts?category={{category}}&limit={{pageLimit}}&offset=0",
+            "description": "Filter category, examTypeId, subtestId, search dan ready. sort NEWEST (default) atau TITLE; default limit 12 maksimal 100. Stok readiness mengikuti versi soal PUBLISHED terbaru dan taksonomi aktif; start tetap memeriksa stock/exposure personal. Tidak mengarang editionYear dari sourceYear soal.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/catalog/tryouts?category={{category}}&limit={{pageLimit}}&offset=0",
+                "description": "Filter category, examTypeId, subtestId, search dan ready. sort NEWEST (default) atau TITLE; default limit 12 maksimal 100. Stok readiness mengikuti versi soal PUBLISHED terbaru dan taksonomi aktif; start tetap memeriksa stock/exposure personal. Tidak mengarang editionYear dari sourceYear soal.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000002\",\n      \"code\": \"DEMO_TRYOUT\",\n      \"title\": \"Tryout UTBK Contoh\",\n      \"category\": \"UTBK\",\n      \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n      \"examType\": \"TPS\",\n      \"blueprintVersionId\": \"00000000-0000-4000-8000-000000000003\",\n      \"durationSeconds\": 5400,\n      \"questionCount\": 3,\n      \"ready\": true,\n      \"attemptCount\": 2,\n      \"latestScore\": 80,\n      \"latestCompletedAt\": \"2026-11-21T07:00:00Z\"\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Katalog topik berhalaman",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/catalog/practice-topics?category={{category}}&limit={{pageLimit}}&offset=0",
+            "description": "Filter category, examTypeId, subtestId, search dan ready. Urutan TITLE; NEWEST ditolak. Default limit 12 maksimal 100. ready berarti stok global >0; batas/jumlah personal tetap diperiksa saat start.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/catalog/practice-topics?category={{category}}&limit={{pageLimit}}&offset=0",
+                "description": "Filter category, examTypeId, subtestId, search dan ready. Urutan TITLE; NEWEST ditolak. Default limit 12 maksimal 100. ready berarti stok global >0; batas/jumlah personal tetap diperiksa saat start.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000005\",\n      \"topic\": \"Aritmetika\",\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"subtestCode\": \"NUMERIK\",\n      \"subtest\": \"Penalaran Numerik\",\n      \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n      \"examType\": \"TPS\",\n      \"category\": \"UTBK\",\n      \"questionCount\": 12,\n      \"ready\": true\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Pilih kelompok leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/leaderboards/cohorts?category={{category}}&limit={{pageLimit}}&offset=0",
+            "description": "Filter category, examTypeId dan includeEnded (default false). Hanya cohort ACTIVE yang sudah dimulai; calon cohort masa depan tidak tampil. Satu cohort menunjuk tepat satu form/policy/periode/attemptPolicy. Tidak membuat cohort atau entry otomatis.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));",
+                  "const first = pm.response.json().items?.[0]; if (first) pm.collectionVariables.set(\"cohortId\", first.id);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/leaderboards/cohorts?category={{category}}&limit={{pageLimit}}&offset=0",
+                "description": "Filter category, examTypeId dan includeEnded (default false). Hanya cohort ACTIVE yang sudah dimulai; calon cohort masa depan tidak tampil. Satu cohort menunjuk tepat satu form/policy/periode/attemptPolicy. Tidak membuat cohort atau entry otomatis.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000061\",\n      \"title\": \"Tryout UTBK Contoh\",\n      \"category\": \"UTBK\",\n      \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n      \"formId\": \"00000000-0000-4000-8000-000000000062\",\n      \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n      \"periodStart\": \"2026-11-01T00:00:00Z\",\n      \"periodEnd\": \"2026-12-01T00:00:00Z\",\n      \"attemptPolicy\": \"BEST\",\n      \"ended\": false\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Peringkat satu cohort",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/leaderboards/cohorts/{{cohortId}}/entries?limit={{pageLimit}}&offset=0",
+            "description": "Preview gratis maksimal tiga baris pertama; offset tidak dapat melewati batas itu. ownRank tersedia terpisah bila pengguna sudah masuk entry dan menyetujui publikasi. Hak fullLeaderboard membuka pagination dan filter targetKind/targetInstitution/targetProgram (persamaan persis). Filter target tanpa hak mendapat 403 PREMIUM_REQUIRED. Rank tetap peringkat cohort ketika difilter, bukan dihitung ulang. totalParticipants mengikuti filter; accessibleTotal dibatasi 3 pada preview. Akun suspended/opt-out dan hasil abandon tidak tampil. Tidak membocorkan email/ID akun.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/leaderboards/cohorts/{{cohortId}}/entries?limit={{pageLimit}}&offset=0",
+                "description": "Preview gratis maksimal tiga baris pertama; offset tidak dapat melewati batas itu. ownRank tersedia terpisah bila pengguna sudah masuk entry dan menyetujui publikasi. Hak fullLeaderboard membuka pagination dan filter targetKind/targetInstitution/targetProgram (persamaan persis). Filter target tanpa hak mendapat 403 PREMIUM_REQUIRED. Rank tetap peringkat cohort ketika difilter, bukan dihitung ulang. totalParticipants mengikuti filter; accessibleTotal dibatasi 3 pada preview. Akun suspended/opt-out dan hasil abandon tidak tampil. Tidak membocorkan email/ID akun.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"cohort\": {\n    \"id\": \"00000000-0000-4000-8000-000000000061\",\n    \"title\": \"Tryout UTBK Contoh\",\n    \"category\": \"UTBK\",\n    \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n    \"formId\": \"00000000-0000-4000-8000-000000000062\",\n    \"scoringPolicyId\": \"00000000-0000-4000-8000-000000000070\",\n    \"periodStart\": \"2026-11-01T00:00:00Z\",\n    \"periodEnd\": \"2026-12-01T00:00:00Z\",\n    \"attemptPolicy\": \"BEST\",\n    \"ended\": false\n  },\n  \"accessTier\": \"FULL\",\n  \"leaderboardOptIn\": true,\n  \"totalParticipants\": 1,\n  \"accessibleTotal\": 1,\n  \"offset\": 0,\n  \"limit\": 20,\n  \"items\": [\n    {\n      \"rank\": 1,\n      \"displayName\": \"Siswa Contoh\",\n      \"totalScore\": 80,\n      \"targetKind\": \"CAMPUS\",\n      \"targetInstitution\": \"Universitas Contoh\",\n      \"targetProgram\": \"Informatika\",\n      \"currentUser\": true\n    }\n  ],\n  \"ownRank\": {\n    \"rank\": 1,\n    \"displayName\": \"Siswa Contoh\",\n    \"totalScore\": 80,\n    \"targetKind\": \"CAMPUS\",\n    \"targetInstitution\": \"Universitas Contoh\",\n    \"targetProgram\": \"Informatika\",\n    \"currentUser\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Baca persetujuan leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/users/current/privacy",
+            "description": "Default opt-out. updatedAt null jika belum pernah mengubah persetujuan.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/users/current/privacy",
+                "description": "Default opt-out. updatedAt null jika belum pernah mengubah persetujuan.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"leaderboardOptIn\": true,\n  \"updatedAt\": \"2026-11-21T07:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH Ubah persetujuan leaderboard",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/users/current/privacy",
+            "description": "Body eksplisit leaderboardOptIn wajib. Persetujuan/waktu dan audit request dicatat atomik. Opt-out langsung menyembunyikan entry lama; opt-in tidak otomatis membuat ranking.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaderboardOptIn\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Request ID tersedia\", () => pm.expect(pm.response.headers.get(\"X-Request-ID\")).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/users/current/privacy",
+                "description": "Body eksplisit leaderboardOptIn wajib. Persetujuan/waktu dan audit request dicatat atomik. Opt-out langsung menyembunyikan entry lama; opt-in tidak otomatis membuat ranking.\n\nMemerlukan session CUSTOMER. Jalankan Get CSRF Token dan login/register dahulu. Jangan Run Folder untuk mutasi privacy tanpa meninjau pilihan persetujuan.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"leaderboardOptIn\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"leaderboardOptIn\": true,\n  \"updatedAt\": \"2026-11-21T07:00:00Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Question sources and Excel import",
+      "description": "Urutan: buat sumber → mapping/template → upload → tunggu worker → preview/koreksi → save DRAFT → publish per master → admin mengatur sumber/difficulty pada blueprint baru. Jangan Run Folder: archive dan koreksi harus dipilih eksplisit.",
+      "item": [
+        {
+          "name": "GET Daftar sumber soal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets?examTypeId={{examTypeId}}&limit=20&offset=0",
+            "description": "Filter examTypeId, sourceYear, status, search, offset dan limit 1..100 (default 20). publishedCount menghitung master dengan versi terbit yang memenuhi kelengkapan pool, bukan jumlah seluruh revisi.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets?examTypeId={{examTypeId}}&limit=20&offset=0",
+                "description": "Filter examTypeId, sourceYear, status, search, offset dan limit 1..100 (default 20). publishedCount menghitung master dengan versi terbit yang memenuhi kelengkapan pool, bukan jumlah seluruh revisi.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000100\",\n      \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n      \"code\": \"UTBK_2025_A\",\n      \"sourceYear\": 2025,\n      \"title\": \"Sumber UTBK 2025 paket A\",\n      \"status\": \"ACTIVE\",\n      \"questionCount\": 100,\n      \"publishedCount\": 80\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Buat sumber soal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets?examTypeId={{examTypeId}}&limit=20&offset=0",
+            "description": "Identitas jenis ujian, kode dan tahun immutable. Upload koreksi menggunakan source ID yang sama. Kode global unik; tidak membuat tabel baru per tahun/sheet.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"examTypeId\": \"{{examTypeId}}\",\n  \"code\": \"{{questionSetCode}}\",\n  \"sourceYear\": {{sourceYear}},\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"reason\": \"{{operationReason}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('questionSetId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets?examTypeId={{examTypeId}}&limit=20&offset=0",
+                "description": "Identitas jenis ujian, kode dan tahun immutable. Upload koreksi menggunakan source ID yang sama. Kode global unik; tidak membuat tabel baru per tahun/sheet.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"examTypeId\": \"{{examTypeId}}\",\n  \"code\": \"{{questionSetCode}}\",\n  \"sourceYear\": {{sourceYear}},\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"reason\": \"{{operationReason}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000100\",\n  \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n  \"code\": \"UTBK_2025_A\",\n  \"sourceYear\": 2025,\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"status\": \"ACTIVE\",\n  \"questionCount\": 100,\n  \"publishedCount\": 80\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Detail sumber soal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}",
+            "description": "Metadata sumber dan stok. sourceYear adalah tahun sumber, berbeda dari edisi katalog tryout.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}",
+                "description": "Metadata sumber dan stok. sourceYear adalah tahun sumber, berbeda dari edisi katalog tryout.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000100\",\n  \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n  \"code\": \"UTBK_2025_A\",\n  \"sourceYear\": 2025,\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"status\": \"ACTIVE\",\n  \"questionCount\": 100,\n  \"publishedCount\": 80\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH Arsip atau aktifkan sumber",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/status",
+            "description": "Arsip menghentikan pemilihan dari blueprint yang menunjuk sumber tersebut. Tidak mengubah master soal atau snapshot sesi lama.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ARCHIVED\",\n  \"reason\": \"{{operationReason}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/status",
+                "description": "Arsip menghentikan pemilihan dari blueprint yang menunjuk sumber tersebut. Tidak mengubah master soal atau snapshot sesi lama.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ARCHIVED\",\n  \"reason\": \"{{operationReason}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000100\",\n  \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n  \"code\": \"UTBK_2025_A\",\n  \"sourceYear\": 2025,\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"status\": \"ACTIVE\",\n  \"questionCount\": 100,\n  \"publishedCount\": 80\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Anggota sumber soal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/items?offset=0&limit=20",
+            "description": "Daftar master, kode asal, subtes, versi terbaru/difficulty/status dan flag arsip. Versi terbaru dapat DRAFT sementara versi PUBLISHED sebelumnya masih tersedia di pool.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/items?offset=0&limit=20",
+                "description": "Daftar master, kode asal, subtes, versi terbaru/difficulty/status dan flag arsip. Versi terbaru dapat DRAFT sementara versi PUBLISHED sebelumnya masih tersedia di pool.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"questionId\": \"00000000-0000-4000-8000-000000000007\",\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"sourceItemCode\": \"PU_Q001\",\n      \"latestVersionId\": \"00000000-0000-4000-8000-000000000008\",\n      \"status\": \"PUBLISHED\",\n      \"difficulty\": \"MEDIUM\",\n      \"archived\": false\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Hubungkan master yang sudah ada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/items",
+            "description": "Relasi many-to-many tanpa menggandakan isi soal. Subtes master wajib sesuai exam type sumber. Kode asal unik per sumber/subtes; pasangan master yang sama dengan kode sama idempoten. Kode yang sudah dipakai tidak dapat diganti.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionId\": \"{{questionId}}\",\n  \"sourceItemCode\": \"{{workbookSourceItemCode}}\",\n  \"reason\": \"{{operationReason}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/items",
+                "description": "Relasi many-to-many tanpa menggandakan isi soal. Subtes master wajib sesuai exam type sumber. Kode asal unik per sumber/subtes; pasangan master yang sama dengan kode sama idempoten. Kode yang sudah dipakai tidak dapat diganti.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"questionId\": \"{{questionId}}\",\n  \"sourceItemCode\": \"{{workbookSourceItemCode}}\",\n  \"reason\": \"{{operationReason}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000100\",\n  \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n  \"code\": \"UTBK_2025_A\",\n  \"sourceYear\": 2025,\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"status\": \"ACTIVE\",\n  \"questionCount\": 100,\n  \"publishedCount\": 80\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Pemetaan sheet template",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/template-mapping",
+            "description": "Array sheetName dan subtestId aktif untuk metadata upload. Nama berasal dari kode subtes, dibatasi 31 karakter; benturan nama ditolak.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) pm.collectionVariables.set('workbookSheetMappings', JSON.stringify(pm.response.json()));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/template-mapping",
+                "description": "Array sheetName dan subtestId aktif untuk metadata upload. Nama berasal dari kode subtes, dibatasi 31 karakter; benturan nama ditolak.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"sheetName\": \"NUMERIK\",\n    \"subtestId\": \"00000000-0000-4000-8000-000000000004\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "GET Unduh template XLSX",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/question-sets/{{questionSetId}}/template",
+            "description": "Workbook berisi header, pilihan difficulty/kunci dan sheet untuk subtes aktif. Isi teks sesuai panduan. Hapus sheet kosong dan pemetaannya jika hanya mengunggah sebagian subtes.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "POST Upload Excel per sheet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/staff/workbook-imports",
+            "description": "Multipart file XLSX dan metadata JSON WorkbookMetadata. File disimpan privat dan job IMPORT_XLSX diproses worker. 202 bukan jaminan workbook valid. Dedup berdasarkan actor, checksum file, source dan pemetaan sheet; replay mengembalikan batch lama. Format/header/sheet invalid gagal dengan kode aman; row error tetap tersedia untuk review.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "metadata",
+                  "type": "text",
+                  "contentType": "application/json",
+                  "value": "{\"questionSetId\":\"{{questionSetId}}\",\"sheets\":{{workbookSheetMappings}}}"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Pilih file .xlsx yang sudah diisi dari template."
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', () => pm.response.to.have.status(202));",
+                  "if (pm.response.code === 202) pm.collectionVariables.set('workbookBatchId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/staff/workbook-imports",
+                "description": "Multipart file XLSX dan metadata JSON WorkbookMetadata. File disimpan privat dan job IMPORT_XLSX diproses worker. 202 bukan jaminan workbook valid. Dedup berdasarkan actor, checksum file, source dan pemetaan sheet; replay mengembalikan batch lama. Format/header/sheet invalid gagal dengan kode aman; row error tetap tersedia untuk review.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "metadata",
+                      "type": "text",
+                      "contentType": "application/json",
+                      "value": "{\"questionSetId\":\"{{questionSetId}}\",\"sheets\":{{workbookSheetMappings}}}"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": [],
+                      "description": "Pilih file .xlsx yang sudah diisi dari template."
+                    }
+                  ]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000101\",\n  \"questionSetId\": \"00000000-0000-4000-8000-000000000100\",\n  \"fileId\": \"00000000-0000-4000-8000-000000000021\",\n  \"inputFormat\": \"XLSX\",\n  \"status\": \"READY\",\n  \"candidateCount\": 2,\n  \"validCount\": 2,\n  \"invalidCount\": 0,\n  \"errorCode\": null,\n  \"jobStatus\": \"SUCCEEDED\",\n  \"createdAt\": \"2026-11-21T07:00:00Z\",\n  \"sheets\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000102\",\n      \"sheetName\": \"NUMERIK\",\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"sheetIndex\": 0,\n      \"status\": \"READY\",\n      \"candidateCount\": 2,\n      \"invalidCount\": 0\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Daftar impor Excel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/workbook-imports?questionSetId={{questionSetId}}&limit=20&offset=0",
+            "description": "Filter questionSetId/status dan pagination offset/limit. Tidak menyertakan isi/kunci soal.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/workbook-imports?questionSetId={{questionSetId}}&limit=20&offset=0",
+                "description": "Filter questionSetId/status dan pagination offset/limit. Tidak menyertakan isi/kunci soal.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000101\",\n      \"questionSetId\": \"00000000-0000-4000-8000-000000000100\",\n      \"fileId\": \"00000000-0000-4000-8000-000000000021\",\n      \"inputFormat\": \"XLSX\",\n      \"status\": \"READY\",\n      \"candidateCount\": 2,\n      \"validCount\": 2,\n      \"invalidCount\": 0,\n      \"errorCode\": null,\n      \"jobStatus\": \"SUCCEEDED\",\n      \"createdAt\": \"2026-11-21T07:00:00Z\",\n      \"sheets\": [\n        {\n          \"id\": \"00000000-0000-4000-8000-000000000102\",\n          \"sheetName\": \"NUMERIK\",\n          \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n          \"sheetIndex\": 0,\n          \"status\": \"READY\",\n          \"candidateCount\": 2,\n          \"invalidCount\": 0\n        }\n      ]\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Detail hasil impor Excel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}",
+            "description": "Status batch/job, hitungan valid-invalid, dan status tiap sheet. READY berarti siap direview/disimpan, bukan otomatis published.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}",
+                "description": "Status batch/job, hitungan valid-invalid, dan status tiap sheet. READY berarti siap direview/disimpan, bukan otomatis published.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000101\",\n  \"questionSetId\": \"00000000-0000-4000-8000-000000000100\",\n  \"fileId\": \"00000000-0000-4000-8000-000000000021\",\n  \"inputFormat\": \"XLSX\",\n  \"status\": \"READY\",\n  \"candidateCount\": 2,\n  \"validCount\": 2,\n  \"invalidCount\": 0,\n  \"errorCode\": null,\n  \"jobStatus\": \"SUCCEEDED\",\n  \"createdAt\": \"2026-11-21T07:00:00Z\",\n  \"sheets\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000102\",\n      \"sheetName\": \"NUMERIK\",\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"sheetIndex\": 0,\n      \"status\": \"READY\",\n      \"candidateCount\": 2,\n      \"invalidCount\": 0\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Preview kandidat Excel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}/candidates?offset=0&limit=20",
+            "description": "Filter sheetId opsional, pagination 1..100. sourceRow mulai 2; sourceItemCode adalah identitas stabil pada sumber/subtes. expectedVersionId dibekukan saat ekstraksi; resolvedVersionId merekam hasil simpan.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) { const rows=pm.response.json().items; const first=rows[0]; if(first){pm.collectionVariables.set('workbookCandidateId',first.id);pm.collectionVariables.set('workbookSourceItemCode',first.sourceItemCode);pm.collectionVariables.set('workbookTopicIdJson',JSON.stringify(first.topicId));} pm.collectionVariables.set('workbookCandidateIdsJson',JSON.stringify(rows.filter(r=>!r.validationErrors.length&&!r.resolvedVersionId).map(r=>r.id))); }"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}/candidates?offset=0&limit=20",
+                "description": "Filter sheetId opsional, pagination 1..100. sourceRow mulai 2; sourceItemCode adalah identitas stabil pada sumber/subtes. expectedVersionId dibekukan saat ekstraksi; resolvedVersionId merekam hasil simpan.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000103\",\n      \"sheetId\": \"00000000-0000-4000-8000-000000000102\",\n      \"sheetName\": \"NUMERIK\",\n      \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n      \"sourceRow\": 2,\n      \"sourceItemCode\": \"PU_Q001\",\n      \"topicId\": null,\n      \"difficulty\": \"MEDIUM\",\n      \"extractedContent\": {\n        \"stemText\": \"Berapa hasil 2 + 3?\",\n        \"options\": [\n          {\n            \"code\": \"A\",\n            \"text\": \"4\",\n            \"correct\": false,\n            \"weight\": 0\n          },\n          {\n            \"code\": \"B\",\n            \"text\": \"5\",\n            \"correct\": true,\n            \"weight\": 1\n          }\n        ],\n        \"explanation\": \"Dua ditambah tiga sama dengan lima.\",\n        \"shuffleAllowed\": false\n      },\n      \"draftContent\": null,\n      \"validationErrors\": [],\n      \"expectedVersionId\": null,\n      \"resolvedQuestionId\": null,\n      \"resolvedVersionId\": null\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH Koreksi kandidat Excel",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}/candidates/{{workbookCandidateId}}",
+            "description": "Memperbaiki kode/topik/difficulty/konten sebelum simpan. Topik harus aktif dan sesuai subtes sheet. Kandidat tersimpan tidak dapat diedit. Mengubah konten saja tidak memperbarui expectedVersionId untuk melewati konflik.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceItemCode\": \"{{workbookSourceItemCode}}\",\n  \"topicId\": {{workbookTopicIdJson}},\n  \"difficulty\": \"MEDIUM\",\n  \"content\": {\n    \"stemText\": \"Berapa hasil 2 + 3?\",\n    \"options\": [\n      {\n        \"code\": \"A\",\n        \"text\": \"4\",\n        \"correct\": false,\n        \"weight\": 0\n      },\n      {\n        \"code\": \"B\",\n        \"text\": \"5\",\n        \"correct\": true,\n        \"weight\": 1\n      }\n    ],\n    \"explanation\": \"Dua ditambah tiga sama dengan lima.\",\n    \"shuffleAllowed\": false\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}/candidates/{{workbookCandidateId}}",
+                "description": "Memperbaiki kode/topik/difficulty/konten sebelum simpan. Topik harus aktif dan sesuai subtes sheet. Kandidat tersimpan tidak dapat diedit. Mengubah konten saja tidak memperbarui expectedVersionId untuk melewati konflik.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sourceItemCode\": \"{{workbookSourceItemCode}}\",\n  \"topicId\": {{workbookTopicIdJson}},\n  \"difficulty\": \"MEDIUM\",\n  \"content\": {\n    \"stemText\": \"Berapa hasil 2 + 3?\",\n    \"options\": [\n      {\n        \"code\": \"A\",\n        \"text\": \"4\",\n        \"correct\": false,\n        \"weight\": 0\n      },\n      {\n        \"code\": \"B\",\n        \"text\": \"5\",\n        \"correct\": true,\n        \"weight\": 1\n      }\n    ],\n    \"explanation\": \"Dua ditambah tiga sama dengan lima.\",\n    \"shuffleAllowed\": false\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000103\",\n  \"sheetId\": \"00000000-0000-4000-8000-000000000102\",\n  \"sheetName\": \"NUMERIK\",\n  \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n  \"sourceRow\": 2,\n  \"sourceItemCode\": \"PU_Q001\",\n  \"topicId\": null,\n  \"difficulty\": \"MEDIUM\",\n  \"extractedContent\": {\n    \"stemText\": \"Berapa hasil 2 + 3?\",\n    \"options\": [\n      {\n        \"code\": \"A\",\n        \"text\": \"4\",\n        \"correct\": false,\n        \"weight\": 0\n      },\n      {\n        \"code\": \"B\",\n        \"text\": \"5\",\n        \"correct\": true,\n        \"weight\": 1\n      }\n    ],\n    \"explanation\": \"Dua ditambah tiga sama dengan lima.\",\n    \"shuffleAllowed\": false\n  },\n  \"draftContent\": null,\n  \"validationErrors\": [],\n  \"expectedVersionId\": null,\n  \"resolvedQuestionId\": null,\n  \"resolvedVersionId\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Simpan kandidat Excel terpilih",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}/save",
+            "description": "Maksimal 100 ID unik satu batch, semua atau rollback. Kode baru membuat master/DRAFT; perubahan pada soal terbit membuat revisi DRAFT. Konten sama termasuk bobot numerik yang setara menggunakan versi sama. Revisi hanya memakai baseline PUBLISHED yang immutable; jika master masih DRAFT saat ekstraksi, selesaikan draft lalu unggah ulang. Replay kandidat mengembalikan resolvedVersionId yang sama, bukan revisi terbaru. Tidak otomatis publish.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidateIds\": {{workbookCandidateIdsJson}},\n  \"reason\": \"{{operationReason}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "if (pm.response.code === 200) {const rows=pm.response.json(); pm.collectionVariables.set('workbookSavedQuestionIdsJson',JSON.stringify(rows.map(q=>q.id)));if(rows[0]){pm.collectionVariables.set('questionId',rows[0].id);pm.collectionVariables.set('questionVersionId',rows[0].versionId);}} "
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-CSRF-TOKEN",
+                    "value": "{{csrfToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/staff/workbook-imports/{{workbookBatchId}}/save",
+                "description": "Maksimal 100 ID unik satu batch, semua atau rollback. Kode baru membuat master/DRAFT; perubahan pada soal terbit membuat revisi DRAFT. Konten sama termasuk bobot numerik yang setara menggunakan versi sama. Revisi hanya memakai baseline PUBLISHED yang immutable; jika master masih DRAFT saat ekstraksi, selesaikan draft lalu unggah ulang. Replay kandidat mengembalikan resolvedVersionId yang sama, bukan revisi terbaru. Tidak otomatis publish.\n\nRole: QUESTION_STAFF. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"candidateIds\": {{workbookCandidateIdsJson}},\n  \"reason\": \"{{operationReason}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"00000000-0000-4000-8000-000000000007\",\n    \"versionId\": \"00000000-0000-4000-8000-000000000008\",\n    \"code\": \"Q-00000000-0000-4000-8000-000000000007\",\n    \"version\": 1,\n    \"status\": \"DRAFT\",\n    \"subtestId\": \"00000000-0000-4000-8000-000000000004\",\n    \"topicId\": \"00000000-0000-4000-8000-000000000005\",\n    \"sourceYear\": 2026,\n    \"sourceTitle\": \"Contoh PDF PastiSiap\",\n    \"sourcePage\": 1,\n    \"content\": {\n      \"stemText\": \"Berapa hasil 2 + 3?\",\n      \"options\": [\n        {\n          \"code\": \"A\",\n          \"text\": \"4\",\n          \"correct\": false,\n          \"weight\": 0\n        },\n        {\n          \"code\": \"B\",\n          \"text\": \"5\",\n          \"correct\": true,\n          \"weight\": 1\n        }\n      ],\n      \"explanation\": \"Dua ditambah tiga sama dengan lima.\",\n      \"shuffleAllowed\": false\n    }\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "GET Daftar sumber untuk komposisi",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/question-sets?examTypeId={{examTypeId}}&limit=20&offset=0",
+            "description": "Admin membaca metadata/stok sumber untuk menyusun blueprint; tidak mendapat akses file, kandidat atau kunci soal.\n\nRole: PLATFORM_ADMIN. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/question-sets?examTypeId={{examTypeId}}&limit=20&offset=0",
+                "description": "Admin membaca metadata/stok sumber untuk menyusun blueprint; tidak mendapat akses file, kandidat atau kunci soal.\n\nRole: PLATFORM_ADMIN. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000100\",\n      \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n      \"code\": \"UTBK_2025_A\",\n      \"sourceYear\": 2025,\n      \"title\": \"Sumber UTBK 2025 paket A\",\n      \"status\": \"ACTIVE\",\n      \"questionCount\": 100,\n      \"publishedCount\": 80\n    }\n  ],\n  \"total\": 1,\n  \"offset\": 0,\n  \"limit\": 20\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Detail metadata sumber untuk admin",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/admin/question-sets/{{questionSetId}}",
+            "description": "Metadata jenis ujian/tahun dan hitungan soal, tanpa konten/kunci.\n\nRole: PLATFORM_ADMIN. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Synthetic example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/admin/question-sets/{{questionSetId}}",
+                "description": "Metadata jenis ujian/tahun dan hitungan soal, tanpa konten/kunci.\n\nRole: PLATFORM_ADMIN. Login dan CSRF memakai cookie session yang sama. Jalankan bertahap; tinjau mutasi sebelum mengirim. Unduhan source file memakai GET /staff/imports/{{workbookBatchId}}/source."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000100\",\n  \"examTypeId\": \"00000000-0000-4000-8000-000000000025\",\n  \"code\": \"UTBK_2025_A\",\n  \"sourceYear\": 2025,\n  \"title\": \"Sumber UTBK 2025 paket A\",\n  \"status\": \"ACTIVE\",\n  \"questionCount\": 100,\n  \"publishedCount\": 80\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Local demo - admin and question staff login",
+      "description": "Jalankan scripts/setup-demo-accounts.ps1 lalu import environment PRIVATE dari target/PastiSiap-Demo-Accounts.postman_environment.json. Password acak hanya ada di file lokal tersebut. Pilih satu role, ambil CSRF, lalu login. Cookie session Postman dipakai oleh folder API internal. Login role lain mengganti session yang sedang digunakan.",
+      "item": [
+        {
+          "name": "Get CSRF before demo login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/csrf"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code===200) pm.collectionVariables.set('csrfToken',pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login demo admin (PLATFORM_ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Import private local environment first. Uses ordinary password login; no privileged public bootstrap endpoint."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code===200){ const user=pm.response.json().user; pm.test('Exact internal role',()=>{pm.expect(user.userType).to.eql('INTERNAL');pm.expect(user.roles).to.eql(['PLATFORM_ADMIN']);}); }",
+                  "// Login rotates the CSRF token: fetch GET /csrf again before the next mutation."
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login demo staff (QUESTION_STAFF)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-CSRF-TOKEN",
+                "value": "{{csrfToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{staffEmail}}\",\n  \"password\": \"{{staffPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Import private local environment first. Uses ordinary password login; no privileged public bootstrap endpoint."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+                  "if(pm.response.code===200){ const user=pm.response.json().user; pm.test('Exact internal role',()=>{pm.expect(user.userType).to.eql('INTERNAL');pm.expect(user.roles).to.eql(['QUESTION_STAFF']);}); }",
+                  "// Login rotates the CSRF token: fetch GET /csrf again before the next mutation."
+                ]
+              }
             }
           ]
         }

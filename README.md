@@ -15,15 +15,18 @@ tersedia di [rencana arsitektur](docs/learning-architecture-plan.md). Endpoint a
 | Area | Status di repo saat ini |
 |---|---|
 | Runtime Java 25, Spring MVC, validasi, PostgreSQL | Setup tersedia |
-| Migrasi Flyway dan schema PRD | V1â€“V7; V7 menambahkan pencabutan sesi, revision draft/harga dan permintaan refund |
+| Migrasi Flyway dan schema PRD | V1â€“V9; V9 menambahkan sumber soal, staging sheet Excel dan pembatas sumber blueprint |
 | Clean architecture | `modules/<domain>/{domain,application,adapter}` dan `shared` |
 | Health | `GET /api/v1/health` dan Actuator health |
 | CSRF | `GET /api/v1/csrf` mengeluarkan token session untuk mutasi |
-| Identity | Register/login password dan Google OAuth2/OIDC, profil dan target siswa, session logout dan CSRF; reset password, rate limit, dan provisioning role internal belum tersedia |
+| Identity | Register/login password dan Google OAuth2/OIDC, profil dan target siswa, session logout dan CSRF; provisioning akun internal oleh admin tersedia; reset password dan rate limit belum tersedia |
 | Katalog, tryout, practice | Detail dan kesiapan pool, start/resume idempoten, autosave revision, deadline, finalize, hasil/review |
 | Bank soal dan PDF/OCR | Upload privat, worker PDFBox/Tesseract, review kandidat, draft, publish, versi baru, arsip |
+| Excel per sheet | XLSX satu sumber/jenis/tahun; mapping subtes, staging, koreksi, versi stale guard, simpan draft dan publish terpisah |
+| Generate dari sumber | questionSetIds, alokasi difficulty dan repeatPolicy per section; snapshot sesi tetap immutable |
 | Scoring | BINARY/OPTION_WEIGHT; indeks latihan terversi, bukan skor resmi/IRT; leaderboard kompetisi tidak diisi dari sesi acak |
 | Dummy | Profil `demo`: 4 kategori/katalog, 48 soal matematika contoh dan PDF contoh 2 soal |
+| Akun dummy internal | Setup development eksplisit membuat admin dan petugas dengan password acak, role terpisah dan verifikasi login/akses |
 | API dan worker terpisah | Compose menjalankan PostgreSQL, API dan worker job persisten dengan lease/retry |
 | Admin | Pengguna/peran/status, taxonomy, paket/policy/blueprint terversi, readiness/publish, dashboard, audit dan retry job |
 | Keuangan | Daftar/detail order/langganan, revoke dan kasus refund PENDING_PROVIDER; gateway belum terintegrasi |
@@ -38,6 +41,7 @@ Endpoint bisnis baru sebaiknya mengikuti kontrak prefix `/api/v1` dalam bagian â
 - Docker Desktop/Compose opsional, memakai `compose.yaml` dan `Dockerfile`.
 - Tesseract OCR dengan model bahasa Indonesia dan Inggris dipasang pada image backend. PDFBox membaca teks/render; worker menjalankan OCR pada halaman dengan teks minim, di luar thread request.
 - springdoc-openapi 3.2.x dipakai untuk Spring Boot 4.1.x; PDFBox 3.0.8 dipakai untuk ekstraksi/render PDF.
+- Apache POI 6.0.0 membaca XLSX dan membuat template; workbook dibatasi sebelum dimuat, tanpa evaluasi formula/macro/link eksternal.
 - Spring Security memakai sesi server dan proteksi CSRF. Email/password dan Google OAuth tersedia. Registrasi publik selalu membuat user type `SISWA` dengan role `CUSTOMER`; admin dapat membuat akun internal SSO atau mengganti role akun existing. Bootstrap admin pertama dijelaskan pada [panduan operasional](docs/backend/05-operations.md#bootstrap-admin-pertama).
 - Google OAuth2/OIDC tersedia sebagai pilihan selain email/password. Atur `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET` dari Google Cloud Console; callback lokal default `http://localhost:8080/login/oauth2/code/google` harus didaftarkan sebagai Authorized redirect URI. `OAUTH_SUCCESS_REDIRECT` mengatur halaman tujuan setelah login berhasil (default `/`).
 - Springdoc menyediakan Swagger UI pada `/swagger-ui.html` dan dokumen OpenAPI pada `/api-docs`.
@@ -60,7 +64,7 @@ Endpoint bisnis baru sebaiknya mengikuti kontrak prefix `/api/v1` dalam bagian â
    docker compose logs -f api worker
    ```
 
-   Compose menunggu database sehat. Flyway menerapkan migration otomatis; profil demo menambah fixture idempoten. Worker memproses scoring, deadline dan impor PDF. Login ulang setelah API dibangun ulang karena session masih disimpan di memori.
+   Compose menunggu database sehat. Flyway menerapkan migration otomatis; profil demo menambah fixture idempoten. Worker memproses scoring, deadline serta impor PDF/XLSX. Login ulang setelah API dibangun ulang karena session masih disimpan di memori.
 5. Buka `http://localhost:8080/api/v1/health`. Swagger tersedia di `http://localhost:8080/swagger-ui.html`.
 6. Hentikan layanan dengan:
 
@@ -71,6 +75,36 @@ Endpoint bisnis baru sebaiknya mengikuti kontrak prefix `/api/v1` dalam bagian â
 Data PostgreSQL tersimpan di named volume `postgres_data`; file yang diunggah disimpan di folder `storage`. `docker compose down` mempertahankan data tersebut.
 
 Nilai `.env.example` hanya untuk development lokal. Jangan gunakan password contoh atau `COOKIE_SECURE=false` pada deployment HTTPS.
+
+### Akun dummy admin dan petugas bank soal
+
+Setelah Docker berjalan, jalankan dari root repository:
+
+```powershell
+.\scripts\setup-demo-accounts.ps1
+```
+
+Script membangun image terbaru, menjalankan backend, lalu membuat dua akun lokal dan menguji login serta batas aksesnya:
+
+| Email | User type | Role |
+|---|---|---|
+| admin.demo@pastisiap.test | INTERNAL | PLATFORM_ADMIN |
+| staff.demo@pastisiap.test | INTERNAL | QUESTION_STAFF |
+
+Password acak disimpan di `target/demo-accounts.credentials.json`. Import collection
+`postman/PastiSiap-Backend.postman_collection.json` dan environment privat
+`target/PastiSiap-Demo-Accounts.postman_environment.json`, lalu gunakan folder **Local demo - admin and question staff login**.
+Ambil CSRF sebelum login dan ambil ulang setelah login sebelum mutasi. Cookie session Postman dipakai otomatis.
+Folder `target` diabaikan Git; jangan memindahkan environment berisi password ke folder dokumentasi/public Postman.
+
+Setup ulang memakai password yang sama tanpa mengubah hash/role/status akun. Gunakan `-SkipBuild` bila image sudah terbaru.
+Jika email sudah dipakai akun lain atau izin/password dummy berubah, setup berhenti tanpa memberi hak tambahan.
+Profil biasa `demo` tidak membuat akun internal; provisioning ini hanya berjalan melalui tool `demo-accounts` yang eksplisit.
+
+Backend saat ini memiliki **39 operasi API petugas**: dashboard/taxonomy, bank soal dan versi/draft/publish/arsip,
+impor PDF dan Excel beserta review kandidat, sumber soal/tahun, template, riwayat/retry, audit dan kebutuhan stok.
+Upload gambar/asset soal terstruktur dan soal non-MCQ belum tersedia. UI petugas FE sudah memakai alur PDF/bank soal;
+alur Excel baru masih perlu dihubungkan ke endpoint workbook.
 
 ### Build dan unduhan dependency
 
@@ -221,7 +255,7 @@ Refactor DTO tidak mengubah skema database dan tidak memerlukan migration baru.
 
 ## Skema database dan Flyway
 
-Flyway menerapkan migration secara berurutan saat aplikasi mulai. `V1` membuat tabel inti, `V2` melengkapi domain PRD, `V3` menambahkan OAuth, `V4` menambahkan user type, `V5` melengkapi profil/target, `V6` menambahkan lifecycle konten/sesi, dan `V7` menambahkan revision pencabutan sesi/draft/harga serta ledger permintaan refund. Migration lama dipertahankan; perubahan selanjutnya memakai V8 atau berikutnya.
+Flyway menerapkan migration secara berurutan saat aplikasi mulai. `V1` membuat tabel inti, `V2` melengkapi domain PRD, `V3` menambahkan OAuth, `V4` menambahkan user type, `V5` melengkapi profil/target, `V6` menambahkan lifecycle konten/sesi, `V7` menambahkan revision pencabutan sesi/draft/harga serta ledger permintaan refund, `V8` menambahkan index read siswa, dan `V9` menambahkan arsitektur sumber soal serta impor Excel. Migration lama dipertahankan; perubahan selanjutnya memakai V10 atau berikutnya.
 
 Dengan Docker Compose, jalankan atau bangun ulang API agar Flyway memproses migration yang ada di image:
 

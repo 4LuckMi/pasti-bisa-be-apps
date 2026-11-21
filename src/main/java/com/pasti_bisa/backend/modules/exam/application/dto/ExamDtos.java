@@ -32,11 +32,15 @@ public final class ExamDtos {
             BigDecimal maxPoints, BigDecimal accuracy) {}
     public record ResultResponse(UUID attemptId, String status, String terminalReason, String method, String policyVersion,
             BigDecimal totalScore, @Schema(type = "object", implementation = Object.class) JsonNode details, List<SectionResult> sections,
-            Instant finalizedAt) {}
+            Instant finalizedAt, StudentExperienceDtos.Processing processing) {}
 
     public record Blueprint(UUID id, UUID blueprintId, UUID examTypeId, int durationSeconds, UUID policyId,
             String method, BigDecimal scale, JsonNode rules, String policyCode, int policyVersion) {}
-    public record Section(UUID id, UUID subtestId, int position, int count, UUID topicId, Integer sourceYear) {}
+    public record DifficultyQuota(String difficulty,int count) {}
+    public record Section(UUID id, UUID subtestId, int position, int count, UUID topicId, Integer sourceYear,
+            List<DifficultyQuota> difficultyQuotas,String repeatPolicy) {
+        public Section(UUID id,UUID subtestId,int position,int count,UUID topicId,Integer sourceYear){this(id,subtestId,position,count,topicId,sourceYear,List.of(),null);}
+    }
     public record PoolItem(UUID questionId, UUID versionId, boolean shuffleAllowed) {}
     public record Option(UUID id, String code, boolean correct, BigDecimal weight) {}
     public record Attempt(UUID id, UUID userId, UUID blueprintVersionId, UUID blueprintId, String mode, String status,

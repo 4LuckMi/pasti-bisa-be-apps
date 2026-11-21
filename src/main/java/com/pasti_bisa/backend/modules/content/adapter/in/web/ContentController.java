@@ -81,9 +81,10 @@ public class ContentController {
 
     @GetMapping("/imports/{id}/source")
     public ResponseEntity<FileSystemResource> source(@PathVariable UUID id) throws IOException {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).cacheControl(CacheControl.noStore())
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=source.pdf")
-                .body(new FileSystemResource(content.source(id)));
+        var path=content.source(id);boolean workbook=path.toString().endsWith(".xlsx");
+        return ResponseEntity.ok().contentType(workbook?MediaType.parseMediaType(WorkbookImportController.XLSX):MediaType.APPLICATION_PDF).cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=source"+(workbook?".xlsx":".pdf"))
+                .body(new FileSystemResource(path));
     }
 
     @PostMapping("/questions")

@@ -31,7 +31,7 @@ services:
       - ./src:/workspace/src:ro
       - verify_target:/workspace/target
       - verify_maven:/root/.m2
-    command: ["mvn", "-B", "-ntp", "-Dtest=ApiRequestLoggingTests,StudentDtoTests,LearningIntegrationTests,ContentRulesTests,ContentStorageTests,AdministrationIntegrationTests", "test"]
+    command: ["mvn", "-B", "-ntp", "-Dtest=ApiRequestLoggingTests,StudentDtoTests,LearningIntegrationTests,ContentRulesTests,ContentStorageTests,AdministrationIntegrationTests,StudentExperienceIntegrationTests,WorkbookImportIntegrationTests,WorkbookParserTests,DemoAccountsIntegrationTests", "test"]
 volumes:
   verify_target:
   verify_maven:

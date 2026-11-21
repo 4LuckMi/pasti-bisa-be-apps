@@ -2,7 +2,7 @@
 
 [Indeks dokumentasi](README.md) · [Kamus kolom lengkap](database-dictionary.md)
 
-Skema aplikasi terdiri dari 41 tabel pada migrasi V1–V7, di luar `flyway_schema_history`.
+Skema aplikasi terdiri dari 45 tabel pada migrasi V1–V9, di luar `flyway_schema_history`, serta view read-only `published_question_pool`.
 ERD di bawah memakai nama camelCase untuk keterbacaan; nama tabel SQL padanannya adalah snake_case.
 Diagram menunjukkan relasi utama, sedangkan seluruh foreign key/composite constraint ada pada kamus tabel.
 
@@ -339,7 +339,7 @@ dapat menonaktifkan guard, sehingga operasi langsung ke database harus dibatasi 
 - Skor dan bobot NUMERIC/BigDecimal; jangan menghitung ulang score resmi di browser.
 - JSONB dipakai untuk konten fleksibel, filter, payload dan detail; identitas/relasi utama tetap kolom/FK.
 - Array list kosong sah. Nilai NULL punya makna berbeda dengan 0 atau string kosong.
-- Migrasi V1–V7 immutable. Tambahkan V8+ untuk perubahan schema berikutnya; jangan memakai ddl-auto=update.
+- Migrasi V1–V9 immutable. Tambahkan V10+ untuk perubahan schema berikutnya; jangan memakai ddl-auto=update.
 
 ## Tambahan V7 untuk operasi internal
 
@@ -356,3 +356,192 @@ kasus PENDING_PROVIDER tidak dihitung sebagai uang dikembalikan. Tidak ada endpo
 secara manual. Mutasi audit hanya append pada level aplikasi; kredensial provider tidak disimpan di audit.
 - Pemindahan disk ke object storage dapat dilakukan lewat port storage, namun pengaturan URL/ACL, backup
   dan migrasi file yang sudah ada tetap perlu dikerjakan secara eksplisit.
+
+## Tambahan V8 untuk read siswa
+
+V8 hanya menambahkan index attempt selesai per pengguna/waktu, versi soal PUBLISHED terbaru, dan cohort
+ACTIVE menurut periode. Tidak ada tabel/kolom baru atau penulisan ulang sesi/hasil/harga historis.
+Consent memakai kolom user_profile.leaderboard_opt_in dan JSON consent yang sudah ada; waktu perubahan
+tersimpan sebagai leaderboardUpdatedAt, disertai audit_event. Membership membaca snapshot order dan grant
+aktif; menonaktifkan plan penjualan tidak mengubah grant yang sudah dibeli.
+
+## V9: master bank soal dan kumpulan sumber
+
+```mermaid
+erDiagram
+    examType ||--o{ subtest : memiliki
+    subtest ||--o{ question : mengelompokkan
+    examType ||--o{ questionSet : memilikiSumber
+    questionSet ||--o{ questionSetItem : beranggotakan
+    question ||--o{ questionSetItem : digunakanSumber
+    question ||--o{ questionVersion : memilikiRevisi
+    questionVersion ||--o{ questionOption : memilikiOpsi
+    examType {
+        uuid id PK
+    }
+    subtest {
+        uuid id PK
+        uuid exam_type_id FK
+    }
+    questionSet {
+        uuid id PK
+        uuid exam_type_id FK
+        string code UK
+        int source_year
+        string status
+    }
+    questionSetItem {
+        uuid question_set_id PK, FK
+        uuid question_id PK, FK
+        uuid exam_type_id FK
+        uuid subtest_id FK
+        string source_item_code
+    }
+    question {
+        uuid id PK
+        uuid subtest_id FK
+        uuid topic_id FK
+    }
+    questionVersion {
+        uuid id PK
+        uuid question_id FK
+        int version
+        string difficulty
+        string status
+    }
+    questionOption {
+        uuid id PK
+        uuid question_version_id FK
+        bool correct_key
+        decimal score_weight
+    }
+```
+
+Nama camelCase diagram dipetakan ke tabel snake_case. PK question_set_item adalah pasangan set/master;
+kode asal unik per set/subtes. Composite FK memastikan jenis ujian set, subtes dan master konsisten.
+Kode, examType dan tahun sumber immutable. Sumber tidak sama dengan katalog atau file upload; satu sumber
+bisa menerima beberapa batch, satu master bisa dipakai beberapa sumber. Tahun versi lama dipertahankan
+sebagai provenance; membership sumber menjadi pilihan tahun eksplisit pada blueprint baru.
+
+## V9: staging workbook per sheet
+
+```mermaid
+erDiagram
+    storedFile ||--o{ importBatch : diproses
+    questionSet |o--o{ importBatch : sumberExcel
+    importBatch ||--o{ importSheet : memetakan
+    subtest ||--o{ importSheet : subtesSheet
+    importBatch ||--o{ importCandidate : menampung
+    importSheet |o--o{ importCandidate : barisExcel
+    questionVersion |o--o{ importCandidate : hasilSimpan
+    storedFile {
+        uuid id PK
+        string sha256
+        string mime_type
+    }
+    questionSet {
+        uuid id PK
+    }
+    importBatch {
+        uuid id PK
+        uuid file_id FK
+        uuid question_set_id FK
+        string input_format
+        string mapping_hash
+    }
+    importSheet {
+        uuid id PK
+        uuid batch_id FK
+        uuid subtest_id FK
+        string sheet_name
+        string status
+    }
+    subtest {
+        uuid id PK
+    }
+    importCandidate {
+        uuid id PK
+        uuid batch_id FK
+        uuid sheet_id FK
+        int source_row
+        uuid expected_version_id FK
+        uuid resolved_version_id FK
+    }
+    questionVersion {
+        uuid id PK
+        uuid question_id FK
+    }
+```
+
+input_format=PDF memakai source_page/source_item_no lama; XLSX memakai sheet_id/source_row. Check constraint
+membedakan keduanya dan composite FK sheet/batch mencegah kandidat lintas batch. Trigger memastikan topik,
+expected version dan resolved master sesuai subtes sheet. resolved_version_id bersama resolved_question_id
+memiliki FK composite ke versi/master. expected version dipakai untuk menolak revisi stale, bukan parameter
+yang bebas diganti client. Tidak ada master baru sebelum review/save; tidak ada auto-publish.
+
+## V9: sumber pemilihan dan snapshot sesi
+
+```mermaid
+erDiagram
+    blueprint ||--o{ blueprintVersion : memilikiVersi
+    blueprintVersion ||--o{ blueprintSection : mengatur
+    blueprintSection ||--o{ blueprintSectionSource : membatasiPool
+    questionSet ||--o{ blueprintSectionSource : sumberTerpilih
+    blueprintVersion ||--o{ attempt : digunakanSesi
+    attempt ||--o{ attemptItem : membekukan
+    blueprintSection ||--o{ attemptItem : asalSection
+    questionVersion ||--o{ attemptItem : versiTerpilih
+    attemptItem ||--o| answer : dijawab
+    blueprint {
+        uuid id PK
+    }
+    blueprintVersion {
+        uuid id PK
+        uuid blueprint_id FK
+    }
+    blueprintSection {
+        uuid id PK
+        uuid blueprint_version_id FK
+        uuid subtest_id FK
+        int item_count
+        json filters
+    }
+    blueprintSectionSource {
+        uuid section_id PK, FK
+        uuid question_set_id PK, FK
+    }
+    questionSet {
+        uuid id PK
+        int source_year
+    }
+    attempt {
+        uuid id PK
+        uuid user_id FK
+        uuid blueprint_version_id FK
+    }
+    attemptItem {
+        uuid id PK
+        uuid attempt_id FK
+        uuid question_id FK
+        uuid question_version_id FK
+        json option_order
+    }
+    questionVersion {
+        uuid id PK
+    }
+    answer {
+        uuid attempt_item_id PK, FK
+        uuid selected_option_id FK
+        int revision
+    }
+```
+
+blueprint_section_source hanya dapat dimutasi pada versi draft yang belum dipakai. Trigger mengunci versi
+parent dan memeriksa examType sumber. filters menyimpan topicId/sourceYear legacy atau difficultyQuotas dan
+repeatPolicy bertipe DTO; source IDs disimpan secara relasional. question_section_available menghitung slot
+global yang dapat diisi dari published_question_pool, termasuk kuota difficulty. Dengan quota, available
+adalah jumlah slot yang bisa dipenuhi, bukan seluruh stok mentah. Pool personal kemudian mengecualikan
+exposure sesuai repeatPolicy; jumlah kurang membuat start rollback, bukan mengubah aturan paket.
+
+View tersebut bukan tabel tambahan dan tidak dimasukkan sebagai tabel pada kamus metadata. Tidak ada
+penulisan ulang attempt_item, answer, score_run atau versi soal terbit selama migration V9.

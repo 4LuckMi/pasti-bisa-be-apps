@@ -2,7 +2,7 @@
 
 [Indeks](README.md) · [ERD dan model data](02-database.md) · [Metadata JSON](database-schema.json)
 
-Snapshot schema public V7, 20 November 2026: **41 tabel**, **321 kolom**. Metadata diambil tanpa baris pengguna/kredensial. flyway_schema_history tidak dimasukkan.
+Snapshot schema public V9, 21 November 2026: **45 tabel**, **353 kolom**. Metadata diambil tanpa baris pengguna/kredensial. flyway_schema_history tidak dimasukkan.
 
 Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadang juga mempunyai index; keduanya ditampilkan untuk audit. Foreign key composite jangan disederhanakan menjadi FK tunggal saat mengubah schema.
 
@@ -17,6 +17,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | [audit_event](#audit-event) | Sebagian | Audit sejumlah mutasi konten; belum seluruh tindakan sistem. |
 | [blueprint](#blueprint) | Aktif/read + fixture | Identitas katalog atau blueprint practice internal. |
 | [blueprint_section](#blueprint-section) | Aktif | Kebutuhan/filter pool per section. |
+| [blueprint_section_source](#blueprint-section-source) | Aktif | Sumber yang diizinkan per section; immutable setelah versi blueprint diterbitkan. |
 | [blueprint_version](#blueprint-version) | Aktif | Durasi dan policy konfigurasi terversi. |
 | [email_verification_token](#email-verification-token) | Schema saja | Hash/expiry token; endpoint/mail belum ada. |
 | [entitlement_grant](#entitlement-grant) | Read/revoke admin | Grant order; creation/payment workflow belum ada. |
@@ -26,6 +27,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | [exam_type](#exam-type) | Aktif/admin | Jenis ujian dalam kategori; parent immutable. |
 | [import_batch](#import-batch) | Aktif | Lingkup, status dan statistik batch PDF. |
 | [import_candidate](#import-candidate) | Aktif | Ekstraksi/koreksi/flag dan hubungan master. |
+| [import_sheet](#import-sheet) | Aktif | Pemetaan sheet XLSX ke subtes, urutan dan status staging. |
 | [job](#job) | Aktif | Antrean persisten dengan dedup/retry/lease token. |
 | [leaderboard_cohort](#leaderboard-cohort) | Read + schema | Definisi cohort; belum admin/provisioning flow. |
 | [leaderboard_entry](#leaderboard-entry) | Read + schema | Peringkat yang bisa dibaca; ranking worker belum dibuat. |
@@ -37,6 +39,8 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | [question](#question) | Aktif | Keluarga soal dan archive/provenance kandidat. |
 | [question_asset](#question-asset) | Read + schema | Asset privat versi; belum upload/attach authoring API. |
 | [question_option](#question-option) | Aktif | Opsi/kunci/bobot per versi. |
+| [question_set](#question-set) | Aktif | Identitas sumber jenis ujian/tahun immutable, status ACTIVE atau ARCHIVED. |
+| [question_set_item](#question-set-item) | Aktif | Keanggotaan N:M master soal, kode sumber per subtes dan composite FK lingkup. |
 | [question_version](#question-version) | Aktif | Konten/sumber/status versi; editor_revision untuk edit draft. |
 | [quota_day](#quota-day) | Aktif | Counter start tryout tanggal WIB. |
 | [quota_usage](#quota-usage) | Aktif | Satu pemakaian kuota per attempt. |
@@ -155,6 +159,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 - `attempt_id_user_unique`: `CREATE UNIQUE INDEX attempt_id_user_unique ON public.attempt USING btree (id, user_id)`
 - `attempt_one_active_per_user_idx`: `CREATE UNIQUE INDEX attempt_one_active_per_user_idx ON public.attempt USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['IN_PROGRESS'::character varying, 'FINALIZING'::character varying])::text[]))`
 - `attempt_pkey`: `CREATE UNIQUE INDEX attempt_pkey ON public.attempt USING btree (id)`
+- `attempt_user_finalized_idx`: `CREATE INDEX attempt_user_finalized_idx ON public.attempt USING btree (user_id, finalized_at DESC, id) WHERE ((status)::text = 'COMPLETED'::text)`
 - `attempt_user_id_idempotency_key_key`: `CREATE UNIQUE INDEX attempt_user_id_idempotency_key_key ON public.attempt USING btree (user_id, idempotency_key)`
 - `attempt_user_started_idx`: `CREATE INDEX attempt_user_started_idx ON public.attempt USING btree (user_id, started_at DESC)`
 
@@ -292,6 +297,30 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `blueprint_section_immutable_guard`: `CREATE TRIGGER blueprint_section_immutable_guard BEFORE INSERT OR DELETE OR UPDATE ON public.blueprint_section FOR EACH ROW EXECUTE FUNCTION prevent_frozen_blueprint_section_changes()`
 - `blueprint_section_subtest_guard`: `CREATE TRIGGER blueprint_section_subtest_guard BEFORE INSERT OR UPDATE OF blueprint_version_id, subtest_id ON public.blueprint_section FOR EACH ROW EXECUTE FUNCTION validate_blueprint_section_subtest()`
+
+<a id="blueprint-section-source"></a>
+## blueprint_section_source
+
+**Aktif** — Sumber yang diizinkan per section; immutable setelah versi blueprint diterbitkan.
+
+| Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
+|---|---|---|---|---|
+| section_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. Lihat primary key. |
+| question_set_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. Lihat primary key. |
+
+### Constraint
+
+- `blueprint_section_source_pkey`: `PRIMARY KEY (section_id, question_set_id)`
+- `blueprint_section_source_question_set_id_fkey`: `FOREIGN KEY (question_set_id) REFERENCES question_set(id)`
+- `blueprint_section_source_section_id_fkey`: `FOREIGN KEY (section_id) REFERENCES blueprint_section(id)`
+
+### Index
+
+- `blueprint_section_source_pkey`: `CREATE UNIQUE INDEX blueprint_section_source_pkey ON public.blueprint_section_source USING btree (section_id, question_set_id)`
+
+### Trigger
+
+- `section_source_guard`: `CREATE TRIGGER section_source_guard BEFORE INSERT OR DELETE OR UPDATE ON public.blueprint_section_source FOR EACH ROW EXECUTE FUNCTION guard_section_source()`
 
 <a id="blueprint-version"></a>
 ## blueprint_version
@@ -521,24 +550,32 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | source_year | integer | Ya | — | Field source_year pada import_batch; tipe/batas dijaga definisi di bawah. |
 | page_count | integer | Ya | — | Field page_count pada import_batch; tipe/batas dijaga definisi di bawah. |
 | error_code | character varying(64) | Ya | — | Field error_code pada import_batch; tipe/batas dijaga definisi di bawah. |
+| question_set_id | uuid | Ya | — | Referensi identitas; lihat foreign key di bawah. |
+| input_format | character varying(8) | Tidak | 'PDF'::character varying | Field input_format pada import_batch; tipe/batas dijaga definisi di bawah. |
+| mapping_hash | character(64) | Ya | — | Field mapping_hash pada import_batch; tipe/batas dijaga definisi di bawah. |
 
 ### Constraint
 
 - `import_batch_candidate_count_check`: `CHECK ((candidate_count >= 0))`
 - `import_batch_file_id_fkey`: `FOREIGN KEY (file_id) REFERENCES stored_file(id)`
+- `import_batch_input_format_check`: `CHECK (((input_format)::text = ANY ((ARRAY['PDF'::character varying, 'XLSX'::character varying])::text[])))`
 - `import_batch_invalid_count_check`: `CHECK ((invalid_count >= 0))`
 - `import_batch_page_count_check`: `CHECK ((page_count > 0))`
 - `import_batch_pkey`: `PRIMARY KEY (id)`
+- `import_batch_question_set_id_fkey`: `FOREIGN KEY (question_set_id) REFERENCES question_set(id)`
 - `import_batch_source_year_check`: `CHECK (((source_year >= 1900) AND (source_year <= 2200)))`
 - `import_batch_subtest_id_fkey`: `FOREIGN KEY (subtest_id) REFERENCES subtest(id)`
 - `import_batch_topic_scope_fk`: `FOREIGN KEY (topic_id, subtest_id) REFERENCES topic(id, subtest_id)`
 - `import_batch_uploader_id_fkey`: `FOREIGN KEY (uploader_id) REFERENCES app_user(id)`
 - `import_batch_valid_count_check`: `CHECK ((valid_count >= 0))`
+- `workbook_batch_scope`: `CHECK ((((input_format)::text <> 'XLSX'::text) OR ((question_set_id IS NOT NULL) AND (subtest_id IS NULL) AND (topic_id IS NULL) AND (mapping_hash IS NOT NULL))))`
+- `workbook_source_year_fk`: `FOREIGN KEY (question_set_id, source_year) REFERENCES question_set(id, source_year)`
 
 ### Index
 
 - `import_batch_pkey`: `CREATE UNIQUE INDEX import_batch_pkey ON public.import_batch USING btree (id)`
 - `import_batch_status_created_idx`: `CREATE INDEX import_batch_status_created_idx ON public.import_batch USING btree (status, created_at)`
+- `workbook_duplicate_idx`: `CREATE INDEX workbook_duplicate_idx ON public.import_batch USING btree (uploader_id, question_set_id, mapping_hash) WHERE ((input_format)::text = 'XLSX'::text)`
 
 <a id="import-candidate"></a>
 ## import_candidate
@@ -549,28 +586,85 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 |---|---|---|---|---|
 | id | uuid | Tidak | gen_random_uuid() | UUID identitas record. Lihat primary key. |
 | batch_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
-| source_page | integer | Tidak | — | Field source_page pada import_candidate; tipe/batas dijaga definisi di bawah. |
+| source_page | integer | Ya | — | Field source_page pada import_candidate; tipe/batas dijaga definisi di bawah. |
 | source_item_no | integer | Tidak | — | Field source_item_no pada import_candidate; tipe/batas dijaga definisi di bawah. |
 | extracted_content | jsonb | Tidak | — | Konten asli hasil parser/OCR. |
 | validation_errors | jsonb | Tidak | '[]'::jsonb | JSON array kode kekurangan kandidat. |
 | resolved_question_id | uuid | Ya | — | Referensi identitas; lihat foreign key di bawah. |
 | created_at | timestamp with time zone | Tidak | now() | Timestamp lifecycle sesuai konteks tabel. |
 | draft_content | jsonb | Ya | — | Koreksi kandidat, terpisah dari ekstraksi asli. |
+| sheet_id | uuid | Ya | — | Referensi identitas; lihat foreign key di bawah. |
+| source_row | integer | Ya | — | Field source_row pada import_candidate; tipe/batas dijaga definisi di bawah. |
+| source_item_code | character varying(80) | Ya | — | Field source_item_code pada import_candidate; tipe/batas dijaga definisi di bawah. |
+| topic_id | uuid | Ya | — | Referensi identitas; lihat foreign key di bawah. |
+| difficulty | character varying(16) | Ya | — | Field difficulty pada import_candidate; tipe/batas dijaga definisi di bawah. |
+| expected_version_id | uuid | Ya | — | Referensi identitas; lihat foreign key di bawah. |
+| resolved_version_id | uuid | Ya | — | Referensi identitas; lihat foreign key di bawah. |
 
 ### Constraint
 
+- `candidate_location`: `CHECK ((((sheet_id IS NULL) AND (source_page IS NOT NULL) AND (source_row IS NULL)) OR ((sheet_id IS NOT NULL) AND (source_page IS NULL) AND (source_row IS NOT NULL) AND (source_item_code IS NOT NULL))))`
+- `candidate_resolved_question_required`: `CHECK (((resolved_version_id IS NULL) OR (resolved_question_id IS NOT NULL)))`
+- `candidate_resolved_version_fk`: `FOREIGN KEY (resolved_version_id, resolved_question_id) REFERENCES question_version(id, question_id)`
+- `candidate_sheet_batch_fk`: `FOREIGN KEY (sheet_id, batch_id) REFERENCES import_sheet(id, batch_id)`
 - `import_candidate_batch_id_fkey`: `FOREIGN KEY (batch_id) REFERENCES import_batch(id) ON DELETE CASCADE`
 - `import_candidate_batch_id_source_page_source_item_no_key`: `UNIQUE (batch_id, source_page, source_item_no)`
+- `import_candidate_difficulty_check`: `CHECK (((difficulty)::text = ANY ((ARRAY['EASY'::character varying, 'MEDIUM'::character varying, 'HARD'::character varying])::text[])))`
+- `import_candidate_expected_version_id_fkey`: `FOREIGN KEY (expected_version_id) REFERENCES question_version(id)`
 - `import_candidate_pkey`: `PRIMARY KEY (id)`
 - `import_candidate_resolved_question_id_fkey`: `FOREIGN KEY (resolved_question_id) REFERENCES question(id) ON DELETE SET NULL`
 - `import_candidate_source_item_no_check`: `CHECK ((source_item_no > 0))`
 - `import_candidate_source_page_check`: `CHECK ((source_page > 0))`
+- `import_candidate_source_row_check`: `CHECK ((source_row >= 2))`
+- `import_candidate_topic_id_fkey`: `FOREIGN KEY (topic_id) REFERENCES topic(id)`
 
 ### Index
 
+- `candidate_sheet_row_unique`: `CREATE UNIQUE INDEX candidate_sheet_row_unique ON public.import_candidate USING btree (sheet_id, source_row) WHERE (sheet_id IS NOT NULL)`
 - `import_candidate_batch_id_source_page_source_item_no_key`: `CREATE UNIQUE INDEX import_candidate_batch_id_source_page_source_item_no_key ON public.import_candidate USING btree (batch_id, source_page, source_item_no)`
 - `import_candidate_batch_idx`: `CREATE INDEX import_candidate_batch_idx ON public.import_candidate USING btree (batch_id, source_page, source_item_no)`
 - `import_candidate_pkey`: `CREATE UNIQUE INDEX import_candidate_pkey ON public.import_candidate USING btree (id)`
+
+### Trigger
+
+- `workbook_candidate_scope_guard`: `CREATE TRIGGER workbook_candidate_scope_guard BEFORE INSERT OR UPDATE ON public.import_candidate FOR EACH ROW EXECUTE FUNCTION validate_workbook_candidate_scope()`
+
+<a id="import-sheet"></a>
+## import_sheet
+
+**Aktif** — Pemetaan sheet XLSX ke subtes, urutan dan status staging.
+
+| Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
+|---|---|---|---|---|
+| id | uuid | Tidak | gen_random_uuid() | UUID identitas record. Lihat primary key. |
+| batch_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
+| subtest_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
+| sheet_name | character varying(31) | Tidak | — | Field sheet_name pada import_sheet; tipe/batas dijaga definisi di bawah. |
+| sheet_index | integer | Ya | — | Field sheet_index pada import_sheet; tipe/batas dijaga definisi di bawah. |
+| status | character varying(24) | Tidak | 'QUEUED'::character varying | Status resource; service hanya memakai subset yang dijelaskan pada arsitektur. |
+| candidate_count | integer | Tidak | 0 | Field candidate_count pada import_sheet; tipe/batas dijaga definisi di bawah. |
+
+### Constraint
+
+- `import_sheet_batch_id_fkey`: `FOREIGN KEY (batch_id) REFERENCES import_batch(id)`
+- `import_sheet_batch_id_sheet_name_key`: `UNIQUE (batch_id, sheet_name)`
+- `import_sheet_batch_id_subtest_id_key`: `UNIQUE (batch_id, subtest_id)`
+- `import_sheet_id_batch_id_key`: `UNIQUE (id, batch_id)`
+- `import_sheet_pkey`: `PRIMARY KEY (id)`
+- `import_sheet_sheet_index_check`: `CHECK ((sheet_index >= 0))`
+- `import_sheet_status_check`: `CHECK (((status)::text = ANY ((ARRAY['QUEUED'::character varying, 'READY'::character varying, 'NEEDS_INPUT'::character varying, 'FAILED'::character varying])::text[])))`
+- `import_sheet_subtest_id_fkey`: `FOREIGN KEY (subtest_id) REFERENCES subtest(id)`
+
+### Index
+
+- `import_sheet_batch_id_sheet_name_key`: `CREATE UNIQUE INDEX import_sheet_batch_id_sheet_name_key ON public.import_sheet USING btree (batch_id, sheet_name)`
+- `import_sheet_batch_id_subtest_id_key`: `CREATE UNIQUE INDEX import_sheet_batch_id_subtest_id_key ON public.import_sheet USING btree (batch_id, subtest_id)`
+- `import_sheet_id_batch_id_key`: `CREATE UNIQUE INDEX import_sheet_id_batch_id_key ON public.import_sheet USING btree (id, batch_id)`
+- `import_sheet_pkey`: `CREATE UNIQUE INDEX import_sheet_pkey ON public.import_sheet USING btree (id)`
+
+### Trigger
+
+- `import_sheet_scope_guard`: `CREATE TRIGGER import_sheet_scope_guard BEFORE INSERT OR UPDATE OF batch_id, subtest_id ON public.import_sheet FOR EACH ROW EXECUTE FUNCTION validate_import_sheet_scope()`
 
 <a id="job"></a>
 ## job
@@ -632,6 +726,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `leaderboard_cohort_form_id_scoring_policy_id_period_start_p_key`: `CREATE UNIQUE INDEX leaderboard_cohort_form_id_scoring_policy_id_period_start_p_key ON public.leaderboard_cohort USING btree (form_id, scoring_policy_id, period_start, period_end, attempt_policy)`
 - `leaderboard_cohort_pkey`: `CREATE UNIQUE INDEX leaderboard_cohort_pkey ON public.leaderboard_cohort USING btree (id)`
+- `leaderboard_visible_period_idx`: `CREATE INDEX leaderboard_visible_period_idx ON public.leaderboard_cohort USING btree (period_start DESC, id) WHERE ((status)::text = 'ACTIVE'::text)`
 
 <a id="leaderboard-entry"></a>
 ## leaderboard_entry
@@ -840,6 +935,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `question_candidate_id_fkey`: `FOREIGN KEY (candidate_id) REFERENCES import_candidate(id) ON DELETE SET NULL`
 - `question_code_key`: `UNIQUE (code)`
+- `question_id_subtest_unique`: `UNIQUE (id, subtest_id)`
 - `question_pkey`: `PRIMARY KEY (id)`
 - `question_subtest_id_fkey`: `FOREIGN KEY (subtest_id) REFERENCES subtest(id)`
 - `question_topic_subtest_fk`: `FOREIGN KEY (topic_id, subtest_id) REFERENCES topic(id, subtest_id)`
@@ -848,6 +944,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `question_candidate_unique_idx`: `CREATE UNIQUE INDEX question_candidate_unique_idx ON public.question USING btree (candidate_id) WHERE (candidate_id IS NOT NULL)`
 - `question_code_key`: `CREATE UNIQUE INDEX question_code_key ON public.question USING btree (code)`
+- `question_id_subtest_unique`: `CREATE UNIQUE INDEX question_id_subtest_unique ON public.question USING btree (id, subtest_id)`
 - `question_pkey`: `CREATE UNIQUE INDEX question_pkey ON public.question USING btree (id)`
 - `question_subtest_active_idx`: `CREATE INDEX question_subtest_active_idx ON public.question USING btree (subtest_id) WHERE (archived_at IS NULL)`
 - `question_topic_active_idx`: `CREATE INDEX question_topic_active_idx ON public.question USING btree (topic_id) WHERE (archived_at IS NULL)`
@@ -914,6 +1011,72 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `question_option_immutable_guard`: `CREATE TRIGGER question_option_immutable_guard BEFORE INSERT OR DELETE OR UPDATE ON public.question_option FOR EACH ROW EXECUTE FUNCTION prevent_published_question_option_changes()`
 
+<a id="question-set"></a>
+## question_set
+
+**Aktif** — Identitas sumber jenis ujian/tahun immutable, status ACTIVE atau ARCHIVED.
+
+| Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
+|---|---|---|---|---|
+| id | uuid | Tidak | gen_random_uuid() | UUID identitas record. Lihat primary key. |
+| exam_type_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
+| code | character varying(80) | Tidak | — | Field code pada question_set; tipe/batas dijaga definisi di bawah. |
+| source_year | integer | Tidak | — | Field source_year pada question_set; tipe/batas dijaga definisi di bawah. |
+| title | character varying(180) | Tidak | — | Field title pada question_set; tipe/batas dijaga definisi di bawah. |
+| status | character varying(24) | Tidak | 'ACTIVE'::character varying | Status resource; service hanya memakai subset yang dijelaskan pada arsitektur. |
+| created_by | uuid | Ya | — | Field created_by pada question_set; tipe/batas dijaga definisi di bawah. |
+| created_at | timestamp with time zone | Tidak | now() | Timestamp lifecycle sesuai konteks tabel. |
+
+### Constraint
+
+- `question_set_code_key`: `UNIQUE (code)`
+- `question_set_created_by_fkey`: `FOREIGN KEY (created_by) REFERENCES app_user(id)`
+- `question_set_exam_type_id_fkey`: `FOREIGN KEY (exam_type_id) REFERENCES exam_type(id)`
+- `question_set_id_exam_type_id_key`: `UNIQUE (id, exam_type_id)`
+- `question_set_id_source_year_key`: `UNIQUE (id, source_year)`
+- `question_set_pkey`: `PRIMARY KEY (id)`
+- `question_set_source_year_check`: `CHECK (((source_year >= 1900) AND (source_year <= 2200)))`
+- `question_set_status_check`: `CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'ARCHIVED'::character varying])::text[])))`
+
+### Index
+
+- `question_set_code_key`: `CREATE UNIQUE INDEX question_set_code_key ON public.question_set USING btree (code)`
+- `question_set_id_exam_type_id_key`: `CREATE UNIQUE INDEX question_set_id_exam_type_id_key ON public.question_set USING btree (id, exam_type_id)`
+- `question_set_id_source_year_key`: `CREATE UNIQUE INDEX question_set_id_source_year_key ON public.question_set USING btree (id, source_year)`
+- `question_set_pkey`: `CREATE UNIQUE INDEX question_set_pkey ON public.question_set USING btree (id)`
+- `question_set_type_year_idx`: `CREATE INDEX question_set_type_year_idx ON public.question_set USING btree (exam_type_id, source_year)`
+
+### Trigger
+
+- `source_identity_guard`: `CREATE TRIGGER source_identity_guard BEFORE UPDATE ON public.question_set FOR EACH ROW EXECUTE FUNCTION guard_source_identity()`
+
+<a id="question-set-item"></a>
+## question_set_item
+
+**Aktif** — Keanggotaan N:M master soal, kode sumber per subtes dan composite FK lingkup.
+
+| Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
+|---|---|---|---|---|
+| question_set_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. Lihat primary key. |
+| question_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. Lihat primary key. |
+| exam_type_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
+| subtest_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
+| source_item_code | character varying(80) | Tidak | — | Field source_item_code pada question_set_item; tipe/batas dijaga definisi di bawah. |
+
+### Constraint
+
+- `question_set_item_pkey`: `PRIMARY KEY (question_set_id, question_id)`
+- `question_set_item_question_id_subtest_id_fkey`: `FOREIGN KEY (question_id, subtest_id) REFERENCES question(id, subtest_id)`
+- `question_set_item_question_set_id_exam_type_id_fkey`: `FOREIGN KEY (question_set_id, exam_type_id) REFERENCES question_set(id, exam_type_id)`
+- `question_set_item_question_set_id_subtest_id_source_item_co_key`: `UNIQUE (question_set_id, subtest_id, source_item_code)`
+- `question_set_item_subtest_id_exam_type_id_fkey`: `FOREIGN KEY (subtest_id, exam_type_id) REFERENCES subtest(id, exam_type_id)`
+
+### Index
+
+- `question_set_item_pkey`: `CREATE UNIQUE INDEX question_set_item_pkey ON public.question_set_item USING btree (question_set_id, question_id)`
+- `question_set_item_question_idx`: `CREATE INDEX question_set_item_question_idx ON public.question_set_item USING btree (question_id, question_set_id)`
+- `question_set_item_question_set_id_subtest_id_source_item_co_key`: `CREATE UNIQUE INDEX question_set_item_question_set_id_subtest_id_source_item_co_key ON public.question_set_item USING btree (question_set_id, subtest_id, source_item_code)`
+
 <a id="question-version"></a>
 ## question_version
 
@@ -940,6 +1103,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `question_version_created_by_fkey`: `FOREIGN KEY (created_by) REFERENCES app_user(id)`
 - `question_version_editor_revision_check`: `CHECK ((editor_revision >= 0))`
+- `question_version_id_question_unique`: `UNIQUE (id, question_id)`
 - `question_version_pkey`: `PRIMARY KEY (id)`
 - `question_version_question_id_fkey`: `FOREIGN KEY (question_id) REFERENCES question(id)`
 - `question_version_question_id_id_unique`: `UNIQUE (question_id, id)`
@@ -949,6 +1113,8 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 ### Index
 
+- `question_latest_published_idx`: `CREATE INDEX question_latest_published_idx ON public.question_version USING btree (question_id, version DESC) WHERE ((status)::text = 'PUBLISHED'::text)`
+- `question_version_id_question_unique`: `CREATE UNIQUE INDEX question_version_id_question_unique ON public.question_version USING btree (id, question_id)`
 - `question_version_pkey`: `CREATE UNIQUE INDEX question_version_pkey ON public.question_version USING btree (id)`
 - `question_version_question_id_id_unique`: `CREATE UNIQUE INDEX question_version_question_id_id_unique ON public.question_version USING btree (question_id, id)`
 - `question_version_question_id_version_key`: `CREATE UNIQUE INDEX question_version_question_id_version_key ON public.question_version USING btree (question_id, version)`
@@ -1209,11 +1375,13 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `subtest_exam_type_id_code_key`: `UNIQUE (exam_type_id, code)`
 - `subtest_exam_type_id_fkey`: `FOREIGN KEY (exam_type_id) REFERENCES exam_type(id)`
+- `subtest_id_exam_type_unique`: `UNIQUE (id, exam_type_id)`
 - `subtest_pkey`: `PRIMARY KEY (id)`
 
 ### Index
 
 - `subtest_exam_type_id_code_key`: `CREATE UNIQUE INDEX subtest_exam_type_id_code_key ON public.subtest USING btree (exam_type_id, code)`
+- `subtest_id_exam_type_unique`: `CREATE UNIQUE INDEX subtest_id_exam_type_unique ON public.subtest USING btree (id, exam_type_id)`
 - `subtest_pkey`: `CREATE UNIQUE INDEX subtest_pkey ON public.subtest USING btree (id)`
 
 <a id="target"></a>

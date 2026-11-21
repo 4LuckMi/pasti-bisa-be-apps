@@ -51,7 +51,8 @@ public class StudentLearningController {
     }
 
     @GetMapping("/leaderboard")
-    public List<LeaderboardResponse> leaderboard(@ParameterObject @ModelAttribute CategoryQuery query) {
-        return learning.leaderboard(query);
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('CUSTOMER')")
+    public List<LeaderboardResponse> leaderboard(Authentication auth,@ParameterObject @ModelAttribute CategoryQuery query) {
+        return learning.leaderboard(auth.getName(),query);
     }
 }

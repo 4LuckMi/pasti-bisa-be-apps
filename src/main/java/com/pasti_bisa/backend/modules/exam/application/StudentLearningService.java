@@ -32,7 +32,7 @@ public class StudentLearningService {
         return repository.findHistory(email,query);
     }
     public List<SubscriptionResponse> subscriptions(String email) { return repository.findSubscriptions(email); }
-    public List<LeaderboardResponse> leaderboard(CategoryQuery query) { return repository.findLeaderboard(query); }
+    public List<LeaderboardResponse> leaderboard(String email,CategoryQuery query) { return repository.findLeaderboard(email,query); }
 
     public QuotaResponse quota(String email) {
         LocalDate day = LocalDate.now(clock.withZone(ZoneId.of("Asia/Jakarta")));

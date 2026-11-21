@@ -2,7 +2,7 @@
 
 [Indeks](README.md) · [Kamus semua DTO](data-contracts.md) · [OpenAPI lengkap](openapi.json)
 
-Snapshot 20 November 2026. **90 operasi controller** dicocokkan dengan runtime; **98 operasi total** mencakup logout/OAuth/Actuator/Swagger. Resource statis internal library tidak didaftar satu per satu.
+Snapshot 21 November 2026. **117 operasi controller** dicocokkan dengan runtime; **125 operasi total** mencakup logout/OAuth/Actuator/Swagger. Resource statis internal library tidak didaftar satu per satu.
 
 ## Konvensi request dan response
 
@@ -89,57 +89,84 @@ Contoh fieldErrors untuk validasi: `{"email":"must be a well-formed email addres
 | 45 | GET | [`/actuator`](#e45) | Discovery Actuator |
 | 46 | GET | [`/swagger-ui.html`](#e46) | Buka Swagger UI |
 | 47 | GET | [`/api-docs`](#e47) | OpenAPI runtime |
-| 48 | GET | [`/api/v1/staff/questions/{id}/draft`](#e48) | Baca atau simpan draft |
-| 49 | PUT | [`/api/v1/staff/questions/{id}/draft`](#e49) | Baca atau simpan draft |
-| 50 | PUT | [`/api/v1/admin/users/{id}/roles`](#e50) | Ganti role akun |
-| 51 | GET | [`/api/v1/staff/questions/{id}/versions`](#e51) | Riwayat versi master |
-| 52 | POST | [`/api/v1/staff/imports/{id}/save`](#e52) | Simpan kandidat terpilih sebagai draft |
-| 53 | POST | [`/api/v1/staff/imports/{id}/retry`](#e53) | Retry impor gagal |
-| 54 | GET | [`/api/v1/admin/users`](#e54) | Daftar atau buat akun internal |
-| 55 | POST | [`/api/v1/admin/users`](#e55) | Daftar atau buat akun internal |
-| 56 | POST | [`/api/v1/admin/topics`](#e56) | Buat topik |
-| 57 | POST | [`/api/v1/admin/subtests`](#e57) | Buat subtes |
-| 58 | POST | [`/api/v1/admin/subscriptions/{id}/revoke`](#e58) | Cabut hak langganan |
-| 59 | GET | [`/api/v1/admin/scoring-policies`](#e59) | Daftar atau buat policy skor |
-| 60 | POST | [`/api/v1/admin/scoring-policies`](#e60) | Daftar atau buat policy skor |
-| 61 | GET | [`/api/v1/admin/plans`](#e61) | Daftar atau buat keluarga paket |
-| 62 | POST | [`/api/v1/admin/plans`](#e62) | Daftar atau buat keluarga paket |
-| 63 | POST | [`/api/v1/admin/plans/{id}/versions`](#e63) | Buat revisi harga baru |
-| 64 | POST | [`/api/v1/admin/orders/{id}/refunds`](#e64) | Catat permintaan refund |
-| 65 | POST | [`/api/v1/admin/orders/{id}/reconcile`](#e65) | Rekonsiliasi belum dikonfigurasi |
-| 66 | POST | [`/api/v1/admin/jobs/{id}/retry`](#e66) | Retry job gagal |
-| 67 | POST | [`/api/v1/admin/exam-types`](#e67) | Buat jenis ujian |
-| 68 | POST | [`/api/v1/admin/categories`](#e68) | Buat kategori |
-| 69 | GET | [`/api/v1/admin/blueprints`](#e69) | Daftar atau buat paket tryout |
-| 70 | POST | [`/api/v1/admin/blueprints`](#e70) | Daftar atau buat paket tryout |
-| 71 | POST | [`/api/v1/admin/blueprints/{id}/versions`](#e71) | Buat komposisi draft baru |
-| 72 | POST | [`/api/v1/admin/blueprints/{id}/versions/{versionId}/publish`](#e72) | Terbitkan versi blueprint |
-| 73 | PATCH | [`/api/v1/admin/users/{id}/status`](#e73) | Suspend atau pulihkan akun |
-| 74 | PATCH | [`/api/v1/admin/topics/{id}`](#e74) | Perbarui topik |
-| 75 | PATCH | [`/api/v1/admin/subtests/{id}`](#e75) | Perbarui subtes |
-| 76 | PATCH | [`/api/v1/admin/plans/{id}/availability`](#e76) | Buka atau hentikan penjualan |
-| 77 | PATCH | [`/api/v1/admin/exam-types/{id}`](#e77) | Perbarui jenis ujian |
-| 78 | PATCH | [`/api/v1/admin/categories/{id}`](#e78) | Perbarui kategori |
-| 79 | PATCH | [`/api/v1/admin/blueprints/{id}/status`](#e79) | Aktifkan atau arsip katalog |
-| 80 | GET | [`/api/v1/staff/questions/{id}/versions/{versionId}`](#e80) | Baca versi soal tertentu |
-| 81 | GET | [`/api/v1/staff/question-bank`](#e81) | Cari master dengan pagination |
-| 82 | GET | [`/api/v1/staff/pool-requirements`](#e82) | Kebutuhan stok blueprint |
-| 83 | GET | [`/api/v1/staff/import-history`](#e83) | Cari riwayat unggahan |
-| 84 | GET | [`/api/v1/staff/dashboard`](#e84) | Ringkasan bank soal |
-| 85 | GET | [`/api/v1/staff/audit`](#e85) | Audit ruang konten |
-| 86 | GET | [`/api/v1/admin/users/{id}`](#e86) | Detail akun untuk dukungan |
-| 87 | GET | [`/api/v1/admin/users/{id}/attempts`](#e87) | Riwayat sesi untuk dukungan |
-| 88 | GET | [`/api/v1/admin/taxonomy`](#e88) | Hierarki kategori lengkap |
-| 89 | GET | [`/api/v1/admin/subscriptions`](#e89) | Daftar langganan dan grant |
-| 90 | GET | [`/api/v1/admin/roles`](#e90) | Matriks peran |
-| 91 | GET | [`/api/v1/admin/plans/{id}`](#e91) | Detail revisi harga |
-| 92 | GET | [`/api/v1/admin/orders`](#e92) | Daftar transaksi |
-| 93 | GET | [`/api/v1/admin/orders/{id}`](#e93) | Detail transaksi |
-| 94 | GET | [`/api/v1/admin/jobs`](#e94) | Daftar job tersensor |
-| 95 | GET | [`/api/v1/admin/dashboard`](#e95) | Ringkasan operasional |
-| 96 | GET | [`/api/v1/admin/blueprints/{id}`](#e96) | Detail blueprint dan versinya |
-| 97 | GET | [`/api/v1/admin/blueprints/{id}/versions/{versionId}/readiness`](#e97) | Cek kebutuhan pool |
-| 98 | GET | [`/api/v1/admin/audit`](#e98) | Audit operasional |
+| 48 | GET | [`/api/v1/users/current/dashboard`](#e48) | Dashboard sesuai kategori |
+| 49 | GET | [`/api/v1/users/current/learning-history`](#e49) | Riwayat berhalaman |
+| 50 | GET | [`/api/v1/users/current/membership`](#e50) | Ringkasan hak premium |
+| 51 | GET | [`/api/v1/plans`](#e51) | Daftar paket aktif |
+| 52 | GET | [`/api/v1/plans/{id}`](#e52) | Detail versi paket aktif |
+| 53 | GET | [`/api/v1/catalog/tryouts`](#e53) | Katalog tryout berhalaman |
+| 54 | GET | [`/api/v1/catalog/practice-topics`](#e54) | Katalog topik berhalaman |
+| 55 | GET | [`/api/v1/leaderboards/cohorts`](#e55) | Pilih kelompok leaderboard |
+| 56 | GET | [`/api/v1/leaderboards/cohorts/{id}/entries`](#e56) | Peringkat satu cohort |
+| 57 | GET | [`/api/v1/users/current/privacy`](#e57) | Baca persetujuan leaderboard |
+| 58 | PATCH | [`/api/v1/users/current/privacy`](#e58) | Ubah persetujuan leaderboard |
+| 59 | GET | [`/api/v1/staff/questions/{id}/draft`](#e59) | Baca atau simpan draft |
+| 60 | PUT | [`/api/v1/staff/questions/{id}/draft`](#e60) | Baca atau simpan draft |
+| 61 | PUT | [`/api/v1/admin/users/{id}/roles`](#e61) | Ganti role akun |
+| 62 | GET | [`/api/v1/staff/questions/{id}/versions`](#e62) | Riwayat versi master |
+| 63 | POST | [`/api/v1/staff/imports/{id}/save`](#e63) | Simpan kandidat terpilih sebagai draft |
+| 64 | POST | [`/api/v1/staff/imports/{id}/retry`](#e64) | Retry impor gagal |
+| 65 | GET | [`/api/v1/admin/users`](#e65) | Daftar atau buat akun internal |
+| 66 | POST | [`/api/v1/admin/users`](#e66) | Daftar atau buat akun internal |
+| 67 | POST | [`/api/v1/admin/topics`](#e67) | Buat topik |
+| 68 | POST | [`/api/v1/admin/subtests`](#e68) | Buat subtes |
+| 69 | POST | [`/api/v1/admin/subscriptions/{id}/revoke`](#e69) | Cabut hak langganan |
+| 70 | GET | [`/api/v1/admin/scoring-policies`](#e70) | Daftar atau buat policy skor |
+| 71 | POST | [`/api/v1/admin/scoring-policies`](#e71) | Daftar atau buat policy skor |
+| 72 | GET | [`/api/v1/admin/plans`](#e72) | Daftar atau buat keluarga paket |
+| 73 | POST | [`/api/v1/admin/plans`](#e73) | Daftar atau buat keluarga paket |
+| 74 | POST | [`/api/v1/admin/plans/{id}/versions`](#e74) | Buat revisi harga baru |
+| 75 | POST | [`/api/v1/admin/orders/{id}/refunds`](#e75) | Catat permintaan refund |
+| 76 | POST | [`/api/v1/admin/orders/{id}/reconcile`](#e76) | Rekonsiliasi belum dikonfigurasi |
+| 77 | POST | [`/api/v1/admin/jobs/{id}/retry`](#e77) | Retry job gagal |
+| 78 | POST | [`/api/v1/admin/exam-types`](#e78) | Buat jenis ujian |
+| 79 | POST | [`/api/v1/admin/categories`](#e79) | Buat kategori |
+| 80 | GET | [`/api/v1/admin/blueprints`](#e80) | Daftar atau buat paket tryout |
+| 81 | POST | [`/api/v1/admin/blueprints`](#e81) | Daftar atau buat paket tryout |
+| 82 | POST | [`/api/v1/admin/blueprints/{id}/versions`](#e82) | Buat komposisi draft baru |
+| 83 | POST | [`/api/v1/admin/blueprints/{id}/versions/{versionId}/publish`](#e83) | Terbitkan versi blueprint |
+| 84 | PATCH | [`/api/v1/admin/users/{id}/status`](#e84) | Suspend atau pulihkan akun |
+| 85 | PATCH | [`/api/v1/admin/topics/{id}`](#e85) | Perbarui topik |
+| 86 | PATCH | [`/api/v1/admin/subtests/{id}`](#e86) | Perbarui subtes |
+| 87 | PATCH | [`/api/v1/admin/plans/{id}/availability`](#e87) | Buka atau hentikan penjualan |
+| 88 | PATCH | [`/api/v1/admin/exam-types/{id}`](#e88) | Perbarui jenis ujian |
+| 89 | PATCH | [`/api/v1/admin/categories/{id}`](#e89) | Perbarui kategori |
+| 90 | PATCH | [`/api/v1/admin/blueprints/{id}/status`](#e90) | Aktifkan atau arsip katalog |
+| 91 | GET | [`/api/v1/staff/questions/{id}/versions/{versionId}`](#e91) | Baca versi soal tertentu |
+| 92 | GET | [`/api/v1/staff/question-bank`](#e92) | Cari master dengan pagination |
+| 93 | GET | [`/api/v1/staff/pool-requirements`](#e93) | Kebutuhan stok blueprint |
+| 94 | GET | [`/api/v1/staff/import-history`](#e94) | Cari riwayat unggahan |
+| 95 | GET | [`/api/v1/staff/dashboard`](#e95) | Ringkasan bank soal |
+| 96 | GET | [`/api/v1/staff/audit`](#e96) | Audit ruang konten |
+| 97 | GET | [`/api/v1/admin/users/{id}`](#e97) | Detail akun untuk dukungan |
+| 98 | GET | [`/api/v1/admin/users/{id}/attempts`](#e98) | Riwayat sesi untuk dukungan |
+| 99 | GET | [`/api/v1/admin/taxonomy`](#e99) | Hierarki kategori lengkap |
+| 100 | GET | [`/api/v1/admin/subscriptions`](#e100) | Daftar langganan dan grant |
+| 101 | GET | [`/api/v1/admin/roles`](#e101) | Matriks peran |
+| 102 | GET | [`/api/v1/admin/plans/{id}`](#e102) | Detail revisi harga |
+| 103 | GET | [`/api/v1/admin/orders`](#e103) | Daftar transaksi |
+| 104 | GET | [`/api/v1/admin/orders/{id}`](#e104) | Detail transaksi |
+| 105 | GET | [`/api/v1/admin/jobs`](#e105) | Daftar job tersensor |
+| 106 | GET | [`/api/v1/admin/dashboard`](#e106) | Ringkasan operasional |
+| 107 | GET | [`/api/v1/admin/blueprints/{id}`](#e107) | Detail blueprint dan versinya |
+| 108 | GET | [`/api/v1/admin/blueprints/{id}/versions/{versionId}/readiness`](#e108) | Cek kebutuhan pool |
+| 109 | GET | [`/api/v1/admin/audit`](#e109) | Audit operasional |
+| 110 | GET | [`/api/v1/staff/question-sets`](#e110) | Daftar sumber soal |
+| 111 | POST | [`/api/v1/staff/question-sets`](#e111) | Buat sumber soal |
+| 112 | GET | [`/api/v1/staff/question-sets/{id}`](#e112) | Detail sumber soal |
+| 113 | PATCH | [`/api/v1/staff/question-sets/{id}/status`](#e113) | Arsip atau aktifkan sumber |
+| 114 | GET | [`/api/v1/staff/question-sets/{id}/items`](#e114) | Anggota sumber soal |
+| 115 | POST | [`/api/v1/staff/question-sets/{id}/items`](#e115) | Hubungkan master yang sudah ada |
+| 116 | GET | [`/api/v1/staff/question-sets/{id}/template-mapping`](#e116) | Pemetaan sheet template |
+| 117 | GET | [`/api/v1/staff/question-sets/{id}/template`](#e117) | Unduh template XLSX |
+| 118 | POST | [`/api/v1/staff/workbook-imports`](#e118) | Upload Excel per sheet |
+| 119 | GET | [`/api/v1/staff/workbook-imports`](#e119) | Daftar impor Excel |
+| 120 | GET | [`/api/v1/staff/workbook-imports/{id}`](#e120) | Detail hasil impor Excel |
+| 121 | GET | [`/api/v1/staff/workbook-imports/{id}/candidates`](#e121) | Preview kandidat Excel |
+| 122 | PATCH | [`/api/v1/staff/workbook-imports/{id}/candidates/{candidateId}`](#e122) | Koreksi kandidat Excel |
+| 123 | POST | [`/api/v1/staff/workbook-imports/{id}/save`](#e123) | Simpan kandidat Excel terpilih |
+| 124 | GET | [`/api/v1/admin/question-sets`](#e124) | Daftar sumber untuk komposisi |
+| 125 | GET | [`/api/v1/admin/question-sets/{id}`](#e125) | Detail metadata sumber untuk admin |
 
 ## Publik dan identity
 
@@ -464,7 +491,7 @@ Schema: [StudentProfileResponse](data-contracts.md#studentprofileresponse).
 
 **PATCH `/api/v1/users/current/profile`**
 
-Memperbarui data profil sesuai form lengkap.
+Partial PATCH: field yang tidak dikirim dipertahankan. Explicit null menghapus field opsional. Perubahan diserialisasi dengan lock akun.
 
 Akses: **Session login**. Sukses utama: **HTTP 200**.
 
@@ -518,15 +545,15 @@ Schema: [StudentProfileResponse](data-contracts.md#studentprofileresponse).
 }
 ```
 
-- Walaupun method PATCH, displayName, schoolName, schoolGrade, targetCategory dan targetInstitution tetap wajib.
-- targetCategory dipetakan ke targetKind: UTBK→CAMPUS, CPNS→CIVIL_SERVICE, KEDINASAN→ACADEMY, SEKOLAH→SCHOOL.
-- targetProgram dan targetScore boleh null; targetScore 0–1000. leaderboardOptIn, email, roles dan userType tidak dapat diubah lewat body ini.
+- displayName jika dikirim harus non-null dan minimal dua karakter setelah trim. targetCategory: UTBK→CAMPUS, CPNS→CIVIL_SERVICE, KEDINASAN→ACADEMY, SEKOLAH→SCHOOL.
+- Target terpilih memerlukan institusi. Sekolah/kelas wajib untuk target UTBK/SEKOLAH; opsional untuk CPNS/KEDINASAN. Ganti kategori harus menyertakan institusi baru. targetCategory:null menghapus target; targetScore dapat dihapus terpisah dengan null.
+- leaderboardOptIn hanya lewat endpoint privacy; email, roles dan userType tidak bisa diedit lewat profil.
 
 #### Error/kondisi yang perlu ditangani
 
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
-- 400 INVALID_REQUEST untuk kategori target tidak didukung.
+- 400 VALIDATION_FAILED dengan fieldErrors.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
 <a id="e9"></a>
@@ -907,9 +934,9 @@ Schema: array dari [SubscriptionResponse](data-contracts.md#subscriptionresponse
 
 **GET `/api/v1/leaderboard`**
 
-Maksimal 100 entry dari cohort aktif yang belum berakhir dan user masih opt-in.
+Array legacy dari satu cohort aktif terbaru sesuai kategori. Gratis dibatasi tiga; fullLeaderboard maksimal 100. Gunakan API cohort untuk pilihan periode, pagination, filter dan ownRank.
 
-Akses: **Session login**. Sukses utama: **HTTP 200**.
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
 
 #### Parameter dan header
 
@@ -944,9 +971,6 @@ Schema: array dari [LeaderboardResponse](data-contracts.md#leaderboardresponse).
   }
 ]
 ```
-
-- Array kosong adalah respons normal tanpa cohort/entry yang diprovisikan. Contoh item hanya ilustrasi kontrak.
-- Sesi acak tidak otomatis ditambahkan ke leaderboard.
 
 #### Error/kondisi yang perlu ditangani
 
@@ -1672,12 +1696,18 @@ Schema: [ResultResponse](data-contracts.md#resultresponse).
       "accuracy": 33.3333
     }
   ],
-  "finalizedAt": "2026-11-19T07:05:00Z"
+  "finalizedAt": "2026-11-19T07:05:00Z",
+  "processing": {
+    "state": "READY",
+    "poll": false,
+    "retryAfterSeconds": 0,
+    "errorCode": null
+  }
 }
 ```
 
-- Sebelum hasil: totalScore/method/policyVersion/details null dan sections kosong. Jangan menganggap null sebagai nilai nol.
-- status bisa IN_PROGRESS/FINALIZING/COMPLETED. Belum ada status API FAILED khusus scoring; telusuri job/log jika lama.
+- totalScore/method/policyVersion/details null sebelum siap; jangan dianggap nol. processing.state=NOT_STARTED/QUEUED/PROCESSING/RETRY_WAIT/FAILED/READY.
+- Poll hanya ketika processing.poll=true, dengan jeda minimal retryAfterSeconds. FAILED menghentikan polling; tampilkan pesan dukungan dan requestId. Admin dapat retry job FAILED. Attempt tetap FINALIZING agar snapshot dan satu sesi aktif aman; belum ada cancel/regrade siswa.
 
 #### Error/kondisi yang perlu ditangani
 
@@ -1852,7 +1882,7 @@ Content-Type: application/json
 Content-Disposition: form-data; name="file"; filename="sample-questions.pdf"
 Content-Type: application/pdf
 
-[binary PDF]
+[binary file]
 --example-boundary--
 ```
 
@@ -2232,7 +2262,7 @@ Schema: [StaffQuestionResponse](data-contracts.md#staffquestionresponse).
 
 **GET `/api/v1/staff/imports/{id}/source`**
 
-Membaca file asli yang dapat berisi kunci untuk review petugas.
+Unduh sumber privat PDF atau XLSX. Content-Type dan nama ekstensi mengikuti format; tetap hanya QUESTION_STAFF.
 
 Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
 
@@ -2256,7 +2286,7 @@ Body request: **tidak ada**.
 
 ```http
 HTTP/1.1 200 OK
-Content-Type: application/pdf
+Content-Type: application/octet-stream
 Cache-Control: no-store
 
 [binary file]
@@ -2984,10 +3014,732 @@ Body request: **tidak ada**.
 
 
 
-## Petugas soal lanjutan
+## Pengalaman siswa terbaru
 
 <a id="e48"></a>
-### 48. Baca atau simpan draft
+### 48. Dashboard sesuai kategori
+
+**GET `/api/v1/users/current/dashboard`**
+
+Filter category dan mode. Menghitung seluruh sesi milik akun, bukan 100 baris pertama. scoreGroups memisahkan examType dan policyVersion; jangan menggabungkan rerata kelompok berbeda. Trend maksimal 12 per kelompok, urut waktu naik. elapsedSeconds adalah wall time sesi yang dibatasi deadline dan waktu server, bukan waktu interaksi aktif. Streak memakai tanggal penyelesaian WIB; skor/penyelesaian mengecualikan abandon.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| category | query | Tidak | string; — |
+| mode | query | Tidak | string; pattern=TRYOUT\|PRACTICE |
+
+#### Contoh request
+
+```http
+GET /api/v1/users/current/dashboard HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [StudentDashboard](data-contracts.md#studentdashboard).
+
+```json
+{
+  "category": "UTBK",
+  "mode": "TRYOUT",
+  "totalTryouts": 10,
+  "totalPractices": 0,
+  "completed": 8,
+  "elapsedSeconds": 3600,
+  "currentStreakDays": 1,
+  "scoreGroups": [
+    {
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "examType": "TPS",
+      "policyVersion": "DEMO_BINARY:1",
+      "count": 8,
+      "average": 80,
+      "trend": [
+        {
+          "attemptId": "00000000-0000-4000-8000-000000000006",
+          "completedAt": "2026-11-21T07:00:00Z",
+          "score": 80
+        }
+      ]
+    }
+  ],
+  "recentActivity": [
+    {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "tryoutId": "00000000-0000-4000-8000-000000000002",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "mode": "TRYOUT",
+      "status": "COMPLETED",
+      "terminalReason": "SUBMITTED",
+      "topicId": null,
+      "topicName": null,
+      "startedAt": "2026-11-21T06:50:00Z",
+      "finalizedAt": "2026-11-21T07:00:00Z",
+      "totalScore": 80,
+      "questionCount": 3,
+      "durationSeconds": 5400,
+      "processing": {
+        "state": "READY",
+        "poll": false,
+        "retryAfterSeconds": 0,
+        "errorCode": null
+      }
+    }
+  ],
+  "quota": {
+    "dateWib": "2026-11-19",
+    "used": 1,
+    "limit": 2,
+    "remaining": 1
+  },
+  "membership": {
+    "tier": "PREMIUM",
+    "startsAt": "2026-11-01T00:00:00Z",
+    "endsAt": "2026-12-01T00:00:00Z",
+    "plan": {
+      "id": "00000000-0000-4000-8000-000000000060",
+      "code": "PREMIUM_MONTH_R1",
+      "name": "Premium 1 bulan",
+      "months": 1,
+      "amountMinor": 39000,
+      "currency": "IDR"
+    },
+    "benefits": {
+      "fullLeaderboard": true
+    },
+    "leaderboardPreviewLimit": 3,
+    "dailyTryoutLimit": 2
+  }
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e49"></a>
+### 49. Riwayat berhalaman
+
+**GET `/api/v1/users/current/learning-history`**
+
+Filter category, mode, status, search, tryoutId atau topicId; from/to tanggal WIB inklusif menurut startedAt. period=WEEK berarti hari ini dan enam hari sebelumnya; MONTH berarti awal bulan sampai hari ini. period tidak dapat digabung dengan rentang tanggal. total dan summary dihitung pada seluruh hasil filter, offset default 0, limit default 6 maksimal 100.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| category | query | Tidak | string; — |
+| mode | query | Tidak | string; pattern=TRYOUT\|PRACTICE |
+| status | query | Tidak | string; pattern=IN_PROGRESS\|FINALIZING\|COMPLETED\|ABANDONED\|EXPIRED |
+| search | query | Tidak | string; minLength=0; maxLength=120 |
+| tryoutId | query | Tidak | string (uuid); — |
+| topicId | query | Tidak | string (uuid); — |
+| from | query | Tidak | string (date); — |
+| to | query | Tidak | string (date); — |
+| period | query | Tidak | string; pattern=ALL\|WEEK\|MONTH |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/users/current/learning-history HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [HistoryPage](data-contracts.md#historypage).
+
+```json
+{
+  "items": [
+    {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "tryoutId": "00000000-0000-4000-8000-000000000002",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "mode": "TRYOUT",
+      "status": "COMPLETED",
+      "terminalReason": "SUBMITTED",
+      "topicId": null,
+      "topicName": null,
+      "startedAt": "2026-11-21T06:50:00Z",
+      "finalizedAt": "2026-11-21T07:00:00Z",
+      "totalScore": 80,
+      "questionCount": 3,
+      "durationSeconds": 5400,
+      "processing": {
+        "state": "READY",
+        "poll": false,
+        "retryAfterSeconds": 0,
+        "errorCode": null
+      }
+    }
+  ],
+  "total": 10,
+  "offset": 0,
+  "limit": 6,
+  "summary": {
+    "total": 10,
+    "completed": 8,
+    "inProgress": 1,
+    "scoring": 1,
+    "scoringFailed": 0
+  }
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e50"></a>
+### 50. Ringkasan hak premium
+
+**GET `/api/v1/users/current/membership`**
+
+FREE/PREMIUM berasal dari grant aktif yang belum dicabut dan order PAID. fullLeaderboard memakai benefits_snapshot, bukan konfigurasi paket saat ini. plan name merupakan label versi paket; harga, kode dan months dari snapshot order. Menonaktifkan penjualan paket tidak mencabut hak yang sudah dibeli.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Contoh request
+
+```http
+GET /api/v1/users/current/membership HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [Membership](data-contracts.md#membership).
+
+```json
+{
+  "tier": "PREMIUM",
+  "startsAt": "2026-11-01T00:00:00Z",
+  "endsAt": "2026-12-01T00:00:00Z",
+  "plan": {
+    "id": "00000000-0000-4000-8000-000000000060",
+    "code": "PREMIUM_MONTH_R1",
+    "name": "Premium 1 bulan",
+    "months": 1,
+    "amountMinor": 39000,
+    "currency": "IDR"
+  },
+  "benefits": {
+    "fullLeaderboard": true
+  },
+  "leaderboardPreviewLimit": 3,
+  "dailyTryoutLimit": 2
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e51"></a>
+### 51. Daftar paket aktif
+
+**GET `/api/v1/plans`**
+
+Harga integer amountMinor dan currency dari database. Hanya versi paket active. Default limit 12 maksimal 100. Tidak membuat checkout atau pembayaran.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/plans HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponsePlan](data-contracts.md#pageresponseplan).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000060",
+      "code": "PREMIUM_MONTH_R1",
+      "familyCode": "PREMIUM_MONTH",
+      "revision": 1,
+      "name": "Premium 1 bulan",
+      "months": 1,
+      "amountMinor": 39000,
+      "currency": "IDR",
+      "benefits": {
+        "fullLeaderboard": true
+      }
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e52"></a>
+### 52. Detail versi paket aktif
+
+**GET `/api/v1/plans/{id}`**
+
+ID versi paket aktif; paket nonaktif/tidak ditemukan mendapat 404. Gunakan harga dan mata uang dari server.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+
+#### Contoh request
+
+```http
+GET /api/v1/plans/00000000-0000-4000-8000-000000000006 HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [Plan](data-contracts.md#plan).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000060",
+  "code": "PREMIUM_MONTH_R1",
+  "familyCode": "PREMIUM_MONTH",
+  "revision": 1,
+  "name": "Premium 1 bulan",
+  "months": 1,
+  "amountMinor": 39000,
+  "currency": "IDR",
+  "benefits": {
+    "fullLeaderboard": true
+  }
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e53"></a>
+### 53. Katalog tryout berhalaman
+
+**GET `/api/v1/catalog/tryouts`**
+
+Filter category, examTypeId, subtestId, search dan ready. sort NEWEST (default) atau TITLE; default limit 12 maksimal 100. Stok readiness mengikuti versi soal PUBLISHED terbaru dan taksonomi aktif; start tetap memeriksa stock/exposure personal. Tidak mengarang editionYear dari sourceYear soal.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| category | query | Tidak | string; — |
+| search | query | Tidak | string; minLength=0; maxLength=120 |
+| examTypeId | query | Tidak | string (uuid); — |
+| subtestId | query | Tidak | string (uuid); — |
+| ready | query | Tidak | boolean; — |
+| sort | query | Tidak | string; pattern=TITLE\|NEWEST |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/catalog/tryouts HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseTryoutCard](data-contracts.md#pageresponsetryoutcard).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "code": "DEMO_TRYOUT",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "examType": "TPS",
+      "blueprintVersionId": "00000000-0000-4000-8000-000000000003",
+      "durationSeconds": 5400,
+      "questionCount": 3,
+      "ready": true,
+      "attemptCount": 2,
+      "latestScore": 80,
+      "latestCompletedAt": "2026-11-21T07:00:00Z"
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e54"></a>
+### 54. Katalog topik berhalaman
+
+**GET `/api/v1/catalog/practice-topics`**
+
+Filter category, examTypeId, subtestId, search dan ready. Urutan TITLE; NEWEST ditolak. Default limit 12 maksimal 100. ready berarti stok global >0; batas/jumlah personal tetap diperiksa saat start.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| category | query | Tidak | string; — |
+| search | query | Tidak | string; minLength=0; maxLength=120 |
+| examTypeId | query | Tidak | string (uuid); — |
+| subtestId | query | Tidak | string (uuid); — |
+| ready | query | Tidak | boolean; — |
+| sort | query | Tidak | string; pattern=TITLE\|NEWEST |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/catalog/practice-topics HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseTopicCard](data-contracts.md#pageresponsetopiccard).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "topic": "Aritmetika",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "subtestCode": "NUMERIK",
+      "subtest": "Penalaran Numerik",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "examType": "TPS",
+      "category": "UTBK",
+      "questionCount": 12,
+      "ready": true
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e55"></a>
+### 55. Pilih kelompok leaderboard
+
+**GET `/api/v1/leaderboards/cohorts`**
+
+Filter category, examTypeId dan includeEnded (default false). Hanya cohort ACTIVE yang sudah dimulai; calon cohort masa depan tidak tampil. Satu cohort menunjuk tepat satu form/policy/periode/attemptPolicy. Tidak membuat cohort atau entry otomatis.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| category | query | Tidak | string; — |
+| examTypeId | query | Tidak | string (uuid); — |
+| includeEnded | query | Tidak | boolean; — |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/leaderboards/cohorts HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseCohort](data-contracts.md#pageresponsecohort).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000061",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "formId": "00000000-0000-4000-8000-000000000062",
+      "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+      "periodStart": "2026-11-01T00:00:00Z",
+      "periodEnd": "2026-12-01T00:00:00Z",
+      "attemptPolicy": "BEST",
+      "ended": false
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e56"></a>
+### 56. Peringkat satu cohort
+
+**GET `/api/v1/leaderboards/cohorts/{id}/entries`**
+
+Preview gratis maksimal tiga baris pertama; offset tidak dapat melewati batas itu. ownRank tersedia terpisah bila pengguna sudah masuk entry dan menyetujui publikasi. Hak fullLeaderboard membuka pagination dan filter targetKind/targetInstitution/targetProgram (persamaan persis). Filter target tanpa hak mendapat 403 PREMIUM_REQUIRED. Rank tetap peringkat cohort ketika difilter, bukan dihitung ulang. totalParticipants mengikuti filter; accessibleTotal dibatasi 3 pada preview. Akun suspended/opt-out dan hasil abandon tidak tampil. Tidak membocorkan email/ID akun.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| targetInstitution | query | Tidak | string; minLength=0; maxLength=180 |
+| targetProgram | query | Tidak | string; minLength=0; maxLength=180 |
+| targetKind | query | Tidak | string; pattern=CAMPUS\|CIVIL_SERVICE\|ACADEMY\|SCHOOL |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/leaderboards/cohorts/00000000-0000-4000-8000-000000000006/entries HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [Rankings](data-contracts.md#rankings).
+
+```json
+{
+  "cohort": {
+    "id": "00000000-0000-4000-8000-000000000061",
+    "title": "Tryout UTBK Contoh",
+    "category": "UTBK",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "formId": "00000000-0000-4000-8000-000000000062",
+    "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+    "periodStart": "2026-11-01T00:00:00Z",
+    "periodEnd": "2026-12-01T00:00:00Z",
+    "attemptPolicy": "BEST",
+    "ended": false
+  },
+  "accessTier": "FULL",
+  "leaderboardOptIn": true,
+  "totalParticipants": 1,
+  "accessibleTotal": 1,
+  "offset": 0,
+  "limit": 20,
+  "items": [
+    {
+      "rank": 1,
+      "displayName": "Siswa Contoh",
+      "totalScore": 80,
+      "targetKind": "CAMPUS",
+      "targetInstitution": "Universitas Contoh",
+      "targetProgram": "Informatika",
+      "currentUser": true
+    }
+  ],
+  "ownRank": {
+    "rank": 1,
+    "displayName": "Siswa Contoh",
+    "totalScore": 80,
+    "targetKind": "CAMPUS",
+    "targetInstitution": "Universitas Contoh",
+    "targetProgram": "Informatika",
+    "currentUser": true
+  }
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e57"></a>
+### 57. Baca persetujuan leaderboard
+
+**GET `/api/v1/users/current/privacy`**
+
+Default opt-out. updatedAt null jika belum pernah mengubah persetujuan.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Contoh request
+
+```http
+GET /api/v1/users/current/privacy HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PrivacyResponse](data-contracts.md#privacyresponse).
+
+```json
+{
+  "leaderboardOptIn": true,
+  "updatedAt": "2026-11-21T07:00:00Z"
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 INVALID_FILTER.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e58"></a>
+### 58. Ubah persetujuan leaderboard
+
+**PATCH `/api/v1/users/current/privacy`**
+
+Body eksplisit leaderboardOptIn wajib. Persetujuan/waktu dan audit request dicatat atomik. Opt-out langsung menyembunyikan entry lama; opt-in tidak otomatis membuat ranking.
+
+Akses: **Session + role CUSTOMER**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+PATCH /api/v1/users/current/privacy HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: application/json
+```
+
+Body: [PrivacyRequest](data-contracts.md#privacyrequest). Wajib/validasi setiap key ada pada kamus DTO.
+
+```json
+{
+  "leaderboardOptIn": true
+}
+```
+
+#### Response
+
+Schema: [PrivacyResponse](data-contracts.md#privacyresponse).
+
+```json
+{
+  "leaderboardOptIn": true,
+  "updatedAt": "2026-11-21T07:00:00Z"
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+
+## Petugas soal lanjutan
+
+<a id="e59"></a>
+### 59. Baca atau simpan draft
 
 **GET `/api/v1/staff/questions/{id}/draft`**
 
@@ -3060,8 +3812,8 @@ Schema: [DraftView](data-contracts.md#draftview).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e49"></a>
-### 49. Baca atau simpan draft
+<a id="e60"></a>
+### 60. Baca atau simpan draft
 
 **PUT `/api/v1/staff/questions/{id}/draft`**
 
@@ -3168,8 +3920,8 @@ Schema: [DraftView](data-contracts.md#draftview).
 
 ## Admin platform
 
-<a id="e50"></a>
-### 50. Ganti role akun
+<a id="e61"></a>
+### 61. Ganti role akun
 
 **PUT `/api/v1/admin/users/{id}/roles`**
 
@@ -3236,8 +3988,8 @@ Schema: [AdminUserResponse](data-contracts.md#adminuserresponse).
 
 ## Petugas soal lanjutan
 
-<a id="e51"></a>
-### 51. Riwayat versi master
+<a id="e62"></a>
+### 62. Riwayat versi master
 
 **GET `/api/v1/staff/questions/{id}/versions`**
 
@@ -3286,8 +4038,8 @@ Schema: array dari [VersionSummary](data-contracts.md#versionsummary).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e52"></a>
-### 52. Simpan kandidat terpilih sebagai draft
+<a id="e63"></a>
+### 63. Simpan kandidat terpilih sebagai draft
 
 **POST `/api/v1/staff/imports/{id}/save`**
 
@@ -3372,8 +4124,8 @@ Schema: array dari [StaffQuestionResponse](data-contracts.md#staffquestionrespon
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e53"></a>
-### 53. Retry impor gagal
+<a id="e64"></a>
+### 64. Retry impor gagal
 
 **POST `/api/v1/staff/imports/{id}/retry`**
 
@@ -3442,8 +4194,8 @@ Schema: [ImportResponse](data-contracts.md#importresponse).
 
 ## Admin platform
 
-<a id="e54"></a>
-### 54. Daftar atau buat akun internal
+<a id="e65"></a>
+### 65. Daftar atau buat akun internal
 
 **GET `/api/v1/admin/users`**
 
@@ -3506,8 +4258,8 @@ Schema: [PageResponseAdminUserResponse](data-contracts.md#pageresponseadminuserr
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e55"></a>
-### 55. Daftar atau buat akun internal
+<a id="e66"></a>
+### 66. Daftar atau buat akun internal
 
 **POST `/api/v1/admin/users`**
 
@@ -3571,8 +4323,8 @@ Schema: [AdminUserResponse](data-contracts.md#adminuserresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e56"></a>
-### 56. Buat topik
+<a id="e67"></a>
+### 67. Buat topik
 
 **POST `/api/v1/admin/topics`**
 
@@ -3629,8 +4381,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e57"></a>
-### 57. Buat subtes
+<a id="e68"></a>
+### 68. Buat subtes
 
 **POST `/api/v1/admin/subtests`**
 
@@ -3688,8 +4440,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e58"></a>
-### 58. Cabut hak langganan
+<a id="e69"></a>
+### 69. Cabut hak langganan
 
 **POST `/api/v1/admin/subscriptions/{id}/revoke`**
 
@@ -3754,8 +4506,8 @@ Schema: [AdminSubscriptionResponse](data-contracts.md#adminsubscriptionresponse)
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e59"></a>
-### 59. Daftar atau buat policy skor
+<a id="e70"></a>
+### 70. Daftar atau buat policy skor
 
 **GET `/api/v1/admin/scoring-policies`**
 
@@ -3819,8 +4571,8 @@ Schema: [PageResponsePolicyResponse](data-contracts.md#pageresponsepolicyrespons
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e60"></a>
-### 60. Daftar atau buat policy skor
+<a id="e71"></a>
+### 71. Daftar atau buat policy skor
 
 **POST `/api/v1/admin/scoring-policies`**
 
@@ -3888,8 +4640,8 @@ Schema: [PolicyResponse](data-contracts.md#policyresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e61"></a>
-### 61. Daftar atau buat keluarga paket
+<a id="e72"></a>
+### 72. Daftar atau buat keluarga paket
 
 **GET `/api/v1/admin/plans`**
 
@@ -3954,8 +4706,8 @@ Schema: [PageResponsePlanResponse](data-contracts.md#pageresponseplanresponse).
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e62"></a>
-### 62. Daftar atau buat keluarga paket
+<a id="e73"></a>
+### 73. Daftar atau buat keluarga paket
 
 **POST `/api/v1/admin/plans`**
 
@@ -4024,8 +4776,8 @@ Schema: [PlanResponse](data-contracts.md#planresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e63"></a>
-### 63. Buat revisi harga baru
+<a id="e74"></a>
+### 74. Buat revisi harga baru
 
 **POST `/api/v1/admin/plans/{id}/versions`**
 
@@ -4096,8 +4848,8 @@ Schema: [PlanResponse](data-contracts.md#planresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e64"></a>
-### 64. Catat permintaan refund
+<a id="e75"></a>
+### 75. Catat permintaan refund
 
 **POST `/api/v1/admin/orders/{id}/refunds`**
 
@@ -4158,8 +4910,8 @@ Schema: [RefundResponse](data-contracts.md#refundresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e65"></a>
-### 65. Rekonsiliasi belum dikonfigurasi
+<a id="e76"></a>
+### 76. Rekonsiliasi belum dikonfigurasi
 
 **POST `/api/v1/admin/orders/{id}/reconcile`**
 
@@ -4214,12 +4966,12 @@ Schema: [ApiError](data-contracts.md#apierror).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e66"></a>
-### 66. Retry job gagal
+<a id="e77"></a>
+### 77. Retry job gagal
 
 **POST `/api/v1/admin/jobs/{id}/retry`**
 
-Hanya FAILED dan jenis IMPORT_PDF/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.
+Hanya FAILED dan jenis IMPORT_PDF/IMPORT_XLSX/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.
 
 Akses: **Session + role PLATFORM_ADMIN**. Sukses utama: **HTTP 200**.
 
@@ -4275,8 +5027,8 @@ Schema: [JobResponse](data-contracts.md#jobresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e67"></a>
-### 67. Buat jenis ujian
+<a id="e78"></a>
+### 78. Buat jenis ujian
 
 **POST `/api/v1/admin/exam-types`**
 
@@ -4334,8 +5086,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e68"></a>
-### 68. Buat kategori
+<a id="e79"></a>
+### 79. Buat kategori
 
 **POST `/api/v1/admin/categories`**
 
@@ -4392,8 +5144,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e69"></a>
-### 69. Daftar atau buat paket tryout
+<a id="e80"></a>
+### 80. Daftar atau buat paket tryout
 
 **GET `/api/v1/admin/blueprints`**
 
@@ -4452,8 +5204,8 @@ Schema: [PageResponseBlueprintResponse](data-contracts.md#pageresponseblueprintr
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e70"></a>
-### 70. Daftar atau buat paket tryout
+<a id="e81"></a>
+### 81. Daftar atau buat paket tryout
 
 **POST `/api/v1/admin/blueprints`**
 
@@ -4511,12 +5263,12 @@ Schema: [BlueprintResponse](data-contracts.md#blueprintresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e71"></a>
-### 71. Buat komposisi draft baru
+<a id="e82"></a>
+### 82. Buat komposisi draft baru
 
 **POST `/api/v1/admin/blueprints/{id}/versions`**
 
-Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit.
+Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit. questionSetIds membatasi pool ke kumpulan sumber aktif dari examType yang sama; kosong mempertahankan pool legacy. Jangan gabungkan dengan sourceYear. difficultyQuotas berisi EASY/MEDIUM/HARD unik dengan jumlah tepat questionCount. repeatPolicy=UNSEEN_TODAY (default tryout), NEVER_SEEN, atau RECYCLE_OLDEST. Tidak menurunkan jumlah/komposisi saat stok personal habis: 409 POOL_NOT_READY tanpa kuota terpakai.
 
 Akses: **Session + role PLATFORM_ADMIN**. Sukses utama: **HTTP 201**.
 
@@ -4548,7 +5300,21 @@ Body: [BlueprintVersionRequest](data-contracts.md#blueprintversionrequest). Waji
       "subtestId": "00000000-0000-4000-8000-000000000004",
       "questionCount": 3,
       "topicId": "00000000-0000-4000-8000-000000000005",
-      "sourceYear": 2026
+      "sourceYear": null,
+      "questionSetIds": [
+        "00000000-0000-4000-8000-000000000100"
+      ],
+      "difficultyQuotas": [
+        {
+          "difficulty": "EASY",
+          "count": 1
+        },
+        {
+          "difficulty": "MEDIUM",
+          "count": 2
+        }
+      ],
+      "repeatPolicy": "UNSEEN_TODAY"
     }
   ],
   "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
@@ -4574,8 +5340,22 @@ Schema: [BlueprintVersion](data-contracts.md#blueprintversion).
       "subtestName": "Penalaran Numerik",
       "questionCount": 3,
       "topicId": "00000000-0000-4000-8000-000000000005",
-      "sourceYear": 2026,
-      "available": 12
+      "sourceYear": null,
+      "available": 12,
+      "questionSetIds": [
+        "00000000-0000-4000-8000-000000000100"
+      ],
+      "difficultyQuotas": [
+        {
+          "difficulty": "EASY",
+          "count": 1
+        },
+        {
+          "difficulty": "MEDIUM",
+          "count": 2
+        }
+      ],
+      "repeatPolicy": "UNSEEN_TODAY"
     }
   ],
   "ready": true
@@ -4591,8 +5371,8 @@ Schema: [BlueprintVersion](data-contracts.md#blueprintversion).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e72"></a>
-### 72. Terbitkan versi blueprint
+<a id="e83"></a>
+### 83. Terbitkan versi blueprint
 
 **POST `/api/v1/admin/blueprints/{id}/versions/{versionId}/publish`**
 
@@ -4656,8 +5436,22 @@ Schema: [BlueprintDetail](data-contracts.md#blueprintdetail).
           "subtestName": "Penalaran Numerik",
           "questionCount": 3,
           "topicId": "00000000-0000-4000-8000-000000000005",
-          "sourceYear": 2026,
-          "available": 12
+          "sourceYear": null,
+          "available": 12,
+          "questionSetIds": [
+            "00000000-0000-4000-8000-000000000100"
+          ],
+          "difficultyQuotas": [
+            {
+              "difficulty": "EASY",
+              "count": 1
+            },
+            {
+              "difficulty": "MEDIUM",
+              "count": 2
+            }
+          ],
+          "repeatPolicy": "UNSEEN_TODAY"
         }
       ],
       "ready": true
@@ -4675,8 +5469,8 @@ Schema: [BlueprintDetail](data-contracts.md#blueprintdetail).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e73"></a>
-### 73. Suspend atau pulihkan akun
+<a id="e84"></a>
+### 84. Suspend atau pulihkan akun
 
 **PATCH `/api/v1/admin/users/{id}/status`**
 
@@ -4738,8 +5532,8 @@ Schema: [AdminUserResponse](data-contracts.md#adminuserresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e74"></a>
-### 74. Perbarui topik
+<a id="e85"></a>
+### 85. Perbarui topik
 
 **PATCH `/api/v1/admin/topics/{id}`**
 
@@ -4798,8 +5592,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e75"></a>
-### 75. Perbarui subtes
+<a id="e86"></a>
+### 86. Perbarui subtes
 
 **PATCH `/api/v1/admin/subtests/{id}`**
 
@@ -4859,8 +5653,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e76"></a>
-### 76. Buka atau hentikan penjualan
+<a id="e87"></a>
+### 87. Buka atau hentikan penjualan
 
 **PATCH `/api/v1/admin/plans/{id}/availability`**
 
@@ -4924,8 +5718,8 @@ Schema: [PlanResponse](data-contracts.md#planresponse).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e77"></a>
-### 77. Perbarui jenis ujian
+<a id="e88"></a>
+### 88. Perbarui jenis ujian
 
 **PATCH `/api/v1/admin/exam-types/{id}`**
 
@@ -4985,8 +5779,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e78"></a>
-### 78. Perbarui kategori
+<a id="e89"></a>
+### 89. Perbarui kategori
 
 **PATCH `/api/v1/admin/categories/{id}`**
 
@@ -5045,8 +5839,8 @@ Schema: [TaxonomyItem](data-contracts.md#taxonomyitem).
 - 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e79"></a>
-### 79. Aktifkan atau arsip katalog
+<a id="e90"></a>
+### 90. Aktifkan atau arsip katalog
 
 **PATCH `/api/v1/admin/blueprints/{id}/status`**
 
@@ -5109,8 +5903,22 @@ Schema: [BlueprintDetail](data-contracts.md#blueprintdetail).
           "subtestName": "Penalaran Numerik",
           "questionCount": 3,
           "topicId": "00000000-0000-4000-8000-000000000005",
-          "sourceYear": 2026,
-          "available": 12
+          "sourceYear": null,
+          "available": 12,
+          "questionSetIds": [
+            "00000000-0000-4000-8000-000000000100"
+          ],
+          "difficultyQuotas": [
+            {
+              "difficulty": "EASY",
+              "count": 1
+            },
+            {
+              "difficulty": "MEDIUM",
+              "count": 2
+            }
+          ],
+          "repeatPolicy": "UNSEEN_TODAY"
         }
       ],
       "ready": true
@@ -5131,8 +5939,8 @@ Schema: [BlueprintDetail](data-contracts.md#blueprintdetail).
 
 ## Petugas soal lanjutan
 
-<a id="e80"></a>
-### 80. Baca versi soal tertentu
+<a id="e91"></a>
+### 91. Baca versi soal tertentu
 
 **GET `/api/v1/staff/questions/{id}/versions/{versionId}`**
 
@@ -5203,8 +6011,8 @@ Schema: [StaffQuestionResponse](data-contracts.md#staffquestionresponse).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e81"></a>
-### 81. Cari master dengan pagination
+<a id="e92"></a>
+### 92. Cari master dengan pagination
 
 **GET `/api/v1/staff/question-bank`**
 
@@ -5274,8 +6082,8 @@ Schema: [PageResponseQuestionSummary](data-contracts.md#pageresponsequestionsumm
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e82"></a>
-### 82. Kebutuhan stok blueprint
+<a id="e93"></a>
+### 93. Kebutuhan stok blueprint
 
 **GET `/api/v1/staff/pool-requirements`**
 
@@ -5332,8 +6140,8 @@ Schema: [PageResponsePoolRequirement](data-contracts.md#pageresponsepoolrequirem
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e83"></a>
-### 83. Cari riwayat unggahan
+<a id="e94"></a>
+### 94. Cari riwayat unggahan
 
 **GET `/api/v1/staff/import-history`**
 
@@ -5404,8 +6212,8 @@ Schema: [PageResponseImportSummary](data-contracts.md#pageresponseimportsummary)
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e84"></a>
-### 84. Ringkasan bank soal
+<a id="e95"></a>
+### 95. Ringkasan bank soal
 
 **GET `/api/v1/staff/dashboard`**
 
@@ -5445,8 +6253,8 @@ Schema: [StaffDashboard](data-contracts.md#staffdashboard).
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e85"></a>
-### 85. Audit ruang konten
+<a id="e96"></a>
+### 96. Audit ruang konten
 
 **GET `/api/v1/staff/audit`**
 
@@ -5504,8 +6312,8 @@ Schema: [PageResponseContentAudit](data-contracts.md#pageresponsecontentaudit).
 
 ## Admin platform
 
-<a id="e86"></a>
-### 86. Detail akun untuk dukungan
+<a id="e97"></a>
+### 97. Detail akun untuk dukungan
 
 **GET `/api/v1/admin/users/{id}`**
 
@@ -5569,8 +6377,8 @@ Schema: [UserDetail](data-contracts.md#userdetail).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e87"></a>
-### 87. Riwayat sesi untuk dukungan
+<a id="e98"></a>
+### 98. Riwayat sesi untuk dukungan
 
 **GET `/api/v1/admin/users/{id}/attempts`**
 
@@ -5634,8 +6442,8 @@ Schema: [PageResponseUserAttempt](data-contracts.md#pageresponseuserattempt).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e88"></a>
-### 88. Hierarki kategori lengkap
+<a id="e99"></a>
+### 99. Hierarki kategori lengkap
 
 **GET `/api/v1/admin/taxonomy`**
 
@@ -5705,8 +6513,8 @@ Schema: [TaxonomyTree](data-contracts.md#taxonomytree).
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e89"></a>
-### 89. Daftar langganan dan grant
+<a id="e100"></a>
+### 100. Daftar langganan dan grant
 
 **GET `/api/v1/admin/subscriptions`**
 
@@ -5773,8 +6581,8 @@ Schema: [PageResponseAdminSubscriptionResponse](data-contracts.md#pageresponsead
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e90"></a>
-### 90. Matriks peran
+<a id="e101"></a>
+### 101. Matriks peran
 
 **GET `/api/v1/admin/roles`**
 
@@ -5815,8 +6623,8 @@ Schema: array dari [RoleDefinition](data-contracts.md#roledefinition).
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e91"></a>
-### 91. Detail revisi harga
+<a id="e102"></a>
+### 102. Detail revisi harga
 
 **GET `/api/v1/admin/plans/{id}`**
 
@@ -5869,8 +6677,8 @@ Schema: [PlanResponse](data-contracts.md#planresponse).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e92"></a>
-### 92. Daftar transaksi
+<a id="e103"></a>
+### 103. Daftar transaksi
 
 **GET `/api/v1/admin/orders`**
 
@@ -5936,8 +6744,8 @@ Schema: [PageResponseOrderResponse](data-contracts.md#pageresponseorderresponse)
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e93"></a>
-### 93. Detail transaksi
+<a id="e104"></a>
+### 104. Detail transaksi
 
 **GET `/api/v1/admin/orders/{id}`**
 
@@ -6015,8 +6823,8 @@ Schema: [OrderDetail](data-contracts.md#orderdetail).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e94"></a>
-### 94. Daftar job tersensor
+<a id="e105"></a>
+### 105. Daftar job tersensor
 
 **GET `/api/v1/admin/jobs`**
 
@@ -6078,8 +6886,8 @@ Schema: [PageResponseJobResponse](data-contracts.md#pageresponsejobresponse).
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e95"></a>
-### 95. Ringkasan operasional
+<a id="e106"></a>
+### 106. Ringkasan operasional
 
 **GET `/api/v1/admin/dashboard`**
 
@@ -6141,8 +6949,8 @@ Schema: [Dashboard](data-contracts.md#dashboard).
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e96"></a>
-### 96. Detail blueprint dan versinya
+<a id="e107"></a>
+### 107. Detail blueprint dan versinya
 
 **GET `/api/v1/admin/blueprints/{id}`**
 
@@ -6195,8 +7003,22 @@ Schema: [BlueprintDetail](data-contracts.md#blueprintdetail).
           "subtestName": "Penalaran Numerik",
           "questionCount": 3,
           "topicId": "00000000-0000-4000-8000-000000000005",
-          "sourceYear": 2026,
-          "available": 12
+          "sourceYear": null,
+          "available": 12,
+          "questionSetIds": [
+            "00000000-0000-4000-8000-000000000100"
+          ],
+          "difficultyQuotas": [
+            {
+              "difficulty": "EASY",
+              "count": 1
+            },
+            {
+              "difficulty": "MEDIUM",
+              "count": 2
+            }
+          ],
+          "repeatPolicy": "UNSEEN_TODAY"
         }
       ],
       "ready": true
@@ -6213,8 +7035,8 @@ Schema: [BlueprintDetail](data-contracts.md#blueprintdetail).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e97"></a>
-### 97. Cek kebutuhan pool
+<a id="e108"></a>
+### 108. Cek kebutuhan pool
 
 **GET `/api/v1/admin/blueprints/{id}/versions/{versionId}/readiness`**
 
@@ -6258,8 +7080,22 @@ Schema: [BlueprintVersion](data-contracts.md#blueprintversion).
       "subtestName": "Penalaran Numerik",
       "questionCount": 3,
       "topicId": "00000000-0000-4000-8000-000000000005",
-      "sourceYear": 2026,
-      "available": 12
+      "sourceYear": null,
+      "available": 12,
+      "questionSetIds": [
+        "00000000-0000-4000-8000-000000000100"
+      ],
+      "difficultyQuotas": [
+        {
+          "difficulty": "EASY",
+          "count": 1
+        },
+        {
+          "difficulty": "MEDIUM",
+          "count": 2
+        }
+      ],
+      "repeatPolicy": "UNSEEN_TODAY"
     }
   ],
   "ready": true
@@ -6274,8 +7110,8 @@ Schema: [BlueprintVersion](data-contracts.md#blueprintversion).
 - Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
-<a id="e98"></a>
-### 98. Audit operasional
+<a id="e109"></a>
+### 109. Audit operasional
 
 **GET `/api/v1/admin/audit`**
 
@@ -6336,6 +7172,1063 @@ Schema: [PageResponseAuditResponse](data-contracts.md#pageresponseauditresponse)
 #### Error/kondisi yang perlu ditangani
 
 - 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+
+## Sumber soal dan Excel
+
+<a id="e110"></a>
+### 110. Daftar sumber soal
+
+**GET `/api/v1/staff/question-sets`**
+
+Filter examTypeId, sourceYear, status, search, offset dan limit 1..100 (default 20). publishedCount menghitung master dengan versi terbit yang memenuhi kelengkapan pool, bukan jumlah seluruh revisi.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| examTypeId | query | Tidak | string (uuid); — |
+| sourceYear | query | Tidak | integer (int32); minimum=1900; maximum=2200 |
+| status | query | Tidak | string; pattern=ACTIVE\|ARCHIVED |
+| search | query | Tidak | string; minLength=0; maxLength=120 |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/question-sets HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseQuestionSource](data-contracts.md#pageresponsequestionsource).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000100",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "code": "UTBK_2025_A",
+      "sourceYear": 2025,
+      "title": "Sumber UTBK 2025 paket A",
+      "status": "ACTIVE",
+      "questionCount": 100,
+      "publishedCount": 80
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e111"></a>
+### 111. Buat sumber soal
+
+**POST `/api/v1/staff/question-sets`**
+
+Identitas jenis ujian, kode dan tahun immutable. Upload koreksi menggunakan source ID yang sama. Kode global unik; tidak membuat tabel baru per tahun/sheet.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 201**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+POST /api/v1/staff/question-sets HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: application/json
+```
+
+Body: [SourceRequest](data-contracts.md#sourcerequest). Wajib/validasi setiap key ada pada kamus DTO.
+
+```json
+{
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
+#### Response
+
+Schema: [QuestionSource](data-contracts.md#questionsource).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "status": "ACTIVE",
+  "questionCount": 100,
+  "publishedCount": 80
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e112"></a>
+### 112. Detail sumber soal
+
+**GET `/api/v1/staff/question-sets/{id}`**
+
+Metadata sumber dan stok. sourceYear adalah tahun sumber, berbeda dari edisi katalog tryout.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/question-sets/00000000-0000-4000-8000-000000000006 HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [QuestionSource](data-contracts.md#questionsource).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "status": "ACTIVE",
+  "questionCount": 100,
+  "publishedCount": 80
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e113"></a>
+### 113. Arsip atau aktifkan sumber
+
+**PATCH `/api/v1/staff/question-sets/{id}/status`**
+
+Arsip menghentikan pemilihan dari blueprint yang menunjuk sumber tersebut. Tidak mengubah master soal atau snapshot sesi lama.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+PATCH /api/v1/staff/question-sets/00000000-0000-4000-8000-000000000006/status HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: application/json
+```
+
+Body: [SourceStatus](data-contracts.md#sourcestatus). Wajib/validasi setiap key ada pada kamus DTO.
+
+```json
+{
+  "status": "ARCHIVED",
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
+#### Response
+
+Schema: [QuestionSource](data-contracts.md#questionsource).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "status": "ACTIVE",
+  "questionCount": 100,
+  "publishedCount": 80
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e114"></a>
+### 114. Anggota sumber soal
+
+**GET `/api/v1/staff/question-sets/{id}/items`**
+
+Daftar master, kode asal, subtes, versi terbaru/difficulty/status dan flag arsip. Versi terbaru dapat DRAFT sementara versi PUBLISHED sebelumnya masih tersedia di pool.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| offset | query | Tidak | integer (int32); default=0 |
+| limit | query | Tidak | integer (int32); default=20 |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/question-sets/00000000-0000-4000-8000-000000000006/items HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseSourceItem](data-contracts.md#pageresponsesourceitem).
+
+```json
+{
+  "items": [
+    {
+      "questionId": "00000000-0000-4000-8000-000000000007",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sourceItemCode": "PU_Q001",
+      "latestVersionId": "00000000-0000-4000-8000-000000000008",
+      "status": "PUBLISHED",
+      "difficulty": "MEDIUM",
+      "archived": false
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e115"></a>
+### 115. Hubungkan master yang sudah ada
+
+**POST `/api/v1/staff/question-sets/{id}/items`**
+
+Relasi many-to-many tanpa menggandakan isi soal. Subtes master wajib sesuai exam type sumber. Kode asal unik per sumber/subtes; pasangan master yang sama dengan kode sama idempoten. Kode yang sudah dipakai tidak dapat diganti.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+POST /api/v1/staff/question-sets/00000000-0000-4000-8000-000000000006/items HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: application/json
+```
+
+Body: [LinkSourceQuestion](data-contracts.md#linksourcequestion). Wajib/validasi setiap key ada pada kamus DTO.
+
+```json
+{
+  "questionId": "00000000-0000-4000-8000-000000000007",
+  "sourceItemCode": "PU_Q001",
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
+#### Response
+
+Schema: [QuestionSource](data-contracts.md#questionsource).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "status": "ACTIVE",
+  "questionCount": 100,
+  "publishedCount": 80
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e116"></a>
+### 116. Pemetaan sheet template
+
+**GET `/api/v1/staff/question-sets/{id}/template-mapping`**
+
+Array sheetName dan subtestId aktif untuk metadata upload. Nama berasal dari kode subtes, dibatasi 31 karakter; benturan nama ditolak.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/question-sets/00000000-0000-4000-8000-000000000006/template-mapping HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: array dari [SheetMapping](data-contracts.md#sheetmapping).
+
+```json
+[
+  {
+    "sheetName": "NUMERIK",
+    "subtestId": "00000000-0000-4000-8000-000000000004"
+  }
+]
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e117"></a>
+### 117. Unduh template XLSX
+
+**GET `/api/v1/staff/question-sets/{id}/template`**
+
+Workbook berisi header, pilihan difficulty/kunci dan sheet untuk subtes aktif. Isi teks sesuai panduan. Hapus sheet kosong dan pemetaannya jika hanya mengunggah sebagian subtes.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/question-sets/00000000-0000-4000-8000-000000000006/template HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+Cache-Control: no-store
+
+[binary file]
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e118"></a>
+### 118. Upload Excel per sheet
+
+**POST `/api/v1/staff/workbook-imports`**
+
+Multipart file XLSX dan metadata JSON WorkbookMetadata. File disimpan privat dan job IMPORT_XLSX diproses worker. 202 bukan jaminan workbook valid. Dedup berdasarkan actor, checksum file, source dan pemetaan sheet; replay mengembalikan batch lama. Format/header/sheet invalid gagal dengan kode aman; row error tetap tersedia untuk review.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 202**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+POST /api/v1/staff/workbook-imports HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: multipart/form-data; boundary=example-boundary
+
+--example-boundary
+Content-Disposition: form-data; name="metadata"
+Content-Type: application/json
+
+{
+  "questionSetId": "00000000-0000-4000-8000-000000000100",
+  "sheets": [
+    {
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004"
+    }
+  ]
+}
+--example-boundary
+Content-Disposition: form-data; name="file"; filename="questions.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+[binary file]
+--example-boundary--
+```
+
+Key `file` berisi binary XLSX dan `metadata` mengikuti [WorkbookMetadata](data-contracts.md#workbookmetadata). Gunakan file picker Postman agar boundary dibentuk otomatis.
+
+#### Response
+
+Schema: [WorkbookImport](data-contracts.md#workbookimport).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000101",
+  "questionSetId": "00000000-0000-4000-8000-000000000100",
+  "fileId": "00000000-0000-4000-8000-000000000021",
+  "inputFormat": "XLSX",
+  "status": "READY",
+  "candidateCount": 2,
+  "validCount": 2,
+  "invalidCount": 0,
+  "errorCode": null,
+  "jobStatus": "SUCCEEDED",
+  "createdAt": "2026-11-21T07:00:00Z",
+  "sheets": [
+    {
+      "id": "00000000-0000-4000-8000-000000000102",
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sheetIndex": 0,
+      "status": "READY",
+      "candidateCount": 2,
+      "invalidCount": 0
+    }
+  ]
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 400 XLSX_REQUIRED / INVALID_XLSX_SIGNATURE.
+- 409 INVALID_CONTENT_SCOPE.
+- 413 FILE_TOO_LARGE.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e119"></a>
+### 119. Daftar impor Excel
+
+**GET `/api/v1/staff/workbook-imports`**
+
+Filter questionSetId/status dan pagination offset/limit. Tidak menyertakan isi/kunci soal.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| questionSetId | query | Tidak | string (uuid); — |
+| status | query | Tidak | string; pattern=QUEUED\|READY\|NEEDS_INPUT\|FAILED |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/workbook-imports HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseWorkbookImport](data-contracts.md#pageresponseworkbookimport).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000101",
+      "questionSetId": "00000000-0000-4000-8000-000000000100",
+      "fileId": "00000000-0000-4000-8000-000000000021",
+      "inputFormat": "XLSX",
+      "status": "READY",
+      "candidateCount": 2,
+      "validCount": 2,
+      "invalidCount": 0,
+      "errorCode": null,
+      "jobStatus": "SUCCEEDED",
+      "createdAt": "2026-11-21T07:00:00Z",
+      "sheets": [
+        {
+          "id": "00000000-0000-4000-8000-000000000102",
+          "sheetName": "NUMERIK",
+          "subtestId": "00000000-0000-4000-8000-000000000004",
+          "sheetIndex": 0,
+          "status": "READY",
+          "candidateCount": 2,
+          "invalidCount": 0
+        }
+      ]
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e120"></a>
+### 120. Detail hasil impor Excel
+
+**GET `/api/v1/staff/workbook-imports/{id}`**
+
+Status batch/job, hitungan valid-invalid, dan status tiap sheet. READY berarti siap direview/disimpan, bukan otomatis published.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/workbook-imports/00000000-0000-4000-8000-000000000006 HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [WorkbookImport](data-contracts.md#workbookimport).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000101",
+  "questionSetId": "00000000-0000-4000-8000-000000000100",
+  "fileId": "00000000-0000-4000-8000-000000000021",
+  "inputFormat": "XLSX",
+  "status": "READY",
+  "candidateCount": 2,
+  "validCount": 2,
+  "invalidCount": 0,
+  "errorCode": null,
+  "jobStatus": "SUCCEEDED",
+  "createdAt": "2026-11-21T07:00:00Z",
+  "sheets": [
+    {
+      "id": "00000000-0000-4000-8000-000000000102",
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sheetIndex": 0,
+      "status": "READY",
+      "candidateCount": 2,
+      "invalidCount": 0
+    }
+  ]
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e121"></a>
+### 121. Preview kandidat Excel
+
+**GET `/api/v1/staff/workbook-imports/{id}/candidates`**
+
+Filter sheetId opsional, pagination 1..100. sourceRow mulai 2; sourceItemCode adalah identitas stabil pada sumber/subtes. expectedVersionId dibekukan saat ekstraksi; resolvedVersionId merekam hasil simpan.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| sheetId | query | Tidak | string (uuid); — |
+| offset | query | Tidak | integer (int32); default=0 |
+| limit | query | Tidak | integer (int32); default=20 |
+
+#### Contoh request
+
+```http
+GET /api/v1/staff/workbook-imports/00000000-0000-4000-8000-000000000006/candidates HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseExcelCandidate](data-contracts.md#pageresponseexcelcandidate).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000103",
+      "sheetId": "00000000-0000-4000-8000-000000000102",
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sourceRow": 2,
+      "sourceItemCode": "PU_Q001",
+      "topicId": null,
+      "difficulty": "MEDIUM",
+      "extractedContent": {
+        "stemText": "Berapa hasil 2 + 3?",
+        "options": [
+          {
+            "code": "A",
+            "text": "4",
+            "correct": false,
+            "weight": 0
+          },
+          {
+            "code": "B",
+            "text": "5",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "shuffleAllowed": false
+      },
+      "draftContent": null,
+      "validationErrors": [],
+      "expectedVersionId": null,
+      "resolvedQuestionId": null,
+      "resolvedVersionId": null
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e122"></a>
+### 122. Koreksi kandidat Excel
+
+**PATCH `/api/v1/staff/workbook-imports/{id}/candidates/{candidateId}`**
+
+Memperbaiki kode/topik/difficulty/konten sebelum simpan. Topik harus aktif dan sesuai subtes sheet. Kandidat tersimpan tidak dapat diedit. Mengubah konten saja tidak memperbarui expectedVersionId untuk melewati konflik.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| candidateId | path | Ya | string (uuid); — |
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+PATCH /api/v1/staff/workbook-imports/00000000-0000-4000-8000-000000000006/candidates/00000000-0000-4000-8000-000000000022 HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: application/json
+```
+
+Body: [CandidateCorrection](data-contracts.md#candidatecorrection). Wajib/validasi setiap key ada pada kamus DTO.
+
+```json
+{
+  "sourceItemCode": "PU_Q001",
+  "topicId": null,
+  "difficulty": "MEDIUM",
+  "content": {
+    "stemText": "Berapa hasil 2 + 3?",
+    "options": [
+      {
+        "code": "A",
+        "text": "4",
+        "correct": false,
+        "weight": 0
+      },
+      {
+        "code": "B",
+        "text": "5",
+        "correct": true,
+        "weight": 1
+      }
+    ],
+    "explanation": "Dua ditambah tiga sama dengan lima.",
+    "shuffleAllowed": false
+  }
+}
+```
+
+#### Response
+
+Schema: [ExcelCandidate](data-contracts.md#excelcandidate).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000103",
+  "sheetId": "00000000-0000-4000-8000-000000000102",
+  "sheetName": "NUMERIK",
+  "subtestId": "00000000-0000-4000-8000-000000000004",
+  "sourceRow": 2,
+  "sourceItemCode": "PU_Q001",
+  "topicId": null,
+  "difficulty": "MEDIUM",
+  "extractedContent": {
+    "stemText": "Berapa hasil 2 + 3?",
+    "options": [
+      {
+        "code": "A",
+        "text": "4",
+        "correct": false,
+        "weight": 0
+      },
+      {
+        "code": "B",
+        "text": "5",
+        "correct": true,
+        "weight": 1
+      }
+    ],
+    "explanation": "Dua ditambah tiga sama dengan lima.",
+    "shuffleAllowed": false
+  },
+  "draftContent": null,
+  "validationErrors": [],
+  "expectedVersionId": null,
+  "resolvedQuestionId": null,
+  "resolvedVersionId": null
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e123"></a>
+### 123. Simpan kandidat Excel terpilih
+
+**POST `/api/v1/staff/workbook-imports/{id}/save`**
+
+Maksimal 100 ID unik satu batch, semua atau rollback. Kode baru membuat master/DRAFT; perubahan pada soal terbit membuat revisi DRAFT. Konten sama termasuk bobot numerik yang setara menggunakan versi sama. Revisi hanya memakai baseline PUBLISHED yang immutable; jika master masih DRAFT saat ekstraksi, selesaikan draft lalu unggah ulang. Replay kandidat mengembalikan resolvedVersionId yang sama, bukan revisi terbaru. Tidak otomatis publish.
+
+Akses: **Session + role QUESTION_STAFF**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+| X-CSRF-TOKEN | header | Ya | string; — |
+
+#### Contoh request
+
+```http
+POST /api/v1/staff/workbook-imports/00000000-0000-4000-8000-000000000006/save HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+X-CSRF-TOKEN: example-csrf-token
+Content-Type: application/json
+```
+
+Body: [SaveWorkbookCandidates](data-contracts.md#saveworkbookcandidates). Wajib/validasi setiap key ada pada kamus DTO.
+
+```json
+{
+  "candidateIds": [
+    "00000000-0000-4000-8000-000000000103"
+  ],
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
+#### Response
+
+Schema: array dari [StaffQuestionResponse](data-contracts.md#staffquestionresponse).
+
+```json
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "versionId": "00000000-0000-4000-8000-000000000008",
+    "code": "Q-00000000-0000-4000-8000-000000000007",
+    "version": 1,
+    "status": "DRAFT",
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "topicId": "00000000-0000-4000-8000-000000000005",
+    "sourceYear": 2026,
+    "sourceTitle": "Contoh PDF PastiSiap",
+    "sourcePage": 1,
+    "content": {
+      "stemText": "Berapa hasil 2 + 3?",
+      "options": [
+        {
+          "code": "A",
+          "text": "4",
+          "correct": false,
+          "weight": 0
+        },
+        {
+          "code": "B",
+          "text": "5",
+          "correct": true,
+          "weight": 1
+        }
+      ],
+      "explanation": "Dua ditambah tiga sama dengan lima.",
+      "shuffleAllowed": false
+    }
+  }
+]
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 pada validasi/deserialisasi, 403 CSRF_INVALID bila token/cookie tidak cocok.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e124"></a>
+### 124. Daftar sumber untuk komposisi
+
+**GET `/api/v1/admin/question-sets`**
+
+Admin membaca metadata/stok sumber untuk menyusun blueprint; tidak mendapat akses file, kandidat atau kunci soal.
+
+Akses: **Session + role PLATFORM_ADMIN**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| examTypeId | query | Tidak | string (uuid); — |
+| sourceYear | query | Tidak | integer (int32); minimum=1900; maximum=2200 |
+| status | query | Tidak | string; pattern=ACTIVE\|ARCHIVED |
+| search | query | Tidak | string; minLength=0; maxLength=120 |
+| offset | query | Tidak | integer (int32); minimum=0 |
+| limit | query | Tidak | integer (int32); minimum=1; maximum=100 |
+
+#### Contoh request
+
+```http
+GET /api/v1/admin/question-sets HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [PageResponseQuestionSource](data-contracts.md#pageresponsequestionsource).
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000100",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "code": "UTBK_2025_A",
+      "sourceYear": 2025,
+      "title": "Sumber UTBK 2025 paket A",
+      "status": "ACTIVE",
+      "questionCount": 100,
+      "publishedCount": 80
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
+- 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
+
+<a id="e125"></a>
+### 125. Detail metadata sumber untuk admin
+
+**GET `/api/v1/admin/question-sets/{id}`**
+
+Metadata jenis ujian/tahun dan hitungan soal, tanpa konten/kunci.
+
+Akses: **Session + role PLATFORM_ADMIN**. Sukses utama: **HTTP 200**.
+
+#### Parameter dan header
+
+| Nama | Letak | Wajib | Tipe / batas |
+|---|---|---|---|
+| id | path | Ya | string (uuid); — |
+
+#### Contoh request
+
+```http
+GET /api/v1/admin/question-sets/00000000-0000-4000-8000-000000000006 HTTP/1.1
+Host: localhost:8080
+Cookie: JSESSIONID=example-session
+```
+
+Body request: **tidak ada**.
+
+#### Response
+
+Schema: [QuestionSource](data-contracts.md#questionsource).
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "status": "ACTIVE",
+  "questionCount": 100,
+  "publishedCount": 80
+}
+```
+
+#### Error/kondisi yang perlu ditangani
+
+- 401 tanpa session login atau sesi dicabut; 403 bila role/CSRF menolak.
+- Gunakan UUID/position yang valid. Resource tidak tersedia/tidak dimiliki memberi 404; pemetaan error konversi parameter masih perlu diseragamkan.
+- 400 VALIDATION_FAILED.
+- 409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED.
 - 500 INTERNAL_ERROR untuk kegagalan tak terduga; cocokkan requestId dengan log.
 
 ## Sumber dan pemeliharaan

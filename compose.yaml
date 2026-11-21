@@ -39,6 +39,23 @@ services:
     volumes:
       - ./storage:/app/storage
 
+  demo-accounts:
+    profiles: ["demo-tools"]
+    image: pasti-bisa-backend-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: demo-accounts
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-pastisiap}
+      DB_USERNAME: ${DB_USERNAME:-pastisiap}
+      DB_PASSWORD: ${DB_PASSWORD:-pastisiap}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-}
+      DEMO_STAFF_PASSWORD: ${DEMO_STAFF_PASSWORD:-}
+      WORKER_ENABLED: "false"
+      JAVA_TOOL_OPTIONS: -Xmx384m
+    mem_limit: 768m
+
   worker:
     image: pasti-bisa-backend-api
     depends_on:

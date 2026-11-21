@@ -54,13 +54,12 @@ public class JdbcStudentLearningRepository implements StudentLearningRepository 
     public List<PracticeTopicResponse> findTopics(CategoryQuery query) {
         return jdbc.query("""
                 SELECT topic.id, topic.name AS topic, subtest.code AS subtest_code, subtest.name AS subtest,
-                       category.code AS category, COUNT(DISTINCT question.id) FILTER (WHERE version.id IS NOT NULL) AS question_count
+                       category.code AS category, COUNT(pool.question_id) AS question_count
                 FROM topic
                 JOIN subtest ON subtest.id = topic.subtest_id
                 JOIN exam_type ON exam_type.id = subtest.exam_type_id
                 JOIN exam_category category ON category.id = exam_type.category_id
-                LEFT JOIN question ON question.topic_id = topic.id AND question.archived_at IS NULL
-                LEFT JOIN question_version version ON version.question_id = question.id AND version.status = 'PUBLISHED'
+                LEFT JOIN published_question_pool pool ON pool.topic_id=topic.id
                 WHERE topic.active AND subtest.active AND exam_type.active AND category.active
                   AND (CAST(:category AS varchar) IS NULL OR upper(category.code) = upper(:category))
                 GROUP BY topic.id, subtest.code, subtest.name, category.code
@@ -74,8 +73,7 @@ public class JdbcStudentLearningRepository implements StudentLearningRepository 
         return jdbc.queryForObject("""
                 SELECT t.id,t.name AS topic,s.id AS subtest_id,s.code AS subtest_code,s.name AS subtest,
                        e.id AS exam_type_id,e.name AS exam_type,c.code AS category,
-                       (SELECT COUNT(*) FROM question q WHERE q.topic_id=t.id AND q.archived_at IS NULL
-                        AND EXISTS(SELECT 1 FROM question_version v WHERE v.question_id=q.id AND v.status='PUBLISHED')) AS question_count
+                       (SELECT COUNT(*) FROM published_question_pool p WHERE p.topic_id=t.id) AS question_count
                 FROM topic t JOIN subtest s ON s.id=t.subtest_id JOIN exam_type e ON e.id=s.exam_type_id
                 JOIN exam_category c ON c.id=e.category_id WHERE t.id=:id AND t.active AND s.active AND e.active AND c.active
                 """,new MapSqlParameterSource("id",id),(rs,row)->{
@@ -150,8 +148,16 @@ public class JdbcStudentLearningRepository implements StudentLearningRepository 
     }
 
     @Override
-    public List<LeaderboardResponse> findLeaderboard(CategoryQuery query) {
+    public List<LeaderboardResponse> findLeaderboard(String email,CategoryQuery query) {
         return jdbc.query("""
+                WITH selected AS (
+                  SELECT h.id FROM leaderboard_cohort h JOIN exam_form f ON f.id=h.form_id
+                  JOIN blueprint_version v ON v.id=f.blueprint_version_id JOIN blueprint b ON b.id=v.blueprint_id
+                  JOIN exam_type e ON e.id=b.exam_type_id JOIN exam_category c ON c.id=e.category_id
+                  WHERE h.status='ACTIVE' AND h.period_start<=now() AND h.period_end>now()
+                  AND (:category::varchar IS NULL OR upper(c.code)=upper(:category))
+                  ORDER BY h.period_start DESC,h.id LIMIT 1
+                )
                 SELECT entry.rank, entry.display_name_snapshot AS display_name, score.total_score,
                        category.code AS category, cohort.period_start, cohort.period_end
                 FROM leaderboard_entry entry
@@ -162,11 +168,19 @@ public class JdbcStudentLearningRepository implements StudentLearningRepository 
                 JOIN exam_type ON exam_type.id = blueprint.exam_type_id
                 JOIN exam_category category ON category.id = exam_type.category_id
                 JOIN score_run score ON score.id = entry.score_run_id
+                JOIN attempt ranked ON ranked.id=score.attempt_id AND ranked.status='COMPLETED' AND ranked.terminal_reason IN ('SUBMITTED','TIMED_OUT')
                 JOIN user_profile profile ON profile.user_id = entry.user_id AND profile.leaderboard_opt_in
-                WHERE cohort.status = 'ACTIVE' AND cohort.period_end > now()
+                JOIN app_user u ON u.id=entry.user_id AND u.status='ACTIVE'
+                WHERE cohort.id=(SELECT id FROM selected)
                   AND (CAST(:category AS varchar) IS NULL OR upper(category.code) = upper(:category))
-                ORDER BY entry.rank LIMIT 100
-                """, categoryParams(query), (rs, row) -> new LeaderboardResponse(
+                ORDER BY entry.rank,entry.user_id LIMIT CASE WHEN EXISTS(
+                  SELECT 1 FROM entitlement_grant g JOIN purchase_order o ON o.id=g.order_id
+                  LEFT JOIN subscription s ON s.id=g.subscription_id
+                  WHERE g.user_id=(SELECT id FROM app_user WHERE email_canonical=:email)
+                  AND o.user_id=g.user_id AND o.status='PAID' AND g.revoked_at IS NULL AND g.starts_at<=now() AND g.ends_at>now()
+                  AND (g.subscription_id IS NULL OR s.status='ACTIVE') AND o.benefits_snapshot->>'fullLeaderboard'='true'
+                ) THEN 100 ELSE 3 END
+                """, categoryParams(query).addValue("email",email), (rs, row) -> new LeaderboardResponse(
                     rs.getInt("rank"), rs.getString("display_name"), rs.getBigDecimal("total_score"),
                     rs.getString("category"), rs.getObject("period_start", OffsetDateTime.class),
                     rs.getObject("period_end", OffsetDateTime.class)));

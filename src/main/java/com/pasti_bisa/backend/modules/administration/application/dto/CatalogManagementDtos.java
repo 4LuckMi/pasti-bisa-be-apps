@@ -31,13 +31,19 @@ public final class CatalogManagementDtos {
     public record PolicyResponse(UUID id,String code,int version,String method,BigDecimal scale,ScoreRules rules,String status) {}
     public record BlueprintRequest(@NotNull UUID examTypeId,@NotBlank @Pattern(regexp="[A-Z][A-Z0-9_-]{1,59}") String code,
             @NotBlank @Size(max=180) String title,@NotBlank @Size(max=500) String reason) {}
-    public record SectionRequest(@NotNull UUID subtestId,@Min(1) @Max(500) int questionCount,UUID topicId,@Min(1900) @Max(2200) Integer sourceYear) {}
+    public record DifficultyAllocation(@NotBlank @Pattern(regexp="EASY|MEDIUM|HARD") String difficulty,@Min(1) @Max(500) int count) {}
+    public record SectionRequest(@NotNull UUID subtestId,@Min(1) @Max(500) int questionCount,UUID topicId,@Min(1900) @Max(2200) Integer sourceYear,
+            @Size(max=20) List<@NotNull UUID> questionSetIds,@Size(max=3) List<@NotNull @Valid DifficultyAllocation> difficultyQuotas,
+            @Pattern(regexp="UNSEEN_TODAY|NEVER_SEEN|RECYCLE_OLDEST") String repeatPolicy) {
+        public SectionRequest{questionSetIds=questionSetIds==null?List.of():List.copyOf(questionSetIds);difficultyQuotas=difficultyQuotas==null?List.of():List.copyOf(difficultyQuotas);}
+    }
     public record BlueprintVersionRequest(@Min(60) @Max(86400) int durationSeconds,@NotNull UUID scoringPolicyId,
             @NotEmpty @Size(max=30) List<@NotNull @Valid SectionRequest> sections,@NotBlank @Size(max=500) String reason) {}
     public record PublishRequest(UUID expectedActiveVersionId,@NotBlank @Size(max=500) String reason) {}
     public record BlueprintStatusRequest(@NotBlank @Pattern(regexp="ACTIVE|ARCHIVED") String status,@NotBlank @Size(max=500) String reason) {}
     public record BlueprintResponse(UUID id,UUID examTypeId,String code,String title,String status,UUID activeVersionId) {}
-    public record BlueprintSection(UUID id,int position,UUID subtestId,String subtestName,int questionCount,UUID topicId,Integer sourceYear,long available) {}
+    public record BlueprintSection(UUID id,int position,UUID subtestId,String subtestName,int questionCount,UUID topicId,Integer sourceYear,long available,
+            List<UUID> questionSetIds,List<DifficultyAllocation> difficultyQuotas,String repeatPolicy) {}
     public record BlueprintVersion(UUID id,int version,String status,int durationSeconds,UUID scoringPolicyId,List<BlueprintSection> sections,boolean ready) {}
     public record BlueprintDetail(BlueprintResponse blueprint,List<BlueprintVersion> versions) {}
 }

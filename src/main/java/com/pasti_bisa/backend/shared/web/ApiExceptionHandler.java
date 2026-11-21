@@ -29,7 +29,7 @@ public class ApiExceptionHandler {
 
 	@ExceptionHandler(BusinessException.class)
 	ResponseEntity<ApiError> handleBusiness(BusinessException exception, HttpServletRequest request) {
-		return error(request, exception, exception.status(), exception.code(), exception.getMessage(), Map.of());
+		return error(request, exception, exception.status(), exception.code(), exception.getMessage(), exception.fieldErrors());
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)

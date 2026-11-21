@@ -76,6 +76,8 @@ scoring dan pemeriksaan expiry. Pemisahan antrean/kapasitas worker termasuk road
 | V5 | Sekolah, kelas dan skor target |
 | V6 | Mode/demo blueprint, idempotency hash/reason, metadata impor, lease token dan guard snapshot/answer/source |
 | V7 | Revision sesi/draft, keluarga/revisi harga immutable, ledger permintaan refund dan index audit |
+| V8 | Index read dashboard/riwayat siswa, versi soal terbit terbaru, dan periode cohort |
+| V9 | Kumpulan sumber/N:M, staging Excel/sheet, guard lingkup dan versi stale, sumber section immutable, view/function pool |
 
 Migrasi berjalan otomatis saat startup aplikasi. File migration harus berada dalam JAR image terbaru.
 
@@ -90,7 +92,16 @@ startup Flyway dan versi image; jangan menjalankan repair/baseline/reset secara 
 
 Profil demo memuat 4 kategori/katalog, 48 soal aritmetika generik dan PDF contoh di
 `storage/demo/sample-questions.pdf`. Fixture idempoten; menonaktifkan profil tidak menghapus data yang sudah masuk.
-Tidak ada akun internal/password default. Register publik tetap SISWA+CUSTOMER.
+Profil biasa tidak membuat akun internal/password default. Register publik tetap SISWA+CUSTOMER.
+Untuk akun dummy development terpisah, jalankan `scripts/setup-demo-accounts.ps1` dari root repository.
+Tool eksplisit ini membuat `admin.demo@pastisiap.test` (INTERNAL/PLATFORM_ADMIN) dan
+`staff.demo@pastisiap.test` (INTERNAL/QUESTION_STAFF), menggunakan password acak dari
+`target/demo-accounts.credentials.json`. Environment Postman privat dan hasil uji login/role
+ditulis ke `target/PastiSiap-Demo-Accounts.postman_environment.json` dan `target/demo-accounts-verification.json`.
+File tersebut diabaikan Git; collection publik hanya berisi placeholder password.
+Setup ulang idempoten dan menolak bentrok identitas atau perubahan password/role/status; tidak mempromosikan akun existing.
+Service Compose `demo-accounts` hanya aktif melalui profile `demo-tools`, tanpa port HTTP, dan berhenti setelah seed.
+Tidak ada perubahan migration/schema untuk fixture akun ini. Untuk deployment sebenarnya gunakan provisioning admin terkontrol di bawah.
 
 Untuk uji petugas lokal, operator memilih akun existing dan menjalankan provisioning yang eksplisit:
 
@@ -122,7 +133,20 @@ Untuk akun password existing, gunakan `PUT /admin/users/{id}/roles`. User type d
 
 ### Menjalankan endpoint internal
 
-1. Dari repo backend jalankan `docker compose up --build -d`; V7 berjalan otomatis saat API mulai.
+Saat ini ada **39 operasi petugas** yang dijaga role QUESTION_STAFF pada `/api/v1/staff/**`:
+
+| Controller | Operasi | Cakupan |
+|---|---:|---|
+| ContentController | 14 | Taxonomy read, upload/status/sumber PDF, review kandidat, save, master/detail/versi/publish/arsip |
+| QuestionBankController | 11 | Dashboard, filter bank soal, versi/detail, draft/revision, history/retry/bulk save, audit, stok pool |
+| WorkbookImportController | 14 | Sumber jenis/tahun dan item, status, mapping/template Excel, upload/list/status, review/koreksi/save kandidat |
+
+Kontrak request/response tiap operasi tersedia pada [referensi API](03-api-reference.md) dan collection Postman.
+Admin memerlukan PLATFORM_ADMIN dan tidak otomatis memperoleh QUESTION_STAFF. Akun demo memegang tepat satu role.
+Rangkaian tes mencakup upload PDF/OCR dan Excel, review/save/publish, immutability, stok/generasi dan batas akses.
+Tidak semua variasi file nyata sudah tercakup; rich asset dan essay tetap pada roadmap.
+
+1. Dari repo backend jalankan `docker compose up --build -d`; V9 berjalan otomatis saat API mulai.
 2. Import ulang collection Postman, login akun berizin lalu ambil CSRF dari session/cookie yang sama.
 3. Petugas: taxonomy → upload/status/candidates → koreksi → save draft → GET draft/revision → edit/publish.
 4. Admin: taxonomy → scoring policy → blueprint → versi → readiness → publish. Kirim active version terakhir
@@ -140,7 +164,7 @@ docker compose -p pastisiap-verify -f compose.verify.yaml down
 ```
 
 Suite memakai database tmpfs terpisah dan Maven/JDK 25 + OCR asli. Tidak menyentuh akun/database development.
-28 tes yang ada dijelaskan di roadmap; hasil pengujian sebelumnya tidak berarti semua skenario produksi lulus.
+Suite dan cakupan tes dijelaskan di roadmap; hasil pengujian sebelumnya tidak berarti semua skenario produksi lulus.
 Untuk perubahan dokumentasi/annotation, verifikasi tambahan memeriksa semua operasi runtime terdokumentasi,
 semua contoh terhadap key DTO, referensi schema/link dan tidak adanya endpoint lama pada kontrak baru.
 
@@ -159,9 +183,10 @@ SSO Google harus diselesaikan lewat browser; Postman tidak menyelesaikan consent
 | 409 revision | Fetch soal/navigator lagi dan gunakan revision terakhir |
 | FINALIZING berkepanjangan | Periksa worker dan job; admin dapat retry job FAILED, bukan PROCESSING atau hasil yang sudah selesai |
 | Batch QUEUED | Pastikan worker hidup dan storage mount sama |
-| Batch FAILED | Periksa jobId/log extractor, PDF encrypted/limit/OCR dan file tersedia |
+| Batch FAILED | Periksa errorCode/jobId/log worker; PDF encrypted/limit/OCR atau format/header/sheet XLSX, serta file sumber tersedia |
 | 500 | Cocokkan requestId response dengan log; jangan hanya membaca ringkasan startup |
 | Image registry/DNS error | Periksa koneksi/DNS/proxy Docker; ini berbeda dari compile error kode |
+| Docker read-only / no space / I/O error | Periksa ruang drive host tempat VHD Docker disimpan. Bebaskan ruang, lalu restart Docker secara terkontrol; pertahankan volume dan VHD data. |
 
 ```powershell
 docker compose logs --since 10m api | Select-String -SimpleMatch 'REQUEST_ID' -Context 0,20
@@ -182,8 +207,8 @@ Jangan menganggap bind mount storage lokal otomatis merupakan backup off-host.
 
 1. Review controller, DTO, service, migrasi dan konfigurasi yang berubah.
 2. Perbarui snapshot runtime `/api-docs` setelah rebuild, tanpa menyalin secret/session atau baris pengguna.
-3. Perbarui catatan/example pada `generate-reference.mjs`. Export ulang metadata skema jika ada migrasi baru.
-4. Jalankan `node docs/backend/generate-reference.mjs`, lalu `node docs/backend/validate-docs.mjs`.
+3. Perbarui catatan/example pada `generate-reference.mjs`, `student-reference.mjs`, `internal-reference.mjs` atau `workbook-reference.mjs`. Export ulang metadata skema jika ada migrasi baru.
+4. Jalankan generator reference, `node postman/update-internal.mjs`, `node postman/update-student-experience.mjs`, `node postman/update-workbook.mjs`, lalu `node docs/backend/validate-docs.mjs`.
 5. Review hasil Markdown, diagram dan schema; update Postman bila kontrak berubah.
 
 Generator tidak melakukan deployment, migrasi atau mutasi data pengguna; hanya membaca snapshot JSON lokal
@@ -200,6 +225,20 @@ npm install --prefix $renderRoot --no-save --package-lock=false --ignore-scripts
 node docs/backend/build-html.mjs
 ```
 
-Renderer memakai profil browser headless terpisah, memvalidasi 14 diagram dengan engine Mermaid,
+Renderer memakai profil browser headless terpisah, memvalidasi 17 diagram dengan engine Mermaid,
 menyimpan SVG dan menggabungkan seluruh bab menjadi HTML offline. Library renderer tidak diperlukan
 untuk membaca hasil HTML. Lokasi package/browser alternatif dapat diberikan sebagai dua argumen script.
+
+Argumen ketiga opsional menentukan direktori kerja renderer, misalnya ketika drive C penuh:
+
+```powershell
+$renderRoot = Join-Path $PWD 'target/documentation-runtime'
+$renderScratch = Join-Path $PWD 'target/documentation-scratch'
+$renderBrowser = 'C:/Program Files/Google/Chrome/Application/chrome.exe'
+node docs/backend/build-html.mjs $renderRoot $renderBrowser $renderScratch
+```
+
+Pasang library pada renderRoot jika belum tersedia. target/ diabaikan Git. Jika mount disk Docker tetap
+macet setelah ruang tersedia, ikuti [panduan disk WSL Microsoft](https://learn.microsoft.com/en-us/windows/wsl/disk-space).
+Penghentian seluruh WSL juga memutus distribusi Linux lain yang berjalan; simpan pekerjaan dan pastikan
+persetujuan pemilik proses sebelum melakukannya. Reset/format/delete volume bukan langkah diagnosis awal.

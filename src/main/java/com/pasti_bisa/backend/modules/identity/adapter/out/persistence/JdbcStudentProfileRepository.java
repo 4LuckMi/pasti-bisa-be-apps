@@ -17,6 +17,33 @@ public class JdbcStudentProfileRepository implements StudentProfileRepository {
         }
 
         @Override
+        public void lock(String email){jdbc.queryForObject("SELECT id FROM app_user WHERE email_canonical=:email AND status='ACTIVE' FOR UPDATE",new MapSqlParameterSource("email",email),UUID.class);}
+
+        @Override public com.pasti_bisa.backend.modules.identity.application.dto.StudentPrivacy.PrivacyResponse privacy(String email){
+                return jdbc.queryForObject("""
+                        SELECT p.leaderboard_opt_in,(p.consent->>'leaderboardUpdatedAt')::timestamptz AS consent_updated
+                        FROM user_profile p JOIN app_user u ON u.id=p.user_id WHERE u.email_canonical=:email
+                        """,new MapSqlParameterSource("email",email),(r,n)->{
+                            var updated=r.getObject("consent_updated",java.time.OffsetDateTime.class);
+                            return new com.pasti_bisa.backend.modules.identity.application.dto.StudentPrivacy.PrivacyResponse(r.getBoolean("leaderboard_opt_in"),updated==null?null:updated.toInstant());
+                        });
+        }
+        @Override public void updatePrivacy(String email,boolean optedIn,String requestId){
+                var p=new MapSqlParameterSource("email",email).addValue("opted",optedIn).addValue("request",requestId);
+                jdbc.update("""
+                        INSERT INTO audit_event(id,actor_id,action,entity_type,entity_id,request_id,before_redacted,after_redacted)
+                        SELECT gen_random_uuid(),u.id,'STUDENT_PRIVACY_UPDATED','USER_PROFILE',u.id,:request,
+                        jsonb_build_object('leaderboardOptIn',p.leaderboard_opt_in),jsonb_build_object('leaderboardOptIn',:opted::boolean)
+                        FROM app_user u JOIN user_profile p ON p.user_id=u.id WHERE u.email_canonical=:email
+                        """,p);
+                jdbc.update("""
+                        UPDATE user_profile SET leaderboard_opt_in=:opted,
+                        consent=consent||jsonb_build_object('leaderboardOptIn',:opted::boolean,'leaderboardUpdatedAt',now()),updated_at=now()
+                        WHERE user_id=(SELECT id FROM app_user WHERE email_canonical=:email)
+                        """,p);
+        }
+
+        @Override
         public StudentProfileResponse findByEmail(String email) {
                 return jdbc.queryForObject(
                                 """
@@ -53,7 +80,7 @@ public class JdbcStudentProfileRepository implements StudentProfileRepository {
                                 .addValue("targetInstitution", command.targetInstitution())
                                 .addValue("targetProgram", command.targetProgram(), java.sql.Types.VARCHAR)
                                 .addValue("targetScore", command.targetScore(), java.sql.Types.INTEGER);
-                UUID targetId = jdbc.query("""
+                UUID targetId = command.targetKind()==null?null:jdbc.query("""
                                 SELECT id FROM target WHERE kind = :targetKind AND institution = :targetInstitution
                                 AND program IS NOT DISTINCT FROM :targetProgram
                                 """, params, (rs, row) -> rs.getObject("id", UUID.class)).stream().findFirst()

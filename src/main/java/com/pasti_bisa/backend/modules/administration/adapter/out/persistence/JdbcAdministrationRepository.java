@@ -161,9 +161,10 @@ public class JdbcAdministrationRepository implements AdministrationRepository {
     @Override public JobResponse retry(UUID id) {
         var job=jdbc.queryForObject("SELECT * FROM job WHERE id=:id FOR UPDATE",p("id",id),jobMapper);
         if(!job.status().equals("FAILED")) throw new BusinessException(409,"JOB_NOT_RETRYABLE","Only failed jobs can be manually retried");
-        if(!List.of("IMPORT_PDF","SCORE_ATTEMPT").contains(job.type())) throw new BusinessException(409,"UNSUPPORTED_JOB_TYPE","This job type cannot be retried here");
+        if(!List.of("IMPORT_PDF","IMPORT_XLSX","SCORE_ATTEMPT").contains(job.type())) throw new BusinessException(409,"UNSUPPORTED_JOB_TYPE","This job type cannot be retried here");
         jdbc.update("UPDATE job SET status='QUEUED',retry_count=0,lease_token=NULL,lease_until=NULL,lease_owner=NULL,last_error=NULL,run_after=now() WHERE id=:id",p("id",id));
-        if(job.type().equals("IMPORT_PDF")) jdbc.update("UPDATE import_batch SET status='QUEUED',error_code=NULL,updated_at=now() WHERE id=(SELECT (payload->>'batchId')::uuid FROM job WHERE id=:id)",p("id",id));
+        if(job.type().startsWith("IMPORT_")) jdbc.update("UPDATE import_batch SET status='QUEUED',error_code=NULL,updated_at=now() WHERE id=(SELECT (payload->>'batchId')::uuid FROM job WHERE id=:id)",p("id",id));
+        if(job.type().equals("IMPORT_XLSX"))jdbc.update("UPDATE import_sheet SET status='QUEUED' WHERE status='FAILED' AND batch_id=(SELECT (payload->>'batchId')::uuid FROM job WHERE id=:id)",p("id",id));
         return jdbc.queryForObject("SELECT * FROM job WHERE id=:id",p("id",id),jobMapper);
     }
     @Override public PageResponse<AuditResponse> audit(ListQuery q) {

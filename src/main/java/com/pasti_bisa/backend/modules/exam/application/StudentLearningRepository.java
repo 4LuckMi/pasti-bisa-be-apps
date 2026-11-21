@@ -12,5 +12,5 @@ public interface StudentLearningRepository {
     int findUsedQuota(String email, LocalDate day);
     List<AttemptHistoryResponse> findHistory(String email, HistoryQuery query);
     List<SubscriptionResponse> findSubscriptions(String email);
-    List<LeaderboardResponse> findLeaderboard(CategoryQuery query);
+    List<LeaderboardResponse> findLeaderboard(String email,CategoryQuery query);
 }

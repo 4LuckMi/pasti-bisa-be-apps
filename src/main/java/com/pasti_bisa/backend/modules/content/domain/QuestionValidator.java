@@ -17,7 +17,7 @@ public final class QuestionValidator {
             for(var option:content.options()) {
                 if(option.code()==null||!option.code().matches("[A-E]")||!codes.add(option.code())) errors.add("OPTION_CODE_INVALID");
                 if(option.text()==null||option.text().isBlank()||option.text().length()>10000) errors.add("OPTION_TEXT_INVALID");
-                if(option.weight()==null||option.weight().signum()<0) errors.add("OPTION_WEIGHT_INVALID");
+                if(option.weight()==null||option.weight().signum()<0||option.weight().compareTo(java.math.BigDecimal.valueOf(1000))>0||option.weight().scale()>4) errors.add("OPTION_WEIGHT_INVALID");
             }
             if(content.options().stream().filter(o->o.correct()).count()!=1) errors.add("ANSWER_KEY_MISSING_OR_AMBIGUOUS");
         }

@@ -76,11 +76,12 @@ public class JdbcQuestionBankRepository implements QuestionBankRepository {
         return new PageResponse<>(items,jdbc.queryForObject("SELECT count(*) "+IMPORT_FROM,params,Long.class),q.offset(),q.limit());
     }
     @Override public ImportResponse retry(UUID actor,UUID id) {
-        var job=jdbc.queryForObject("SELECT id,status FROM job WHERE type='IMPORT_PDF' AND dedup_key=:key FOR UPDATE",p("key","import:"+id),
+        var job=jdbc.queryForObject("SELECT id,status FROM job WHERE type IN ('IMPORT_PDF','IMPORT_XLSX') AND dedup_key=:key FOR UPDATE",p("key","import:"+id),
             (rs,row)->new JobState(rs.getObject("id",UUID.class),rs.getString("status")));
         if(!job.status().equals("FAILED")) throw new BusinessException(409,"JOB_NOT_RETRYABLE","Wait for automatic retries; only exhausted failed jobs can be manually retried");
         jdbc.update("UPDATE job SET status='QUEUED',retry_count=0,last_error=NULL,lease_until=NULL,lease_token=NULL,lease_owner=NULL,run_after=now() WHERE id=:id",p("id",job.id()));
-        jdbc.update("UPDATE import_batch SET status='QUEUED',error_code=NULL,updated_at=now() WHERE id=:id",p("id",id));return content.importById(id);
+        jdbc.update("UPDATE import_batch SET status='QUEUED',error_code=NULL,updated_at=now() WHERE id=:id",p("id",id));
+        jdbc.update("UPDATE import_sheet SET status='QUEUED' WHERE batch_id=:id AND status='FAILED'",p("id",id));return content.importById(id);
     }
     private record JobState(UUID id,String status) {}
     @Override public StaffDashboard dashboard() {
@@ -104,9 +105,7 @@ public class JdbcQuestionBankRepository implements QuestionBankRepository {
     @Override public PageResponse<PoolRequirement> requirements(int offset,int limit) {
         var items=jdbc.query("""
             SELECT b.id,b.title,v.id AS version_id,v.version,s.position,s.subtest_id,t.name,s.item_count,
-              (SELECT count(*) FROM question q JOIN LATERAL(SELECT source_year FROM question_version WHERE question_id=q.id AND status='PUBLISHED' ORDER BY version DESC LIMIT 1) qv ON true
-               WHERE q.subtest_id=s.subtest_id AND q.archived_at IS NULL AND (s.filters->>'topicId' IS NULL OR q.topic_id=(s.filters->>'topicId')::uuid)
-                 AND (s.filters->>'sourceYear' IS NULL OR qv.source_year=(s.filters->>'sourceYear')::int)) AS available
+              question_section_available(s.id) AS available
             """+REQUIREMENTS_FROM+" ORDER BY b.id,s.position LIMIT :limit OFFSET :offset",p("limit",limit).addValue("offset",offset),
             (rs,row)->new PoolRequirement(rs.getObject("id",UUID.class),rs.getString("title"),rs.getObject("version_id",UUID.class),rs.getInt("version"),rs.getInt("position"),rs.getObject("subtest_id",UUID.class),rs.getString("name"),rs.getInt("item_count"),rs.getLong("available")));
         return new PageResponse<>(items,jdbc.queryForObject("SELECT count(*) "+REQUIREMENTS_FROM,new MapSqlParameterSource(),Long.class),offset,limit);

@@ -299,7 +299,13 @@
         "accuracy": 33.3333
       }
     ],
-    "finalizedAt": "2026-11-19T07:05:00Z"
+    "finalizedAt": "2026-11-19T07:05:00Z",
+    "processing": {
+      "state": "READY",
+      "poll": false,
+      "retryAfterSeconds": 0,
+      "errorCode": null
+    }
   },
   "TaxonomyResponse": {
     "categoryId": "00000000-0000-4000-8000-000000000024",
@@ -492,6 +498,306 @@
     "secondsPerQuestion": 120,
     "ready": true
   },
+  "Processing": {
+    "state": "READY",
+    "poll": false,
+    "retryAfterSeconds": 0,
+    "errorCode": null
+  },
+  "PrivacyRequest": {
+    "leaderboardOptIn": true
+  },
+  "PrivacyResponse": {
+    "leaderboardOptIn": true,
+    "updatedAt": "2026-11-21T07:00:00Z"
+  },
+  "Benefits": {
+    "fullLeaderboard": true
+  },
+  "Plan": {
+    "id": "00000000-0000-4000-8000-000000000060",
+    "code": "PREMIUM_MONTH_R1",
+    "familyCode": "PREMIUM_MONTH",
+    "revision": 1,
+    "name": "Premium 1 bulan",
+    "months": 1,
+    "amountMinor": 39000,
+    "currency": "IDR",
+    "benefits": {
+      "fullLeaderboard": true
+    }
+  },
+  "MembershipPlan": {
+    "id": "00000000-0000-4000-8000-000000000060",
+    "code": "PREMIUM_MONTH_R1",
+    "name": "Premium 1 bulan",
+    "months": 1,
+    "amountMinor": 39000,
+    "currency": "IDR"
+  },
+  "ScorePoint": {
+    "attemptId": "00000000-0000-4000-8000-000000000006",
+    "completedAt": "2026-11-21T07:00:00Z",
+    "score": 80
+  },
+  "HistorySummary": {
+    "total": 10,
+    "completed": 8,
+    "inProgress": 1,
+    "scoring": 1,
+    "scoringFailed": 0
+  },
+  "HistoryEntry": {
+    "attemptId": "00000000-0000-4000-8000-000000000006",
+    "tryoutId": "00000000-0000-4000-8000-000000000002",
+    "title": "Tryout UTBK Contoh",
+    "category": "UTBK",
+    "mode": "TRYOUT",
+    "status": "COMPLETED",
+    "terminalReason": "SUBMITTED",
+    "topicId": null,
+    "topicName": null,
+    "startedAt": "2026-11-21T06:50:00Z",
+    "finalizedAt": "2026-11-21T07:00:00Z",
+    "totalScore": 80,
+    "questionCount": 3,
+    "durationSeconds": 5400,
+    "processing": {
+      "state": "READY",
+      "poll": false,
+      "retryAfterSeconds": 0,
+      "errorCode": null
+    }
+  },
+  "TryoutCard": {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "code": "DEMO_TRYOUT",
+    "title": "Tryout UTBK Contoh",
+    "category": "UTBK",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "examType": "TPS",
+    "blueprintVersionId": "00000000-0000-4000-8000-000000000003",
+    "durationSeconds": 5400,
+    "questionCount": 3,
+    "ready": true,
+    "attemptCount": 2,
+    "latestScore": 80,
+    "latestCompletedAt": "2026-11-21T07:00:00Z"
+  },
+  "TopicCard": {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "topic": "Aritmetika",
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "subtestCode": "NUMERIK",
+    "subtest": "Penalaran Numerik",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "examType": "TPS",
+    "category": "UTBK",
+    "questionCount": 12,
+    "ready": true
+  },
+  "Cohort": {
+    "id": "00000000-0000-4000-8000-000000000061",
+    "title": "Tryout UTBK Contoh",
+    "category": "UTBK",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "formId": "00000000-0000-4000-8000-000000000062",
+    "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+    "periodStart": "2026-11-01T00:00:00Z",
+    "periodEnd": "2026-12-01T00:00:00Z",
+    "attemptPolicy": "BEST",
+    "ended": false
+  },
+  "RankingEntry": {
+    "rank": 1,
+    "displayName": "Siswa Contoh",
+    "totalScore": 80,
+    "targetKind": "CAMPUS",
+    "targetInstitution": "Universitas Contoh",
+    "targetProgram": "Informatika",
+    "currentUser": true
+  },
+  "Membership": {
+    "tier": "PREMIUM",
+    "startsAt": "2026-11-01T00:00:00Z",
+    "endsAt": "2026-12-01T00:00:00Z",
+    "plan": {
+      "id": "00000000-0000-4000-8000-000000000060",
+      "code": "PREMIUM_MONTH_R1",
+      "name": "Premium 1 bulan",
+      "months": 1,
+      "amountMinor": 39000,
+      "currency": "IDR"
+    },
+    "benefits": {
+      "fullLeaderboard": true
+    },
+    "leaderboardPreviewLimit": 3,
+    "dailyTryoutLimit": 2
+  },
+  "HistoryPage": {
+    "items": [
+      {
+        "attemptId": "00000000-0000-4000-8000-000000000006",
+        "tryoutId": "00000000-0000-4000-8000-000000000002",
+        "title": "Tryout UTBK Contoh",
+        "category": "UTBK",
+        "mode": "TRYOUT",
+        "status": "COMPLETED",
+        "terminalReason": "SUBMITTED",
+        "topicId": null,
+        "topicName": null,
+        "startedAt": "2026-11-21T06:50:00Z",
+        "finalizedAt": "2026-11-21T07:00:00Z",
+        "totalScore": 80,
+        "questionCount": 3,
+        "durationSeconds": 5400,
+        "processing": {
+          "state": "READY",
+          "poll": false,
+          "retryAfterSeconds": 0,
+          "errorCode": null
+        }
+      }
+    ],
+    "total": 10,
+    "offset": 0,
+    "limit": 6,
+    "summary": {
+      "total": 10,
+      "completed": 8,
+      "inProgress": 1,
+      "scoring": 1,
+      "scoringFailed": 0
+    }
+  },
+  "ScoreGroup": {
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "examType": "TPS",
+    "policyVersion": "DEMO_BINARY:1",
+    "count": 8,
+    "average": 80,
+    "trend": [
+      {
+        "attemptId": "00000000-0000-4000-8000-000000000006",
+        "completedAt": "2026-11-21T07:00:00Z",
+        "score": 80
+      }
+    ]
+  },
+  "StudentDashboard": {
+    "category": "UTBK",
+    "mode": "TRYOUT",
+    "totalTryouts": 10,
+    "totalPractices": 0,
+    "completed": 8,
+    "elapsedSeconds": 3600,
+    "currentStreakDays": 1,
+    "scoreGroups": [
+      {
+        "examTypeId": "00000000-0000-4000-8000-000000000025",
+        "examType": "TPS",
+        "policyVersion": "DEMO_BINARY:1",
+        "count": 8,
+        "average": 80,
+        "trend": [
+          {
+            "attemptId": "00000000-0000-4000-8000-000000000006",
+            "completedAt": "2026-11-21T07:00:00Z",
+            "score": 80
+          }
+        ]
+      }
+    ],
+    "recentActivity": [
+      {
+        "attemptId": "00000000-0000-4000-8000-000000000006",
+        "tryoutId": "00000000-0000-4000-8000-000000000002",
+        "title": "Tryout UTBK Contoh",
+        "category": "UTBK",
+        "mode": "TRYOUT",
+        "status": "COMPLETED",
+        "terminalReason": "SUBMITTED",
+        "topicId": null,
+        "topicName": null,
+        "startedAt": "2026-11-21T06:50:00Z",
+        "finalizedAt": "2026-11-21T07:00:00Z",
+        "totalScore": 80,
+        "questionCount": 3,
+        "durationSeconds": 5400,
+        "processing": {
+          "state": "READY",
+          "poll": false,
+          "retryAfterSeconds": 0,
+          "errorCode": null
+        }
+      }
+    ],
+    "quota": {
+      "dateWib": "2026-11-19",
+      "used": 1,
+      "limit": 2,
+      "remaining": 1
+    },
+    "membership": {
+      "tier": "PREMIUM",
+      "startsAt": "2026-11-01T00:00:00Z",
+      "endsAt": "2026-12-01T00:00:00Z",
+      "plan": {
+        "id": "00000000-0000-4000-8000-000000000060",
+        "code": "PREMIUM_MONTH_R1",
+        "name": "Premium 1 bulan",
+        "months": 1,
+        "amountMinor": 39000,
+        "currency": "IDR"
+      },
+      "benefits": {
+        "fullLeaderboard": true
+      },
+      "leaderboardPreviewLimit": 3,
+      "dailyTryoutLimit": 2
+    }
+  },
+  "Rankings": {
+    "cohort": {
+      "id": "00000000-0000-4000-8000-000000000061",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "formId": "00000000-0000-4000-8000-000000000062",
+      "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+      "periodStart": "2026-11-01T00:00:00Z",
+      "periodEnd": "2026-12-01T00:00:00Z",
+      "attemptPolicy": "BEST",
+      "ended": false
+    },
+    "accessTier": "FULL",
+    "leaderboardOptIn": true,
+    "totalParticipants": 1,
+    "accessibleTotal": 1,
+    "offset": 0,
+    "limit": 20,
+    "items": [
+      {
+        "rank": 1,
+        "displayName": "Siswa Contoh",
+        "totalScore": 80,
+        "targetKind": "CAMPUS",
+        "targetInstitution": "Universitas Contoh",
+        "targetProgram": "Informatika",
+        "currentUser": true
+      }
+    ],
+    "ownRank": {
+      "rank": 1,
+      "displayName": "Siswa Contoh",
+      "totalScore": 80,
+      "targetKind": "CAMPUS",
+      "targetInstitution": "Universitas Contoh",
+      "targetProgram": "Informatika",
+      "currentUser": true
+    }
+  },
   "MutationReason": {
     "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
   },
@@ -587,7 +893,21 @@
     "subtestId": "00000000-0000-4000-8000-000000000004",
     "questionCount": 3,
     "topicId": "00000000-0000-4000-8000-000000000005",
-    "sourceYear": 2026
+    "sourceYear": null,
+    "questionSetIds": [
+      "00000000-0000-4000-8000-000000000100"
+    ],
+    "difficultyQuotas": [
+      {
+        "difficulty": "EASY",
+        "count": 1
+      },
+      {
+        "difficulty": "MEDIUM",
+        "count": 2
+      }
+    ],
+    "repeatPolicy": "UNSEEN_TODAY"
   },
   "BlueprintVersionRequest": {
     "durationSeconds": 5400,
@@ -597,7 +917,21 @@
         "subtestId": "00000000-0000-4000-8000-000000000004",
         "questionCount": 3,
         "topicId": "00000000-0000-4000-8000-000000000005",
-        "sourceYear": 2026
+        "sourceYear": null,
+        "questionSetIds": [
+          "00000000-0000-4000-8000-000000000100"
+        ],
+        "difficultyQuotas": [
+          {
+            "difficulty": "EASY",
+            "count": 1
+          },
+          {
+            "difficulty": "MEDIUM",
+            "count": 2
+          }
+        ],
+        "repeatPolicy": "UNSEEN_TODAY"
       }
     ],
     "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
@@ -676,8 +1010,22 @@
     "subtestName": "Penalaran Numerik",
     "questionCount": 3,
     "topicId": "00000000-0000-4000-8000-000000000005",
-    "sourceYear": 2026,
-    "available": 12
+    "sourceYear": null,
+    "available": 12,
+    "questionSetIds": [
+      "00000000-0000-4000-8000-000000000100"
+    ],
+    "difficultyQuotas": [
+      {
+        "difficulty": "EASY",
+        "count": 1
+      },
+      {
+        "difficulty": "MEDIUM",
+        "count": 2
+      }
+    ],
+    "repeatPolicy": "UNSEEN_TODAY"
   },
   "PolicyResponse": {
     "id": "00000000-0000-4000-8000-000000000070",
@@ -766,8 +1114,22 @@
         "subtestName": "Penalaran Numerik",
         "questionCount": 3,
         "topicId": "00000000-0000-4000-8000-000000000005",
-        "sourceYear": 2026,
-        "available": 12
+        "sourceYear": null,
+        "available": 12,
+        "questionSetIds": [
+          "00000000-0000-4000-8000-000000000100"
+        ],
+        "difficultyQuotas": [
+          {
+            "difficulty": "EASY",
+            "count": 1
+          },
+          {
+            "difficulty": "MEDIUM",
+            "count": 2
+          }
+        ],
+        "repeatPolicy": "UNSEEN_TODAY"
       }
     ],
     "ready": true
@@ -787,6 +1149,80 @@
     "sourceTitle": "Sumber contoh",
     "stemPreview": "Berapa hasil satu tambah satu?",
     "batchId": null
+  },
+  "SheetMapping": {
+    "sheetName": "NUMERIK",
+    "subtestId": "00000000-0000-4000-8000-000000000004"
+  },
+  "WorkbookMetadata": {
+    "questionSetId": "00000000-0000-4000-8000-000000000100",
+    "sheets": [
+      {
+        "sheetName": "NUMERIK",
+        "subtestId": "00000000-0000-4000-8000-000000000004"
+      }
+    ]
+  },
+  "WorkbookImport": {
+    "id": "00000000-0000-4000-8000-000000000101",
+    "questionSetId": "00000000-0000-4000-8000-000000000100",
+    "fileId": "00000000-0000-4000-8000-000000000021",
+    "inputFormat": "XLSX",
+    "status": "READY",
+    "candidateCount": 2,
+    "validCount": 2,
+    "invalidCount": 0,
+    "errorCode": null,
+    "jobStatus": "SUCCEEDED",
+    "createdAt": "2026-11-21T07:00:00Z",
+    "sheets": [
+      {
+        "id": "00000000-0000-4000-8000-000000000102",
+        "sheetName": "NUMERIK",
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "sheetIndex": 0,
+        "status": "READY",
+        "candidateCount": 2,
+        "invalidCount": 0
+      }
+    ]
+  },
+  "WorkbookSheet": {
+    "id": "00000000-0000-4000-8000-000000000102",
+    "sheetName": "NUMERIK",
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "sheetIndex": 0,
+    "status": "READY",
+    "candidateCount": 2,
+    "invalidCount": 0
+  },
+  "SaveWorkbookCandidates": {
+    "candidateIds": [
+      "00000000-0000-4000-8000-000000000103"
+    ],
+    "reason": "Review sumber dan unggahan soal contoh"
+  },
+  "SourceRequest": {
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "code": "UTBK_2025_A",
+    "sourceYear": 2025,
+    "title": "Sumber UTBK 2025 paket A",
+    "reason": "Review sumber dan unggahan soal contoh"
+  },
+  "QuestionSource": {
+    "id": "00000000-0000-4000-8000-000000000100",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "code": "UTBK_2025_A",
+    "sourceYear": 2025,
+    "title": "Sumber UTBK 2025 paket A",
+    "status": "ACTIVE",
+    "questionCount": 100,
+    "publishedCount": 80
+  },
+  "LinkSourceQuestion": {
+    "questionId": "00000000-0000-4000-8000-000000000007",
+    "sourceItemCode": "PU_Q001",
+    "reason": "Review sumber dan unggahan soal contoh"
   },
   "TaxonomyItem": {
     "id": "00000000-0000-4000-8000-000000000090",
@@ -832,6 +1268,10 @@
     },
     "active": true
   },
+  "DifficultyAllocation": {
+    "difficulty": "EASY",
+    "count": 1
+  },
   "BlueprintDetail": {
     "blueprint": {
       "id": "00000000-0000-4000-8000-000000000002",
@@ -856,13 +1296,203 @@
             "subtestName": "Penalaran Numerik",
             "questionCount": 3,
             "topicId": "00000000-0000-4000-8000-000000000005",
-            "sourceYear": 2026,
-            "available": 12
+            "sourceYear": null,
+            "available": 12,
+            "questionSetIds": [
+              "00000000-0000-4000-8000-000000000100"
+            ],
+            "difficultyQuotas": [
+              {
+                "difficulty": "EASY",
+                "count": 1
+              },
+              {
+                "difficulty": "MEDIUM",
+                "count": 2
+              }
+            ],
+            "repeatPolicy": "UNSEEN_TODAY"
           }
         ],
         "ready": true
       }
     ]
+  },
+  "CandidateCorrection": {
+    "sourceItemCode": "PU_Q001",
+    "topicId": null,
+    "difficulty": "MEDIUM",
+    "content": {
+      "stemText": "Berapa hasil 2 + 3?",
+      "options": [
+        {
+          "code": "A",
+          "text": "4",
+          "correct": false,
+          "weight": 0
+        },
+        {
+          "code": "B",
+          "text": "5",
+          "correct": true,
+          "weight": 1
+        }
+      ],
+      "explanation": "Dua ditambah tiga sama dengan lima.",
+      "shuffleAllowed": false
+    }
+  },
+  "ExcelCandidate": {
+    "id": "00000000-0000-4000-8000-000000000103",
+    "sheetId": "00000000-0000-4000-8000-000000000102",
+    "sheetName": "NUMERIK",
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "sourceRow": 2,
+    "sourceItemCode": "PU_Q001",
+    "topicId": null,
+    "difficulty": "MEDIUM",
+    "extractedContent": {
+      "stemText": "Berapa hasil 2 + 3?",
+      "options": [
+        {
+          "code": "A",
+          "text": "4",
+          "correct": false,
+          "weight": 0
+        },
+        {
+          "code": "B",
+          "text": "5",
+          "correct": true,
+          "weight": 1
+        }
+      ],
+      "explanation": "Dua ditambah tiga sama dengan lima.",
+      "shuffleAllowed": false
+    },
+    "draftContent": null,
+    "validationErrors": [],
+    "expectedVersionId": null,
+    "resolvedQuestionId": null,
+    "resolvedVersionId": null
+  },
+  "SourceStatus": {
+    "status": "ARCHIVED",
+    "reason": "Review sumber dan unggahan soal contoh"
+  },
+  "PageResponseWorkbookImport": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000101",
+        "questionSetId": "00000000-0000-4000-8000-000000000100",
+        "fileId": "00000000-0000-4000-8000-000000000021",
+        "inputFormat": "XLSX",
+        "status": "READY",
+        "candidateCount": 2,
+        "validCount": 2,
+        "invalidCount": 0,
+        "errorCode": null,
+        "jobStatus": "SUCCEEDED",
+        "createdAt": "2026-11-21T07:00:00Z",
+        "sheets": [
+          {
+            "id": "00000000-0000-4000-8000-000000000102",
+            "sheetName": "NUMERIK",
+            "subtestId": "00000000-0000-4000-8000-000000000004",
+            "sheetIndex": 0,
+            "status": "READY",
+            "candidateCount": 2,
+            "invalidCount": 0
+          }
+        ]
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseExcelCandidate": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000103",
+        "sheetId": "00000000-0000-4000-8000-000000000102",
+        "sheetName": "NUMERIK",
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "sourceRow": 2,
+        "sourceItemCode": "PU_Q001",
+        "topicId": null,
+        "difficulty": "MEDIUM",
+        "extractedContent": {
+          "stemText": "Berapa hasil 2 + 3?",
+          "options": [
+            {
+              "code": "A",
+              "text": "4",
+              "correct": false,
+              "weight": 0
+            },
+            {
+              "code": "B",
+              "text": "5",
+              "correct": true,
+              "weight": 1
+            }
+          ],
+          "explanation": "Dua ditambah tiga sama dengan lima.",
+          "shuffleAllowed": false
+        },
+        "draftContent": null,
+        "validationErrors": [],
+        "expectedVersionId": null,
+        "resolvedQuestionId": null,
+        "resolvedVersionId": null
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseQuestionSource": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000100",
+        "examTypeId": "00000000-0000-4000-8000-000000000025",
+        "code": "UTBK_2025_A",
+        "sourceYear": 2025,
+        "title": "Sumber UTBK 2025 paket A",
+        "status": "ACTIVE",
+        "questionCount": 100,
+        "publishedCount": 80
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseSourceItem": {
+    "items": [
+      {
+        "questionId": "00000000-0000-4000-8000-000000000007",
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "sourceItemCode": "PU_Q001",
+        "latestVersionId": "00000000-0000-4000-8000-000000000008",
+        "status": "PUBLISHED",
+        "difficulty": "MEDIUM",
+        "archived": false
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "SourceItem": {
+    "questionId": "00000000-0000-4000-8000-000000000007",
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "sourceItemCode": "PU_Q001",
+    "latestVersionId": "00000000-0000-4000-8000-000000000008",
+    "status": "PUBLISHED",
+    "difficulty": "MEDIUM",
+    "archived": false
   },
   "PageResponseQuestionSummary": {
     "items": [
@@ -992,6 +1622,86 @@
         "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh",
         "requestId": "example-request-id",
         "occurredAt": "2026-11-20T07:00:00Z"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponsePlan": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000060",
+        "code": "PREMIUM_MONTH_R1",
+        "familyCode": "PREMIUM_MONTH",
+        "revision": 1,
+        "name": "Premium 1 bulan",
+        "months": 1,
+        "amountMinor": 39000,
+        "currency": "IDR",
+        "benefits": {
+          "fullLeaderboard": true
+        }
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseCohort": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000061",
+        "title": "Tryout UTBK Contoh",
+        "category": "UTBK",
+        "examTypeId": "00000000-0000-4000-8000-000000000025",
+        "formId": "00000000-0000-4000-8000-000000000062",
+        "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+        "periodStart": "2026-11-01T00:00:00Z",
+        "periodEnd": "2026-12-01T00:00:00Z",
+        "attemptPolicy": "BEST",
+        "ended": false
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseTryoutCard": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "code": "DEMO_TRYOUT",
+        "title": "Tryout UTBK Contoh",
+        "category": "UTBK",
+        "examTypeId": "00000000-0000-4000-8000-000000000025",
+        "examType": "TPS",
+        "blueprintVersionId": "00000000-0000-4000-8000-000000000003",
+        "durationSeconds": 5400,
+        "questionCount": 3,
+        "ready": true,
+        "attemptCount": 2,
+        "latestScore": 80,
+        "latestCompletedAt": "2026-11-21T07:00:00Z"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseTopicCard": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000005",
+        "topic": "Aritmetika",
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "subtestCode": "NUMERIK",
+        "subtest": "Penalaran Numerik",
+        "examTypeId": "00000000-0000-4000-8000-000000000025",
+        "examType": "TPS",
+        "category": "UTBK",
+        "questionCount": 12,
+        "ready": true
       }
     ],
     "total": 1,

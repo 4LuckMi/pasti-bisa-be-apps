@@ -115,16 +115,16 @@
     "group": "Profil dan read API siswa",
     "auth": "session",
     "response": "StudentProfileResponse",
-    "description": "Memperbarui data profil sesuai form lengkap.",
+    "description": "Partial PATCH: field yang tidak dikirim dipertahankan. Explicit null menghapus field opsional. Perubahan diserialisasi dengan lock akun.",
     "status": 200,
     "request": "UpdateStudentProfileRequest",
     "errors": [
-      "400 INVALID_REQUEST untuk kategori target tidak didukung"
+      "400 VALIDATION_FAILED dengan fieldErrors"
     ],
     "notes": [
-      "Walaupun method PATCH, displayName, schoolName, schoolGrade, targetCategory dan targetInstitution tetap wajib.",
-      "targetCategory dipetakan ke targetKind: UTBK→CAMPUS, CPNS→CIVIL_SERVICE, KEDINASAN→ACADEMY, SEKOLAH→SCHOOL.",
-      "targetProgram dan targetScore boleh null; targetScore 0–1000. leaderboardOptIn, email, roles dan userType tidak dapat diubah lewat body ini."
+      "displayName jika dikirim harus non-null dan minimal dua karakter setelah trim. targetCategory: UTBK→CAMPUS, CPNS→CIVIL_SERVICE, KEDINASAN→ACADEMY, SEKOLAH→SCHOOL.",
+      "Target terpilih memerlukan institusi. Sekolah/kelas wajib untuk target UTBK/SEKOLAH; opsional untuk CPNS/KEDINASAN. Ganti kategori harus menyertakan institusi baru. targetCategory:null menghapus target; targetScore dapat dihapus terpisah dengan null.",
+      "leaderboardOptIn hanya lewat endpoint privacy; email, roles dan userType tidak bisa diedit lewat profil."
     ],
     "index": 8,
     "runtimeController": true
@@ -258,16 +258,13 @@
     "path": "/api/v1/leaderboard",
     "title": "Baca leaderboard",
     "group": "Profil dan read API siswa",
-    "auth": "session",
+    "auth": "customer",
     "response": "LeaderboardResponse",
-    "description": "Maksimal 100 entry dari cohort aktif yang belum berakhir dan user masih opt-in.",
+    "description": "Array legacy dari satu cohort aktif terbaru sesuai kategori. Gratis dibatasi tiga; fullLeaderboard maksimal 100. Gunakan API cohort untuk pilihan periode, pagination, filter dan ownRank.",
     "status": 200,
     "array": true,
     "category": true,
-    "notes": [
-      "Array kosong adalah respons normal tanpa cohort/entry yang diprovisikan. Contoh item hanya ilustrasi kontrak.",
-      "Sesi acak tidak otomatis ditambahkan ke leaderboard."
-    ],
+    "notes": [],
     "index": 16,
     "runtimeController": true
   },
@@ -533,8 +530,8 @@
     "description": "Membaca status attempt dan score terbaru.",
     "status": 200,
     "notes": [
-      "Sebelum hasil: totalScore/method/policyVersion/details null dan sections kosong. Jangan menganggap null sebagai nilai nol.",
-      "status bisa IN_PROGRESS/FINALIZING/COMPLETED. Belum ada status API FAILED khusus scoring; telusuri job/log jika lama."
+      "totalScore/method/policyVersion/details null sebelum siap; jangan dianggap nol. processing.state=NOT_STARTED/QUEUED/PROCESSING/RETRY_WAIT/FAILED/READY.",
+      "Poll hanya ketika processing.poll=true, dengan jeda minimal retryAfterSeconds. FAILED menghentikan polling; tampilkan pesan dukungan dan requestId. Admin dapat retry job FAILED. Attempt tetap FINALIZING agar snapshot dan satu sesi aktif aman; belum ada cancel/regrade siswa."
     ],
     "index": 25,
     "runtimeController": true
@@ -748,10 +745,10 @@
     "group": "Bank soal dan impor",
     "auth": "staff",
     "response": null,
-    "description": "Membaca file asli yang dapat berisi kunci untuk review petugas.",
+    "description": "Unduh sumber privat PDF atau XLSX. Content-Type dan nama ekstensi mengikuti format; tetap hanya QUESTION_STAFF.",
     "status": 200,
     "binary": true,
-    "mime": "application/pdf",
+    "mime": "application/octet-stream",
     "notes": [
       "200 binary; Content-Disposition attachment; filename=source.pdf; Cache-Control no-store.",
       "Semua QUESTION_STAFF dapat membaca batch yang valid, bukan hanya uploader. File tidak tersedia dapat menghasilkan error internal yang harus dilacak log."
@@ -1113,6 +1110,169 @@
   },
   {
     "method": "get",
+    "path": "/api/v1/users/current/dashboard",
+    "title": "Dashboard sesuai kategori",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "StudentDashboard",
+    "description": "Filter category dan mode. Menghitung seluruh sesi milik akun, bukan 100 baris pertama. scoreGroups memisahkan examType dan policyVersion; jangan menggabungkan rerata kelompok berbeda. Trend maksimal 12 per kelompok, urut waktu naik. elapsedSeconds adalah wall time sesi yang dibatasi deadline dan waktu server, bukan waktu interaksi aktif. Streak memakai tanggal penyelesaian WIB; skor/penyelesaian mengecualikan abandon.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 48,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/learning-history",
+    "title": "Riwayat berhalaman",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "HistoryPage",
+    "description": "Filter category, mode, status, search, tryoutId atau topicId; from/to tanggal WIB inklusif menurut startedAt. period=WEEK berarti hari ini dan enam hari sebelumnya; MONTH berarti awal bulan sampai hari ini. period tidak dapat digabung dengan rentang tanggal. total dan summary dihitung pada seluruh hasil filter, offset default 0, limit default 6 maksimal 100.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 49,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/membership",
+    "title": "Ringkasan hak premium",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "Membership",
+    "description": "FREE/PREMIUM berasal dari grant aktif yang belum dicabut dan order PAID. fullLeaderboard memakai benefits_snapshot, bukan konfigurasi paket saat ini. plan name merupakan label versi paket; harga, kode dan months dari snapshot order. Menonaktifkan penjualan paket tidak mencabut hak yang sudah dibeli.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 50,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/plans",
+    "title": "Daftar paket aktif",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "PageResponsePlan",
+    "description": "Harga integer amountMinor dan currency dari database. Hanya versi paket active. Default limit 12 maksimal 100. Tidak membuat checkout atau pembayaran.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 51,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/plans/{id}",
+    "title": "Detail versi paket aktif",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "Plan",
+    "description": "ID versi paket aktif; paket nonaktif/tidak ditemukan mendapat 404. Gunakan harga dan mata uang dari server.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 52,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/catalog/tryouts",
+    "title": "Katalog tryout berhalaman",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "PageResponseTryoutCard",
+    "description": "Filter category, examTypeId, subtestId, search dan ready. sort NEWEST (default) atau TITLE; default limit 12 maksimal 100. Stok readiness mengikuti versi soal PUBLISHED terbaru dan taksonomi aktif; start tetap memeriksa stock/exposure personal. Tidak mengarang editionYear dari sourceYear soal.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 53,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/catalog/practice-topics",
+    "title": "Katalog topik berhalaman",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "PageResponseTopicCard",
+    "description": "Filter category, examTypeId, subtestId, search dan ready. Urutan TITLE; NEWEST ditolak. Default limit 12 maksimal 100. ready berarti stok global >0; batas/jumlah personal tetap diperiksa saat start.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 54,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/leaderboards/cohorts",
+    "title": "Pilih kelompok leaderboard",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "PageResponseCohort",
+    "description": "Filter category, examTypeId dan includeEnded (default false). Hanya cohort ACTIVE yang sudah dimulai; calon cohort masa depan tidak tampil. Satu cohort menunjuk tepat satu form/policy/periode/attemptPolicy. Tidak membuat cohort atau entry otomatis.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 55,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/leaderboards/cohorts/{id}/entries",
+    "title": "Peringkat satu cohort",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "Rankings",
+    "description": "Preview gratis maksimal tiga baris pertama; offset tidak dapat melewati batas itu. ownRank tersedia terpisah bila pengguna sudah masuk entry dan menyetujui publikasi. Hak fullLeaderboard membuka pagination dan filter targetKind/targetInstitution/targetProgram (persamaan persis). Filter target tanpa hak mendapat 403 PREMIUM_REQUIRED. Rank tetap peringkat cohort ketika difilter, bukan dihitung ulang. totalParticipants mengikuti filter; accessibleTotal dibatasi 3 pada preview. Akun suspended/opt-out dan hasil abandon tidak tampil. Tidak membocorkan email/ID akun.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 56,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/users/current/privacy",
+    "title": "Baca persetujuan leaderboard",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "PrivacyResponse",
+    "description": "Default opt-out. updatedAt null jika belum pernah mengubah persetujuan.",
+    "status": 200,
+    "errors": [
+      "400 INVALID_FILTER"
+    ],
+    "index": 57,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/users/current/privacy",
+    "title": "Ubah persetujuan leaderboard",
+    "group": "Pengalaman siswa terbaru",
+    "auth": "customer",
+    "response": "PrivacyResponse",
+    "description": "Body eksplisit leaderboardOptIn wajib. Persetujuan/waktu dan audit request dicatat atomik. Opt-out langsung menyembunyikan entry lama; opt-in tidak otomatis membuat ranking.",
+    "status": 200,
+    "request": "PrivacyRequest",
+    "index": 58,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
     "path": "/api/v1/staff/questions/{id}/draft",
     "title": "Baca atau simpan draft",
     "group": "Petugas soal lanjutan",
@@ -1124,7 +1284,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 48,
+    "index": 59,
     "runtimeController": true
   },
   {
@@ -1141,7 +1301,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 49,
+    "index": 60,
     "runtimeController": true
   },
   {
@@ -1158,7 +1318,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 50,
+    "index": 61,
     "runtimeController": true
   },
   {
@@ -1174,7 +1334,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 51,
+    "index": 62,
     "runtimeController": true
   },
   {
@@ -1191,7 +1351,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 52,
+    "index": 63,
     "runtimeController": true
   },
   {
@@ -1208,7 +1368,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 53,
+    "index": 64,
     "runtimeController": true
   },
   {
@@ -1224,7 +1384,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 54,
+    "index": 65,
     "runtimeController": true
   },
   {
@@ -1241,7 +1401,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 55,
+    "index": 66,
     "runtimeController": true
   },
   {
@@ -1258,7 +1418,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 56,
+    "index": 67,
     "runtimeController": true
   },
   {
@@ -1275,7 +1435,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 57,
+    "index": 68,
     "runtimeController": true
   },
   {
@@ -1292,7 +1452,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 58,
+    "index": 69,
     "runtimeController": true
   },
   {
@@ -1308,7 +1468,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 59,
+    "index": 70,
     "runtimeController": true
   },
   {
@@ -1325,7 +1485,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 60,
+    "index": 71,
     "runtimeController": true
   },
   {
@@ -1341,7 +1501,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 61,
+    "index": 72,
     "runtimeController": true
   },
   {
@@ -1358,7 +1518,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 62,
+    "index": 73,
     "runtimeController": true
   },
   {
@@ -1375,7 +1535,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 63,
+    "index": 74,
     "runtimeController": true
   },
   {
@@ -1393,7 +1553,7 @@
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
     "idempotency": true,
-    "index": 64,
+    "index": 75,
     "runtimeController": true
   },
   {
@@ -1416,7 +1576,7 @@
       "fieldErrors": {},
       "requestId": "example-request-id"
     },
-    "index": 65,
+    "index": 76,
     "runtimeController": true
   },
   {
@@ -1426,14 +1586,14 @@
     "group": "Admin platform",
     "auth": "admin",
     "response": "JobResponse",
-    "description": "Hanya FAILED dan jenis IMPORT_PDF/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.",
+    "description": "Hanya FAILED dan jenis IMPORT_PDF/IMPORT_XLSX/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.",
     "status": 200,
     "request": "MutationReason",
     "array": false,
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 66,
+    "index": 77,
     "runtimeController": true
   },
   {
@@ -1450,7 +1610,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 67,
+    "index": 78,
     "runtimeController": true
   },
   {
@@ -1467,7 +1627,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 68,
+    "index": 79,
     "runtimeController": true
   },
   {
@@ -1483,7 +1643,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 69,
+    "index": 80,
     "runtimeController": true
   },
   {
@@ -1500,7 +1660,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 70,
+    "index": 81,
     "runtimeController": true
   },
   {
@@ -1510,14 +1670,14 @@
     "group": "Admin platform",
     "auth": "admin",
     "response": "BlueprintVersion",
-    "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit.",
+    "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit. questionSetIds membatasi pool ke kumpulan sumber aktif dari examType yang sama; kosong mempertahankan pool legacy. Jangan gabungkan dengan sourceYear. difficultyQuotas berisi EASY/MEDIUM/HARD unik dengan jumlah tepat questionCount. repeatPolicy=UNSEEN_TODAY (default tryout), NEVER_SEEN, atau RECYCLE_OLDEST. Tidak menurunkan jumlah/komposisi saat stok personal habis: 409 POOL_NOT_READY tanpa kuota terpakai.",
     "status": 201,
     "request": "BlueprintVersionRequest",
     "array": false,
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 71,
+    "index": 82,
     "runtimeController": true
   },
   {
@@ -1534,7 +1694,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 72,
+    "index": 83,
     "runtimeController": true
   },
   {
@@ -1551,7 +1711,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 73,
+    "index": 84,
     "runtimeController": true
   },
   {
@@ -1568,7 +1728,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 74,
+    "index": 85,
     "runtimeController": true
   },
   {
@@ -1585,7 +1745,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 75,
+    "index": 86,
     "runtimeController": true
   },
   {
@@ -1602,7 +1762,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 76,
+    "index": 87,
     "runtimeController": true
   },
   {
@@ -1619,7 +1779,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 77,
+    "index": 88,
     "runtimeController": true
   },
   {
@@ -1636,7 +1796,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 78,
+    "index": 89,
     "runtimeController": true
   },
   {
@@ -1653,7 +1813,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 79,
+    "index": 90,
     "runtimeController": true
   },
   {
@@ -1669,7 +1829,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 80,
+    "index": 91,
     "runtimeController": true
   },
   {
@@ -1685,7 +1845,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 81,
+    "index": 92,
     "runtimeController": true
   },
   {
@@ -1701,7 +1861,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 82,
+    "index": 93,
     "runtimeController": true
   },
   {
@@ -1717,7 +1877,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 83,
+    "index": 94,
     "runtimeController": true
   },
   {
@@ -1733,7 +1893,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 84,
+    "index": 95,
     "runtimeController": true
   },
   {
@@ -1749,7 +1909,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 85,
+    "index": 96,
     "runtimeController": true
   },
   {
@@ -1765,7 +1925,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 86,
+    "index": 97,
     "runtimeController": true
   },
   {
@@ -1781,7 +1941,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 87,
+    "index": 98,
     "runtimeController": true
   },
   {
@@ -1797,7 +1957,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 88,
+    "index": 99,
     "runtimeController": true
   },
   {
@@ -1813,7 +1973,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 89,
+    "index": 100,
     "runtimeController": true
   },
   {
@@ -1829,7 +1989,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 90,
+    "index": 101,
     "runtimeController": true
   },
   {
@@ -1845,7 +2005,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 91,
+    "index": 102,
     "runtimeController": true
   },
   {
@@ -1861,7 +2021,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 92,
+    "index": 103,
     "runtimeController": true
   },
   {
@@ -1877,7 +2037,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 93,
+    "index": 104,
     "runtimeController": true
   },
   {
@@ -1893,7 +2053,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 94,
+    "index": 105,
     "runtimeController": true
   },
   {
@@ -1909,7 +2069,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 95,
+    "index": 106,
     "runtimeController": true
   },
   {
@@ -1925,7 +2085,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 96,
+    "index": 107,
     "runtimeController": true
   },
   {
@@ -1941,7 +2101,7 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 97,
+    "index": 108,
     "runtimeController": true
   },
   {
@@ -1957,7 +2117,277 @@
     "notes": [
       "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
     ],
-    "index": 98,
+    "index": 109,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/question-sets",
+    "title": "Daftar sumber soal",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "PageResponseQuestionSource",
+    "description": "Filter examTypeId, sourceYear, status, search, offset dan limit 1..100 (default 20). publishedCount menghitung master dengan versi terbit yang memenuhi kelengkapan pool, bukan jumlah seluruh revisi.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 110,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/question-sets",
+    "title": "Buat sumber soal",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "QuestionSource",
+    "description": "Identitas jenis ujian, kode dan tahun immutable. Upload koreksi menggunakan source ID yang sama. Kode global unik; tidak membuat tabel baru per tahun/sheet.",
+    "status": 201,
+    "request": "SourceRequest",
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 111,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/question-sets/{id}",
+    "title": "Detail sumber soal",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "QuestionSource",
+    "description": "Metadata sumber dan stok. sourceYear adalah tahun sumber, berbeda dari edisi katalog tryout.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 112,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/staff/question-sets/{id}/status",
+    "title": "Arsip atau aktifkan sumber",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "QuestionSource",
+    "description": "Arsip menghentikan pemilihan dari blueprint yang menunjuk sumber tersebut. Tidak mengubah master soal atau snapshot sesi lama.",
+    "status": 200,
+    "request": "SourceStatus",
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 113,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/question-sets/{id}/items",
+    "title": "Anggota sumber soal",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "PageResponseSourceItem",
+    "description": "Daftar master, kode asal, subtes, versi terbaru/difficulty/status dan flag arsip. Versi terbaru dapat DRAFT sementara versi PUBLISHED sebelumnya masih tersedia di pool.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 114,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/question-sets/{id}/items",
+    "title": "Hubungkan master yang sudah ada",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "QuestionSource",
+    "description": "Relasi many-to-many tanpa menggandakan isi soal. Subtes master wajib sesuai exam type sumber. Kode asal unik per sumber/subtes; pasangan master yang sama dengan kode sama idempoten. Kode yang sudah dipakai tidak dapat diganti.",
+    "status": 200,
+    "request": "LinkSourceQuestion",
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 115,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/question-sets/{id}/template-mapping",
+    "title": "Pemetaan sheet template",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "SheetMapping",
+    "description": "Array sheetName dan subtestId aktif untuk metadata upload. Nama berasal dari kode subtes, dibatasi 31 karakter; benturan nama ditolak.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "array": true,
+    "index": 116,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/question-sets/{id}/template",
+    "title": "Unduh template XLSX",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": null,
+    "description": "Workbook berisi header, pilihan difficulty/kunci dan sheet untuk subtes aktif. Isi teks sesuai panduan. Hapus sheet kosong dan pemetaannya jika hanya mengunggah sebagian subtes.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "binary": true,
+    "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "index": 117,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/workbook-imports",
+    "title": "Upload Excel per sheet",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "WorkbookImport",
+    "description": "Multipart file XLSX dan metadata JSON WorkbookMetadata. File disimpan privat dan job IMPORT_XLSX diproses worker. 202 bukan jaminan workbook valid. Dedup berdasarkan actor, checksum file, source dan pemetaan sheet; replay mengembalikan batch lama. Format/header/sheet invalid gagal dengan kode aman; row error tetap tersedia untuk review.",
+    "status": 202,
+    "errors": [
+      "400 XLSX_REQUIRED / INVALID_XLSX_SIGNATURE",
+      "409 INVALID_CONTENT_SCOPE",
+      "413 FILE_TOO_LARGE"
+    ],
+    "multipart": true,
+    "metadataSchema": "WorkbookMetadata",
+    "uploadName": "questions.xlsx",
+    "uploadMime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "index": 118,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/workbook-imports",
+    "title": "Daftar impor Excel",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "PageResponseWorkbookImport",
+    "description": "Filter questionSetId/status dan pagination offset/limit. Tidak menyertakan isi/kunci soal.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 119,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/workbook-imports/{id}",
+    "title": "Detail hasil impor Excel",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "WorkbookImport",
+    "description": "Status batch/job, hitungan valid-invalid, dan status tiap sheet. READY berarti siap direview/disimpan, bukan otomatis published.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 120,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/workbook-imports/{id}/candidates",
+    "title": "Preview kandidat Excel",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "PageResponseExcelCandidate",
+    "description": "Filter sheetId opsional, pagination 1..100. sourceRow mulai 2; sourceItemCode adalah identitas stabil pada sumber/subtes. expectedVersionId dibekukan saat ekstraksi; resolvedVersionId merekam hasil simpan.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 121,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/staff/workbook-imports/{id}/candidates/{candidateId}",
+    "title": "Koreksi kandidat Excel",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "ExcelCandidate",
+    "description": "Memperbaiki kode/topik/difficulty/konten sebelum simpan. Topik harus aktif dan sesuai subtes sheet. Kandidat tersimpan tidak dapat diedit. Mengubah konten saja tidak memperbarui expectedVersionId untuk melewati konflik.",
+    "status": 200,
+    "request": "CandidateCorrection",
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 122,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/workbook-imports/{id}/save",
+    "title": "Simpan kandidat Excel terpilih",
+    "group": "Sumber soal dan Excel",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Maksimal 100 ID unik satu batch, semua atau rollback. Kode baru membuat master/DRAFT; perubahan pada soal terbit membuat revisi DRAFT. Konten sama termasuk bobot numerik yang setara menggunakan versi sama. Revisi hanya memakai baseline PUBLISHED yang immutable; jika master masih DRAFT saat ekstraksi, selesaikan draft lalu unggah ulang. Replay kandidat mengembalikan resolvedVersionId yang sama, bukan revisi terbaru. Tidak otomatis publish.",
+    "status": 200,
+    "request": "SaveWorkbookCandidates",
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "array": true,
+    "index": 123,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/question-sets",
+    "title": "Daftar sumber untuk komposisi",
+    "group": "Sumber soal dan Excel",
+    "auth": "admin",
+    "response": "PageResponseQuestionSource",
+    "description": "Admin membaca metadata/stok sumber untuk menyusun blueprint; tidak mendapat akses file, kandidat atau kunci soal.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 124,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/question-sets/{id}",
+    "title": "Detail metadata sumber untuk admin",
+    "group": "Sumber soal dan Excel",
+    "auth": "admin",
+    "response": "QuestionSource",
+    "description": "Metadata jenis ujian/tahun dan hitungan soal, tanpa konten/kunci.",
+    "status": 200,
+    "errors": [
+      "400 VALIDATION_FAILED",
+      "409 INVALID_CONTENT_SCOPE / CANDIDATE_STALE / SOURCE_ARCHIVED"
+    ],
+    "index": 125,
     "runtimeController": true
   }
 ]

@@ -109,6 +109,7 @@ public class JdbcContentRepository implements ContentRepository {
         jdbc.update("UPDATE import_batch SET status='FAILED',error_code='EXTRACTION_FAILED',updated_at=now() WHERE id=:id",p("id",id));
     }
     @Override public List<CandidateResponse> candidates(UUID id,int offset,int limit) {
+        requirePdf(id);
         importById(id);
         return jdbc.query("SELECT * FROM import_candidate WHERE batch_id=:id ORDER BY source_page,source_item_no LIMIT :limit OFFSET :offset",
                 p("id",id).addValue("limit",limit).addValue("offset",offset),this::candidate);
@@ -128,7 +129,12 @@ public class JdbcContentRepository implements ContentRepository {
         refreshCounts(batchId);
     }
     private CandidateResponse lockCandidate(UUID batchId,UUID id) {
+        requirePdf(batchId);
         return jdbc.queryForObject("SELECT * FROM import_candidate WHERE batch_id=:batch AND id=:id FOR UPDATE",p("batch",batchId).addValue("id",id),this::candidate);
+    }
+    private void requirePdf(UUID id){
+        String format=jdbc.queryForObject("SELECT input_format FROM import_batch WHERE id=:id",p("id",id),String.class);
+        if(!"PDF".equals(format))throw new BusinessException(409,"WORKBOOK_ENDPOINT_REQUIRED","Use workbook-imports endpoints for Excel candidates");
     }
     @Override public QuestionResponse saveCandidate(UUID actor,UUID batchId,UUID candidateId) {
         CandidateResponse candidate=lockCandidate(batchId,candidateId);
@@ -196,6 +202,8 @@ public class JdbcContentRepository implements ContentRepository {
         jdbc.queryForObject("SELECT id FROM question WHERE id=:id AND archived_at IS NULL FOR UPDATE",p("id",id),UUID.class);
         var current=question(id);
         insertVersion(actor,id,current.version()+1,content,current.sourceYear(),current.sourceTitle(),current.sourcePage());
+        String difficulty=jdbc.queryForObject("SELECT difficulty FROM question_version WHERE id=:id",p("id",current.versionId()),String.class);
+        jdbc.update("UPDATE question_version SET difficulty=:difficulty WHERE question_id=:id AND version=:version AND status='DRAFT'",p("id",id).addValue("version",current.version()+1).addValue("difficulty",difficulty,java.sql.Types.VARCHAR));
         audit(actor,"QUESTION_VERSION_CREATED",id);
         return question(id);
     }

@@ -286,6 +286,19 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="benefits"></a>
+## Benefits
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| fullLeaderboard | boolean | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "fullLeaderboard": true
+}
+```
+
 <a id="blueprintdetail"></a>
 ## BlueprintDetail
 
@@ -319,8 +332,22 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
           "subtestName": "Penalaran Numerik",
           "questionCount": 3,
           "topicId": "00000000-0000-4000-8000-000000000005",
-          "sourceYear": 2026,
-          "available": 12
+          "sourceYear": null,
+          "available": 12,
+          "questionSetIds": [
+            "00000000-0000-4000-8000-000000000100"
+          ],
+          "difficultyQuotas": [
+            {
+              "difficulty": "EASY",
+              "count": 1
+            },
+            {
+              "difficulty": "MEDIUM",
+              "count": 2
+            }
+          ],
+          "repeatPolicy": "UNSEEN_TODAY"
         }
       ],
       "ready": true
@@ -384,6 +411,9 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | topicId | string \| null (uuid) | Tidak ditandai | — | ID topik; harus sesuai subtes. |
 | sourceYear | integer \| null (int32) | Tidak ditandai | — | Tahun sumber 1900–2200 atau null. |
 | available | integer (int64) | Tidak ditandai | — | Jumlah stok global terbit, belum mengurangi exposure personal. |
+| questionSetIds | array<string (uuid)> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| difficultyQuotas | array<DifficultyAllocation> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| repeatPolicy | string \| null | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 
 ```json
 {
@@ -393,8 +423,22 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "subtestName": "Penalaran Numerik",
   "questionCount": 3,
   "topicId": "00000000-0000-4000-8000-000000000005",
-  "sourceYear": 2026,
-  "available": 12
+  "sourceYear": null,
+  "available": 12,
+  "questionSetIds": [
+    "00000000-0000-4000-8000-000000000100"
+  ],
+  "difficultyQuotas": [
+    {
+      "difficulty": "EASY",
+      "count": 1
+    },
+    {
+      "difficulty": "MEDIUM",
+      "count": 2
+    }
+  ],
+  "repeatPolicy": "UNSEEN_TODAY"
 }
 ```
 
@@ -441,8 +485,22 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
       "subtestName": "Penalaran Numerik",
       "questionCount": 3,
       "topicId": "00000000-0000-4000-8000-000000000005",
-      "sourceYear": 2026,
-      "available": 12
+      "sourceYear": null,
+      "available": 12,
+      "questionSetIds": [
+        "00000000-0000-4000-8000-000000000100"
+      ],
+      "difficultyQuotas": [
+        {
+          "difficulty": "EASY",
+          "count": 1
+        },
+        {
+          "difficulty": "MEDIUM",
+          "count": 2
+        }
+      ],
+      "repeatPolicy": "UNSEEN_TODAY"
     }
   ],
   "ready": true
@@ -468,10 +526,61 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
       "subtestId": "00000000-0000-4000-8000-000000000004",
       "questionCount": 3,
       "topicId": "00000000-0000-4000-8000-000000000005",
-      "sourceYear": 2026
+      "sourceYear": null,
+      "questionSetIds": [
+        "00000000-0000-4000-8000-000000000100"
+      ],
+      "difficultyQuotas": [
+        {
+          "difficulty": "EASY",
+          "count": 1
+        },
+        {
+          "difficulty": "MEDIUM",
+          "count": 2
+        }
+      ],
+      "repeatPolicy": "UNSEEN_TODAY"
     }
   ],
   "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+}
+```
+
+<a id="candidatecorrection"></a>
+## CandidateCorrection
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| sourceItemCode | string | Ya | minLength=1; pattern=[A-Za-z0-9][A-Za-z0-9_.-]{0,79} | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| topicId | string \| null (uuid) | Tidak ditandai | — | ID topik; harus sesuai subtes. |
+| difficulty | string | Ya | minLength=1; pattern=EASY\|MEDIUM\|HARD | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| content | QuestionContent | Ya | — | JSON konten opsi siswa atau QuestionContent authoring sesuai DTO. |
+
+```json
+{
+  "sourceItemCode": "PU_Q001",
+  "topicId": null,
+  "difficulty": "MEDIUM",
+  "content": {
+    "stemText": "Berapa hasil 2 + 3?",
+    "options": [
+      {
+        "code": "A",
+        "text": "4",
+        "correct": false,
+        "weight": 0
+      },
+      {
+        "code": "B",
+        "text": "5",
+        "correct": true,
+        "weight": 1
+      }
+    ],
+    "explanation": "Dua ditambah tiga sama dengan lima.",
+    "shuffleAllowed": false
+  }
 }
 ```
 
@@ -547,6 +656,37 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "name": "Ujian Tulis Berbasis Komputer",
   "active": true,
   "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+}
+```
+
+<a id="cohort"></a>
+## Cohort
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| title | string | Tidak ditandai | — | Judul paket/blueprint. |
+| category | string | Tidak ditandai | — | Kode kategori; filter opsional pada read API. |
+| examTypeId | string (uuid) | Tidak ditandai | — | UUID jenis ujian. |
+| formId | string (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| scoringPolicyId | string (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| periodStart | string (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| periodEnd | string (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| attemptPolicy | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| ended | boolean | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000061",
+  "title": "Tryout UTBK Contoh",
+  "category": "UTBK",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "formId": "00000000-0000-4000-8000-000000000062",
+  "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+  "periodStart": "2026-11-01T00:00:00Z",
+  "periodEnd": "2026-12-01T00:00:00Z",
+  "attemptPolicy": "BEST",
+  "ended": false
 }
 ```
 
@@ -704,6 +844,21 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="difficultyallocation"></a>
+## DifficultyAllocation
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| difficulty | string | Ya | minLength=1; pattern=EASY\|MEDIUM\|HARD | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| count | integer (int32) | Tidak ditandai | minimum=1; maximum=500 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "difficulty": "EASY",
+  "count": 1
+}
+```
+
 <a id="draftrequest"></a>
 ## DraftRequest
 
@@ -807,6 +962,63 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="excelcandidate"></a>
+## ExcelCandidate
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| sheetId | string (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| sheetName | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| subtestId | string (uuid) | Tidak ditandai | — | UUID subtes dalam lingkup exam type. |
+| sourceRow | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| sourceItemCode | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| topicId | string \| null (uuid) | Tidak ditandai | — | ID topik; harus sesuai subtes. |
+| difficulty | string \| null | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| extractedContent | QuestionContent | Tidak ditandai | — | Konten ekstraksi asli; bisa tidak lengkap. |
+| draftContent | QuestionContent \| null | Tidak ditandai | — | Koreksi petugas atau null jika belum dikoreksi. |
+| validationErrors | array<string> | Tidak ditandai | — | Kode kekurangan/ambiguity kandidat; [] berarti lengkap menurut validator. |
+| expectedVersionId | string \| null (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| resolvedQuestionId | string \| null (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| resolvedVersionId | string \| null (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000103",
+  "sheetId": "00000000-0000-4000-8000-000000000102",
+  "sheetName": "NUMERIK",
+  "subtestId": "00000000-0000-4000-8000-000000000004",
+  "sourceRow": 2,
+  "sourceItemCode": "PU_Q001",
+  "topicId": null,
+  "difficulty": "MEDIUM",
+  "extractedContent": {
+    "stemText": "Berapa hasil 2 + 3?",
+    "options": [
+      {
+        "code": "A",
+        "text": "4",
+        "correct": false,
+        "weight": 0
+      },
+      {
+        "code": "B",
+        "text": "5",
+        "correct": true,
+        "weight": 1
+      }
+    ],
+    "explanation": "Dua ditambah tiga sama dengan lima.",
+    "shuffleAllowed": false
+  },
+  "draftContent": null,
+  "validationErrors": [],
+  "expectedVersionId": null,
+  "resolvedQuestionId": null,
+  "resolvedVersionId": null
+}
+```
+
 <a id="finalizerequest"></a>
 ## FinalizeRequest
 
@@ -838,6 +1050,123 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "startsAt": "2026-11-20T07:00:00Z",
   "endsAt": "2026-11-20T07:00:00Z",
   "revokedAt": "2026-11-20T07:00:00Z"
+}
+```
+
+<a id="historyentry"></a>
+## HistoryEntry
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| attemptId | string (uuid) | Tidak ditandai | — | UUID sesi milik akun aktif. |
+| tryoutId | string (uuid) | Tidak ditandai | — | ID blueprint/package; pada practice menunjuk blueprint internal. |
+| title | string | Tidak ditandai | — | Judul paket/blueprint. |
+| category | string | Tidak ditandai | — | Kode kategori; filter opsional pada read API. |
+| mode | string | Tidak ditandai | — | TRYOUT atau PRACTICE. |
+| status | string | Tidak ditandai | — | Status resource; baca state machine sesuai attempt/batch/job. |
+| terminalReason | string \| null | Tidak ditandai | — | null, SUBMITTED, ABANDONED atau TIMED_OUT. |
+| topicId | string \| null (uuid) | Tidak ditandai | — | ID topik; harus sesuai subtes. |
+| topicName | string \| null | Tidak ditandai | — | Nama topik; null jika tidak ada. |
+| startedAt | string (date-time) | Tidak ditandai | — | Timestamp mulai server. |
+| finalizedAt | string \| null (date-time) | Tidak ditandai | — | Timestamp finalize server; null sebelum sesi ditutup. |
+| totalScore | number \| null | Tidak ditandai | — | Indeks latihan tersimpan; null bila belum ada hasil. |
+| questionCount | integer (int32) | Tidak ditandai | — | Jumlah soal diminta pada practice atau kebutuhan section. |
+| durationSeconds | integer (int32) | Tidak ditandai | — | Durasi konfigurasi dalam detik. |
+| processing | Processing | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "attemptId": "00000000-0000-4000-8000-000000000006",
+  "tryoutId": "00000000-0000-4000-8000-000000000002",
+  "title": "Tryout UTBK Contoh",
+  "category": "UTBK",
+  "mode": "TRYOUT",
+  "status": "COMPLETED",
+  "terminalReason": "SUBMITTED",
+  "topicId": null,
+  "topicName": null,
+  "startedAt": "2026-11-21T06:50:00Z",
+  "finalizedAt": "2026-11-21T07:00:00Z",
+  "totalScore": 80,
+  "questionCount": 3,
+  "durationSeconds": 5400,
+  "processing": {
+    "state": "READY",
+    "poll": false,
+    "retryAfterSeconds": 0,
+    "errorCode": null
+  }
+}
+```
+
+<a id="historypage"></a>
+## HistoryPage
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<HistoryEntry> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+| summary | HistorySummary | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "items": [
+    {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "tryoutId": "00000000-0000-4000-8000-000000000002",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "mode": "TRYOUT",
+      "status": "COMPLETED",
+      "terminalReason": "SUBMITTED",
+      "topicId": null,
+      "topicName": null,
+      "startedAt": "2026-11-21T06:50:00Z",
+      "finalizedAt": "2026-11-21T07:00:00Z",
+      "totalScore": 80,
+      "questionCount": 3,
+      "durationSeconds": 5400,
+      "processing": {
+        "state": "READY",
+        "poll": false,
+        "retryAfterSeconds": 0,
+        "errorCode": null
+      }
+    }
+  ],
+  "total": 10,
+  "offset": 0,
+  "limit": 6,
+  "summary": {
+    "total": 10,
+    "completed": 8,
+    "inProgress": 1,
+    "scoring": 1,
+    "scoringFailed": 0
+  }
+}
+```
+
+<a id="historysummary"></a>
+## HistorySummary
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| completed | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| inProgress | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| scoring | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| scoringFailed | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "total": 10,
+  "completed": 8,
+  "inProgress": 1,
+  "scoring": 1,
+  "scoringFailed": 0
 }
 ```
 
@@ -1017,6 +1346,23 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="linksourcequestion"></a>
+## LinkSourceQuestion
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| questionId | string (uuid) | Ya | — | UUID keluarga master setelah kandidat disimpan, selain itu null. |
+| sourceItemCode | string | Ya | minLength=1; pattern=[A-Za-z0-9][A-Za-z0-9_.-]{0,79} | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| reason | string | Ya | minLength=0; maxLength=500 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "questionId": "00000000-0000-4000-8000-000000000007",
+  "sourceItemCode": "PU_Q001",
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
 <a id="loginrequest"></a>
 ## LoginRequest
 
@@ -1029,6 +1375,63 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 {
   "email": "siswa@example.com",
   "password": "PasswordAman123!"
+}
+```
+
+<a id="membership"></a>
+## Membership
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| tier | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| startsAt | string \| null (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| endsAt | string \| null (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| plan | MembershipPlan \| null | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| benefits | Benefits | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| leaderboardPreviewLimit | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| dailyTryoutLimit | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "tier": "PREMIUM",
+  "startsAt": "2026-11-01T00:00:00Z",
+  "endsAt": "2026-12-01T00:00:00Z",
+  "plan": {
+    "id": "00000000-0000-4000-8000-000000000060",
+    "code": "PREMIUM_MONTH_R1",
+    "name": "Premium 1 bulan",
+    "months": 1,
+    "amountMinor": 39000,
+    "currency": "IDR"
+  },
+  "benefits": {
+    "fullLeaderboard": true
+  },
+  "leaderboardPreviewLimit": 3,
+  "dailyTryoutLimit": 2
+}
+```
+
+<a id="membershipplan"></a>
+## MembershipPlan
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| code | string | Tidak ditandai | — | Kode resource atau kode opsi sesuai konteks. |
+| name | string | Tidak ditandai | — | Nama section/subtes. |
+| months | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| amountMinor | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| currency | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000060",
+  "code": "PREMIUM_MONTH_R1",
+  "name": "Premium 1 bulan",
+  "months": 1,
+  "amountMinor": 39000,
+  "currency": "IDR"
 }
 ```
 
@@ -1200,7 +1603,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<AdminSubscriptionResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1236,7 +1639,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<AdminUserResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1268,7 +1671,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<AuditResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1300,7 +1703,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<BlueprintResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1320,6 +1723,38 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="pageresponsecohort"></a>
+## PageResponseCohort
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<Cohort> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000061",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "formId": "00000000-0000-4000-8000-000000000062",
+      "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+      "periodStart": "2026-11-01T00:00:00Z",
+      "periodEnd": "2026-12-01T00:00:00Z",
+      "attemptPolicy": "BEST",
+      "ended": false
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
 <a id="pageresponsecontentaudit"></a>
 ## PageResponseContentAudit
 
@@ -1328,7 +1763,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<ContentAudit> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1349,6 +1784,60 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="pageresponseexcelcandidate"></a>
+## PageResponseExcelCandidate
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<ExcelCandidate> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000103",
+      "sheetId": "00000000-0000-4000-8000-000000000102",
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sourceRow": 2,
+      "sourceItemCode": "PU_Q001",
+      "topicId": null,
+      "difficulty": "MEDIUM",
+      "extractedContent": {
+        "stemText": "Berapa hasil 2 + 3?",
+        "options": [
+          {
+            "code": "A",
+            "text": "4",
+            "correct": false,
+            "weight": 0
+          },
+          {
+            "code": "B",
+            "text": "5",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "shuffleAllowed": false
+      },
+      "draftContent": null,
+      "validationErrors": [],
+      "expectedVersionId": null,
+      "resolvedQuestionId": null,
+      "resolvedVersionId": null
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
 <a id="pageresponseimportsummary"></a>
 ## PageResponseImportSummary
 
@@ -1357,7 +1846,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<ImportSummary> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1398,7 +1887,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<JobResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1429,7 +1918,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<OrderResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1456,6 +1945,39 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="pageresponseplan"></a>
+## PageResponsePlan
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<Plan> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000060",
+      "code": "PREMIUM_MONTH_R1",
+      "familyCode": "PREMIUM_MONTH",
+      "revision": 1,
+      "name": "Premium 1 bulan",
+      "months": 1,
+      "amountMinor": 39000,
+      "currency": "IDR",
+      "benefits": {
+        "fullLeaderboard": true
+      }
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
 <a id="pageresponseplanresponse"></a>
 ## PageResponsePlanResponse
 
@@ -1464,7 +1986,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<PlanResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1498,7 +2020,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<PolicyResponse> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1531,7 +2053,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<PoolRequirement> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1554,6 +2076,36 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="pageresponsequestionsource"></a>
+## PageResponseQuestionSource
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<QuestionSource> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000100",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "code": "UTBK_2025_A",
+      "sourceYear": 2025,
+      "title": "Sumber UTBK 2025 paket A",
+      "status": "ACTIVE",
+      "questionCount": 100,
+      "publishedCount": 80
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
 <a id="pageresponsequestionsummary"></a>
 ## PageResponseQuestionSummary
 
@@ -1562,7 +2114,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<QuestionSummary> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1590,6 +2142,102 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="pageresponsesourceitem"></a>
+## PageResponseSourceItem
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<SourceItem> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "questionId": "00000000-0000-4000-8000-000000000007",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sourceItemCode": "PU_Q001",
+      "latestVersionId": "00000000-0000-4000-8000-000000000008",
+      "status": "PUBLISHED",
+      "difficulty": "MEDIUM",
+      "archived": false
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+<a id="pageresponsetopiccard"></a>
+## PageResponseTopicCard
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<TopicCard> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "topic": "Aritmetika",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "subtestCode": "NUMERIK",
+      "subtest": "Penalaran Numerik",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "examType": "TPS",
+      "category": "UTBK",
+      "questionCount": 12,
+      "ready": true
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+<a id="pageresponsetryoutcard"></a>
+## PageResponseTryoutCard
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<TryoutCard> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "code": "DEMO_TRYOUT",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "examType": "TPS",
+      "blueprintVersionId": "00000000-0000-4000-8000-000000000003",
+      "durationSeconds": 5400,
+      "questionCount": 3,
+      "ready": true,
+      "attemptCount": 2,
+      "latestScore": 80,
+      "latestCompletedAt": "2026-11-21T07:00:00Z"
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
 <a id="pageresponseuserattempt"></a>
 ## PageResponseUserAttempt
 
@@ -1598,7 +2246,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | items | array<UserAttempt> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 | offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 
 ```json
 {
@@ -1612,6 +2260,50 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
       "startedAt": "2026-11-20T07:00:00Z",
       "finalizedAt": "2026-11-20T07:00:00Z",
       "score": 1
+    }
+  ],
+  "total": 1,
+  "offset": 0,
+  "limit": 20
+}
+```
+
+<a id="pageresponseworkbookimport"></a>
+## PageResponseWorkbookImport
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| items | array<WorkbookImport> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| total | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000101",
+      "questionSetId": "00000000-0000-4000-8000-000000000100",
+      "fileId": "00000000-0000-4000-8000-000000000021",
+      "inputFormat": "XLSX",
+      "status": "READY",
+      "candidateCount": 2,
+      "validCount": 2,
+      "invalidCount": 0,
+      "errorCode": null,
+      "jobStatus": "SUCCEEDED",
+      "createdAt": "2026-11-21T07:00:00Z",
+      "sheets": [
+        {
+          "id": "00000000-0000-4000-8000-000000000102",
+          "sheetName": "NUMERIK",
+          "subtestId": "00000000-0000-4000-8000-000000000004",
+          "sheetIndex": 0,
+          "status": "READY",
+          "candidateCount": 2,
+          "invalidCount": 0
+        }
+      ]
     }
   ],
   "total": 1,
@@ -1642,6 +2334,37 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "verified": true,
   "signatureStatus": "VERIFIED",
   "receivedAt": "2026-11-20T07:00:00Z"
+}
+```
+
+<a id="plan"></a>
+## Plan
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| code | string | Tidak ditandai | — | Kode resource atau kode opsi sesuai konteks. |
+| familyCode | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| revision | integer (int32) | Tidak ditandai | — | Revision jawaban terakhir; 0 jika belum ada row. |
+| name | string | Tidak ditandai | — | Nama section/subtes. |
+| months | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| amountMinor | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| currency | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| benefits | Benefits | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000060",
+  "code": "PREMIUM_MONTH_R1",
+  "familyCode": "PREMIUM_MONTH",
+  "revision": 1,
+  "name": "Premium 1 bulan",
+  "months": 1,
+  "amountMinor": 39000,
+  "currency": "IDR",
+  "benefits": {
+    "fullLeaderboard": true
+  }
 }
 ```
 
@@ -1861,6 +2584,53 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="privacyrequest"></a>
+## PrivacyRequest
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| leaderboardOptIn | boolean | Ya | — | Persetujuan tampil pada leaderboard; diubah lewat PATCH privacy, bukan PATCH profile. |
+
+```json
+{
+  "leaderboardOptIn": true
+}
+```
+
+<a id="privacyresponse"></a>
+## PrivacyResponse
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| leaderboardOptIn | boolean | Tidak ditandai | — | Persetujuan tampil pada leaderboard; diubah lewat PATCH privacy, bukan PATCH profile. |
+| updatedAt | string \| null (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "leaderboardOptIn": true,
+  "updatedAt": "2026-11-21T07:00:00Z"
+}
+```
+
+<a id="processing"></a>
+## Processing
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| state | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| poll | boolean | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| retryAfterSeconds | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| errorCode | string \| null | Tidak ditandai | — | Kode error batch atau null. |
+
+```json
+{
+  "state": "READY",
+  "poll": false,
+  "retryAfterSeconds": 0,
+  "errorCode": null
+}
+```
+
 <a id="publishrequest"></a>
 ## PublishRequest
 
@@ -1927,6 +2697,33 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="questionsource"></a>
+## QuestionSource
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| examTypeId | string (uuid) | Tidak ditandai | — | UUID jenis ujian. |
+| code | string | Tidak ditandai | — | Kode resource atau kode opsi sesuai konteks. |
+| sourceYear | integer (int32) | Tidak ditandai | — | Tahun sumber 1900–2200 atau null. |
+| title | string | Tidak ditandai | — | Judul paket/blueprint. |
+| status | string | Tidak ditandai | — | Status resource; baca state machine sesuai attempt/batch/job. |
+| questionCount | integer (int64) | Tidak ditandai | — | Jumlah soal diminta pada practice atau kebutuhan section. |
+| publishedCount | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000100",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "status": "ACTIVE",
+  "questionCount": 100,
+  "publishedCount": 80
+}
+```
+
 <a id="questionsummary"></a>
 ## QuestionSummary
 
@@ -1973,7 +2770,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 |---|---|---|---|---|
 | dateWib | string (date) | Tidak ditandai | — | Tanggal kuota Asia/Jakarta. |
 | used | integer (int32) | Tidak ditandai | — | Start tryout yang sudah memakai kuota tanggal ini. |
-| limit | integer (int32) | Tidak ditandai | — | Batas kuota harian saat ini 2. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
 | remaining | integer (int32) | Tidak ditandai | — | Sisa kuota, minimal 0. |
 
 ```json
@@ -1982,6 +2779,89 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "used": 1,
   "limit": 2,
   "remaining": 1
+}
+```
+
+<a id="rankingentry"></a>
+## RankingEntry
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| rank | integer (int32) | Tidak ditandai | — | Peringkat tersimpan. |
+| displayName | string | Tidak ditandai | — | Nama tampil pengguna. |
+| totalScore | number | Tidak ditandai | — | Indeks latihan tersimpan; null bila belum ada hasil. |
+| targetKind | string \| null | Tidak ditandai | — | Jenis target tersimpan hasil mapping kategori. |
+| targetInstitution | string \| null | Tidak ditandai | — | Nama institusi target. |
+| targetProgram | string \| null | Tidak ditandai | — | Program/jurusan target, boleh null. |
+| currentUser | boolean | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "rank": 1,
+  "displayName": "Siswa Contoh",
+  "totalScore": 80,
+  "targetKind": "CAMPUS",
+  "targetInstitution": "Universitas Contoh",
+  "targetProgram": "Informatika",
+  "currentUser": true
+}
+```
+
+<a id="rankings"></a>
+## Rankings
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| cohort | Cohort | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| accessTier | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| leaderboardOptIn | boolean | Tidak ditandai | — | Persetujuan tampil pada leaderboard; diubah lewat PATCH privacy, bukan PATCH profile. |
+| totalParticipants | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| accessibleTotal | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| offset | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| limit | integer (int32) | Tidak ditandai | — | Batas halaman atau kuota sesuai konteks DTO; baca catatan endpoint. |
+| items | array<RankingEntry> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| ownRank | RankingEntry \| null | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "cohort": {
+    "id": "00000000-0000-4000-8000-000000000061",
+    "title": "Tryout UTBK Contoh",
+    "category": "UTBK",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "formId": "00000000-0000-4000-8000-000000000062",
+    "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+    "periodStart": "2026-11-01T00:00:00Z",
+    "periodEnd": "2026-12-01T00:00:00Z",
+    "attemptPolicy": "BEST",
+    "ended": false
+  },
+  "accessTier": "FULL",
+  "leaderboardOptIn": true,
+  "totalParticipants": 1,
+  "accessibleTotal": 1,
+  "offset": 0,
+  "limit": 20,
+  "items": [
+    {
+      "rank": 1,
+      "displayName": "Siswa Contoh",
+      "totalScore": 80,
+      "targetKind": "CAMPUS",
+      "targetInstitution": "Universitas Contoh",
+      "targetProgram": "Informatika",
+      "currentUser": true
+    }
+  ],
+  "ownRank": {
+    "rank": 1,
+    "displayName": "Siswa Contoh",
+    "totalScore": 80,
+    "targetKind": "CAMPUS",
+    "targetInstitution": "Universitas Contoh",
+    "targetProgram": "Informatika",
+    "currentUser": true
+  }
 }
 ```
 
@@ -2056,6 +2936,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | details | object | Tidak ditandai | — | Rincian hasil; bentuk object pada result, string JSON pada history. |
 | sections | array<SectionResult> | Tidak ditandai | — | Rincian subtes atau section pada konteks DTO. |
 | finalizedAt | string \| null (date-time) | Tidak ditandai | — | Timestamp finalize server; null sebelum sesi ditutup. |
+| processing | Processing | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 
 ```json
 {
@@ -2082,7 +2963,13 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
       "accuracy": 33.3333
     }
   ],
-  "finalizedAt": "2026-11-19T07:05:00Z"
+  "finalizedAt": "2026-11-19T07:05:00Z",
+  "processing": {
+    "state": "READY",
+    "poll": false,
+    "retryAfterSeconds": 0,
+    "errorCode": null
+  }
 }
 ```
 
@@ -2160,6 +3047,69 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="saveworkbookcandidates"></a>
+## SaveWorkbookCandidates
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| candidateIds | array<string (uuid)> | Ya | minItems=0; maxItems=100 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| reason | string | Ya | minLength=0; maxLength=500 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "candidateIds": [
+    "00000000-0000-4000-8000-000000000103"
+  ],
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
+<a id="scoregroup"></a>
+## ScoreGroup
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| examTypeId | string (uuid) | Tidak ditandai | — | UUID jenis ujian. |
+| examType | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| policyVersion | string | Tidak ditandai | — | Identitas policy code:version hasil. |
+| count | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| average | number | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| trend | array<ScorePoint> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "examType": "TPS",
+  "policyVersion": "DEMO_BINARY:1",
+  "count": 8,
+  "average": 80,
+  "trend": [
+    {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "completedAt": "2026-11-21T07:00:00Z",
+      "score": 80
+    }
+  ]
+}
+```
+
+<a id="scorepoint"></a>
+## ScorePoint
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| attemptId | string (uuid) | Tidak ditandai | — | UUID sesi milik akun aktif. |
+| completedAt | string (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| score | number | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "attemptId": "00000000-0000-4000-8000-000000000006",
+  "completedAt": "2026-11-21T07:00:00Z",
+  "score": 80
+}
+```
+
 <a id="scorerules"></a>
 ## ScoreRules
 
@@ -2184,15 +3134,32 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 |---|---|---|---|---|
 | subtestId | string (uuid) | Ya | — | UUID subtes dalam lingkup exam type. |
 | questionCount | integer (int32) | Tidak ditandai | minimum=1; maximum=500 | Jumlah soal diminta pada practice atau kebutuhan section. |
-| topicId | string (uuid) | Tidak ditandai | — | ID topik; harus sesuai subtes. |
-| sourceYear | integer (int32) | Tidak ditandai | minimum=1900; maximum=2200 | Tahun sumber 1900–2200 atau null. |
+| topicId | string \| null (uuid) | Tidak ditandai | — | ID topik; harus sesuai subtes. |
+| sourceYear | integer \| null (int32) | Tidak ditandai | minimum=1900; maximum=2200 | Tahun sumber 1900–2200 atau null. |
+| questionSetIds | array<string (uuid)> | Tidak ditandai | minItems=0; maxItems=20 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| difficultyQuotas | array<DifficultyAllocation> | Tidak ditandai | minItems=0; maxItems=3 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| repeatPolicy | string \| null | Tidak ditandai | pattern=UNSEEN_TODAY\|NEVER_SEEN\|RECYCLE_OLDEST | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
 
 ```json
 {
   "subtestId": "00000000-0000-4000-8000-000000000004",
   "questionCount": 3,
   "topicId": "00000000-0000-4000-8000-000000000005",
-  "sourceYear": 2026
+  "sourceYear": null,
+  "questionSetIds": [
+    "00000000-0000-4000-8000-000000000100"
+  ],
+  "difficultyQuotas": [
+    {
+      "difficulty": "EASY",
+      "count": 1
+    },
+    {
+      "difficulty": "MEDIUM",
+      "count": 2
+    }
+  ],
+  "repeatPolicy": "UNSEEN_TODAY"
 }
 ```
 
@@ -2346,6 +3313,82 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="sheetmapping"></a>
+## SheetMapping
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| sheetName | string | Ya | minLength=0; maxLength=31 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| subtestId | string (uuid) | Ya | — | UUID subtes dalam lingkup exam type. |
+
+```json
+{
+  "sheetName": "NUMERIK",
+  "subtestId": "00000000-0000-4000-8000-000000000004"
+}
+```
+
+<a id="sourceitem"></a>
+## SourceItem
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| questionId | string (uuid) | Tidak ditandai | — | UUID keluarga master setelah kandidat disimpan, selain itu null. |
+| subtestId | string (uuid) | Tidak ditandai | — | UUID subtes dalam lingkup exam type. |
+| sourceItemCode | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| latestVersionId | string (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| status | string | Tidak ditandai | — | Status resource; baca state machine sesuai attempt/batch/job. |
+| difficulty | string \| null | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| archived | boolean | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "questionId": "00000000-0000-4000-8000-000000000007",
+  "subtestId": "00000000-0000-4000-8000-000000000004",
+  "sourceItemCode": "PU_Q001",
+  "latestVersionId": "00000000-0000-4000-8000-000000000008",
+  "status": "PUBLISHED",
+  "difficulty": "MEDIUM",
+  "archived": false
+}
+```
+
+<a id="sourcerequest"></a>
+## SourceRequest
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| examTypeId | string (uuid) | Ya | — | UUID jenis ujian. |
+| code | string | Ya | minLength=1; pattern=[A-Z0-9][A-Z0-9_-]{1,79} | Kode resource atau kode opsi sesuai konteks. |
+| sourceYear | integer (int32) | Tidak ditandai | minimum=1900; maximum=2200 | Tahun sumber 1900–2200 atau null. |
+| title | string | Ya | minLength=0; maxLength=180 | Judul paket/blueprint. |
+| reason | string | Ya | minLength=0; maxLength=500 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "code": "UTBK_2025_A",
+  "sourceYear": 2025,
+  "title": "Sumber UTBK 2025 paket A",
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
+<a id="sourcestatus"></a>
+## SourceStatus
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| status | string | Ya | minLength=1; pattern=ACTIVE\|ARCHIVED | Status resource; baca state machine sesuai attempt/batch/job. |
+| reason | string | Ya | minLength=0; maxLength=500 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "status": "ARCHIVED",
+  "reason": "Review sumber dan unggahan soal contoh"
+}
+```
+
 <a id="staffdashboard"></a>
 ## StaffDashboard
 
@@ -2463,6 +3506,99 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="studentdashboard"></a>
+## StudentDashboard
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| category | string \| null | Tidak ditandai | — | Kode kategori; filter opsional pada read API. |
+| mode | string \| null | Tidak ditandai | — | TRYOUT atau PRACTICE. |
+| totalTryouts | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| totalPractices | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| completed | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| elapsedSeconds | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| currentStreakDays | integer (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| scoreGroups | array<ScoreGroup> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| recentActivity | array<HistoryEntry> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| quota | QuotaResponse | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| membership | Membership | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "category": "UTBK",
+  "mode": "TRYOUT",
+  "totalTryouts": 10,
+  "totalPractices": 0,
+  "completed": 8,
+  "elapsedSeconds": 3600,
+  "currentStreakDays": 1,
+  "scoreGroups": [
+    {
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "examType": "TPS",
+      "policyVersion": "DEMO_BINARY:1",
+      "count": 8,
+      "average": 80,
+      "trend": [
+        {
+          "attemptId": "00000000-0000-4000-8000-000000000006",
+          "completedAt": "2026-11-21T07:00:00Z",
+          "score": 80
+        }
+      ]
+    }
+  ],
+  "recentActivity": [
+    {
+      "attemptId": "00000000-0000-4000-8000-000000000006",
+      "tryoutId": "00000000-0000-4000-8000-000000000002",
+      "title": "Tryout UTBK Contoh",
+      "category": "UTBK",
+      "mode": "TRYOUT",
+      "status": "COMPLETED",
+      "terminalReason": "SUBMITTED",
+      "topicId": null,
+      "topicName": null,
+      "startedAt": "2026-11-21T06:50:00Z",
+      "finalizedAt": "2026-11-21T07:00:00Z",
+      "totalScore": 80,
+      "questionCount": 3,
+      "durationSeconds": 5400,
+      "processing": {
+        "state": "READY",
+        "poll": false,
+        "retryAfterSeconds": 0,
+        "errorCode": null
+      }
+    }
+  ],
+  "quota": {
+    "dateWib": "2026-11-19",
+    "used": 1,
+    "limit": 2,
+    "remaining": 1
+  },
+  "membership": {
+    "tier": "PREMIUM",
+    "startsAt": "2026-11-01T00:00:00Z",
+    "endsAt": "2026-12-01T00:00:00Z",
+    "plan": {
+      "id": "00000000-0000-4000-8000-000000000060",
+      "code": "PREMIUM_MONTH_R1",
+      "name": "Premium 1 bulan",
+      "months": 1,
+      "amountMinor": 39000,
+      "currency": "IDR"
+    },
+    "benefits": {
+      "fullLeaderboard": true
+    },
+    "leaderboardPreviewLimit": 3,
+    "dailyTryoutLimit": 2
+  }
+}
+```
+
 <a id="studentprofileresponse"></a>
 ## StudentProfileResponse
 
@@ -2474,7 +3610,7 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 | userType | string | Tidak ditandai | — | Tipe produk; registrasi publik menghasilkan SISWA. |
 | schoolName | string \| null | Tidak ditandai | — | Nama sekolah. |
 | schoolGrade | string \| null | Tidak ditandai | — | Kelas/tingkat, contoh XII. |
-| leaderboardOptIn | boolean | Tidak ditandai | — | Persetujuan tampil pada leaderboard; belum dapat diubah lewat PATCH profile. |
+| leaderboardOptIn | boolean | Tidak ditandai | — | Persetujuan tampil pada leaderboard; diubah lewat PATCH privacy, bukan PATCH profile. |
 | targetScore | integer \| null (int32) | Tidak ditandai | — | Skor target pilihan pengguna, 0–1000 atau null. |
 | targetKind | string \| null | Tidak ditandai | — | Jenis target tersimpan hasil mapping kategori. |
 | targetInstitution | string \| null | Tidak ditandai | — | Nama institusi target. |
@@ -2664,6 +3800,37 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 }
 ```
 
+<a id="topiccard"></a>
+## TopicCard
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| topic | string | Tidak ditandai | — | Nama topik. |
+| subtestId | string (uuid) | Tidak ditandai | — | UUID subtes dalam lingkup exam type. |
+| subtestCode | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| subtest | string | Tidak ditandai | — | Nama subtes. |
+| examTypeId | string (uuid) | Tidak ditandai | — | UUID jenis ujian. |
+| examType | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| category | string | Tidak ditandai | — | Kode kategori; filter opsional pada read API. |
+| questionCount | integer (int64) | Tidak ditandai | — | Jumlah soal diminta pada practice atau kebutuhan section. |
+| ready | boolean | Tidak ditandai | — | Seluruh section mempunyai stok global minimal kebutuhan. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000005",
+  "topic": "Aritmetika",
+  "subtestId": "00000000-0000-4000-8000-000000000004",
+  "subtestCode": "NUMERIK",
+  "subtest": "Penalaran Numerik",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "examType": "TPS",
+  "category": "UTBK",
+  "questionCount": 12,
+  "ready": true
+}
+```
+
 <a id="topicrequest"></a>
 ## TopicRequest
 
@@ -2680,6 +3847,43 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "name": "Aritmetika",
   "active": true,
   "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+}
+```
+
+<a id="tryoutcard"></a>
+## TryoutCard
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| code | string | Tidak ditandai | — | Kode resource atau kode opsi sesuai konteks. |
+| title | string | Tidak ditandai | — | Judul paket/blueprint. |
+| category | string | Tidak ditandai | — | Kode kategori; filter opsional pada read API. |
+| examTypeId | string (uuid) | Tidak ditandai | — | UUID jenis ujian. |
+| examType | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| blueprintVersionId | string (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| durationSeconds | integer (int32) | Tidak ditandai | — | Durasi konfigurasi dalam detik. |
+| questionCount | integer (int32) | Tidak ditandai | — | Jumlah soal diminta pada practice atau kebutuhan section. |
+| ready | boolean | Tidak ditandai | — | Seluruh section mempunyai stok global minimal kebutuhan. |
+| attemptCount | integer (int64) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| latestScore | number \| null | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| latestCompletedAt | string \| null (date-time) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000002",
+  "code": "DEMO_TRYOUT",
+  "title": "Tryout UTBK Contoh",
+  "category": "UTBK",
+  "examTypeId": "00000000-0000-4000-8000-000000000025",
+  "examType": "TPS",
+  "blueprintVersionId": "00000000-0000-4000-8000-000000000003",
+  "durationSeconds": 5400,
+  "questionCount": 3,
+  "ready": true,
+  "attemptCount": 2,
+  "latestScore": 80,
+  "latestCompletedAt": "2026-11-21T07:00:00Z"
 }
 ```
 
@@ -2759,11 +3963,11 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
 
 | Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
 |---|---|---|---|---|
-| displayName | string | Ya | minLength=2; maxLength=120 | Nama tampil pengguna. |
-| schoolName | string | Ya | minLength=0; maxLength=180 | Nama sekolah. |
-| schoolGrade | string | Ya | minLength=0; maxLength=32 | Kelas/tingkat, contoh XII. |
-| targetCategory | string | Ya | minLength=0; maxLength=24; enum=UTBK/CPNS/KEDINASAN/SEKOLAH | Kategori form: UTBK/CPNS/KEDINASAN/SEKOLAH. |
-| targetInstitution | string | Ya | minLength=0; maxLength=180 | Nama institusi target. |
+| displayName | string | Tidak ditandai | minLength=2; maxLength=120 | Nama tampil pengguna. |
+| schoolName | string \| null | Tidak ditandai | minLength=0; maxLength=180 | Nama sekolah. |
+| schoolGrade | string \| null | Tidak ditandai | minLength=0; maxLength=32 | Kelas/tingkat, contoh XII. |
+| targetCategory | string \| null | Tidak ditandai | minLength=0; maxLength=24; enum=UTBK/CPNS/KEDINASAN/SEKOLAH | Kategori form: UTBK/CPNS/KEDINASAN/SEKOLAH. |
+| targetInstitution | string \| null | Tidak ditandai | minLength=0; maxLength=180 | Nama institusi target. |
 | targetProgram | string \| null | Tidak ditandai | minLength=0; maxLength=180 | Program/jurusan target, boleh null. |
 | targetScore | integer \| null (int32) | Tidak ditandai | minimum=0; maximum=1000 | Skor target pilihan pengguna, 0–1000 atau null. |
 
@@ -2886,6 +4090,96 @@ Primitive boolean/numeric request dikirim eksplisit. FinalizeRequest.abandon dan
   "revision": 0,
   "createdBy": "00000000-0000-4000-8000-000000000001",
   "createdAt": "2026-11-20T07:00:00Z"
+}
+```
+
+<a id="workbookimport"></a>
+## WorkbookImport
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| questionSetId | string (uuid) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| fileId | string (uuid) | Tidak ditandai | — | UUID metadata stored_file sumber. |
+| inputFormat | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| status | string | Tidak ditandai | — | Status resource; baca state machine sesuai attempt/batch/job. |
+| candidateCount | integer (int32) | Tidak ditandai | — | Total kandidat. |
+| validCount | integer (int32) | Tidak ditandai | — | Kandidat tanpa validationErrors. |
+| invalidCount | integer (int32) | Tidak ditandai | — | Kandidat yang masih mempunyai error. |
+| errorCode | string \| null | Tidak ditandai | — | Kode error batch atau null. |
+| jobStatus | string \| null | Tidak ditandai | — | Status pekerjaan terpisah dari status batch. |
+| createdAt | string (date-time) | Tidak ditandai | — | Timestamp pembuatan record. |
+| sheets | array<WorkbookSheet> | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000101",
+  "questionSetId": "00000000-0000-4000-8000-000000000100",
+  "fileId": "00000000-0000-4000-8000-000000000021",
+  "inputFormat": "XLSX",
+  "status": "READY",
+  "candidateCount": 2,
+  "validCount": 2,
+  "invalidCount": 0,
+  "errorCode": null,
+  "jobStatus": "SUCCEEDED",
+  "createdAt": "2026-11-21T07:00:00Z",
+  "sheets": [
+    {
+      "id": "00000000-0000-4000-8000-000000000102",
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "sheetIndex": 0,
+      "status": "READY",
+      "candidateCount": 2,
+      "invalidCount": 0
+    }
+  ]
+}
+```
+
+<a id="workbookmetadata"></a>
+## WorkbookMetadata
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| questionSetId | string (uuid) | Ya | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| sheets | array<SheetMapping> | Ya | minItems=0; maxItems=30 | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+
+```json
+{
+  "questionSetId": "00000000-0000-4000-8000-000000000100",
+  "sheets": [
+    {
+      "sheetName": "NUMERIK",
+      "subtestId": "00000000-0000-4000-8000-000000000004"
+    }
+  ]
+}
+```
+
+<a id="workbooksheet"></a>
+## WorkbookSheet
+
+| Key | Tipe JSON | Wajib input | Batas dari schema | Makna |
+|---|---|---|---|---|
+| id | string (uuid) | Tidak ditandai | — | Identitas resource/record pada konteks DTO. |
+| sheetName | string | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| subtestId | string (uuid) | Tidak ditandai | — | UUID subtes dalam lingkup exam type. |
+| sheetIndex | integer \| null (int32) | Tidak ditandai | — | Data sesuai konteks resource; lihat contoh dan endpoint pemakai. |
+| status | string | Tidak ditandai | — | Status resource; baca state machine sesuai attempt/batch/job. |
+| candidateCount | integer (int32) | Tidak ditandai | — | Total kandidat. |
+| invalidCount | integer (int32) | Tidak ditandai | — | Kandidat yang masih mempunyai error. |
+
+```json
+{
+  "id": "00000000-0000-4000-8000-000000000102",
+  "sheetName": "NUMERIK",
+  "subtestId": "00000000-0000-4000-8000-000000000004",
+  "sheetIndex": 0,
+  "status": "READY",
+  "candidateCount": 2,
+  "invalidCount": 0
 }
 ```
 

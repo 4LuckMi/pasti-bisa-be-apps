@@ -20,7 +20,8 @@ public class LearningWorker {
     private final JobQueue queue;
     private final ExamService exams;
     private final ContentImportService imports;
-    public LearningWorker(JobQueue queue,ExamService exams,ContentImportService imports) { this.queue=queue;this.exams=exams;this.imports=imports; }
+    private final com.pasti_bisa.backend.modules.content.application.WorkbookImportService workbooks;
+    public LearningWorker(JobQueue queue,ExamService exams,ContentImportService imports,com.pasti_bisa.backend.modules.content.application.WorkbookImportService workbooks) { this.queue=queue;this.exams=exams;this.imports=imports;this.workbooks=workbooks; }
 
     @Scheduled(fixedDelayString="${pastisiap.worker.poll-interval:PT2S}")
     public void tick() {
@@ -36,6 +37,7 @@ public class LearningWorker {
                 switch(job.type()) {
                     case "SCORE_ATTEMPT" -> exams.score(UUID.fromString(job.payload().get("attemptId").asString()));
                     case "IMPORT_PDF" -> imports.process(job);
+                    case "IMPORT_XLSX" -> workbooks.process(job);
                     default -> throw new IllegalArgumentException("Unknown persistent job type");
                 }
                 queue.succeeded(job);

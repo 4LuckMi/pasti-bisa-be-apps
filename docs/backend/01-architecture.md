@@ -15,10 +15,15 @@ flowchart LR
     worker -->|"Teks / OCR"| extractor["PDFBox dan Tesseract"]
 ```
 
-Compose mempunyai tiga service: `postgres`, `api`, `worker`. API dan worker memakai image yang sama,
+Compose menjalankan tiga service utama: `postgres`, `api`, `worker`. API dan worker memakai image yang sama,
 namun worker memakai profil `worker`, mengaktifkan scheduler dan tidak membuka HTTP listener publik.
 API menjalankan HTTP di port container 8080. Flyway berjalan saat startup; PostgreSQL mengunci proses migrasi
 agar dua proses tidak menerapkan versi yang sama bersamaan.
+
+Service tambahan `demo-accounts` hanya tersedia melalui profile Compose `demo-tools` dan dijalankan oleh
+`scripts/setup-demo-accounts.ps1`. Proses sekali jalan ini membuat fixture INTERNAL admin/petugas dalam satu transaksi,
+tanpa HTTP listener. Password BCrypt berasal dari kredensial acak lokal, tidak memiliki nilai default di repository.
+Seed menolak bentrok identitas/izin, mencatat audit, dan tidak mengubah akun yang sudah ada.
 
 Antrean memakai tabel `job`, bukan broker terpisah. Redis, S3/object storage, message broker, gateway payment,
 SMTP dan reverse proxy produksi belum terintegrasi. Session masih berada di memori proses API.
@@ -303,3 +308,39 @@ Worker memakai korelasi `job:<uuid>`. Client tidak menerima stack trace/SQL.
 
 Respons error standar dijelaskan pada referensi API. Kasus binary asset tidak ditemukan secara eksplisit
 mengembalikan 404 dengan body kosong, sehingga client tidak boleh selalu mengasumsikan body error JSON.
+
+## Read model layar siswa terbaru
+
+`StudentExperienceController → StudentExperienceService → StudentExperienceRepository` mengikuti port/adapter
+yang sama dengan lifecycle exam. Adapter JDBC memetakan kolom ke DTO eksplisit; controller tidak mengembalikan
+Map baris database. Transaksi read REPEATABLE_READ menjaga count/summary/items konsisten pada satu request.
+Endpoint baru dilindungi role CUSTOMER dan scope data pribadi selalu berasal dari session, bukan userId client.
+
+Dashboard menghitung seluruh attempt tersaring dan membagi statistik berdasarkan examType/policyVersion.
+Riwayat dan katalog memiliki total/offset/limit dari server. Leaderboard memilih satu cohort, mengecualikan
+akun nonaktif/opt-out dan hasil abandon, menerapkan preview tiga baris serta ownRank, dan memeriksa hak dari
+order/grant. API lama tetap kompatibel; leaderboard lama juga memakai satu cohort serta batas preview.
+
+`ScoringProgress` menerjemahkan status attempt/job ke metadata aman untuk polling. Kegagalan tidak mengubah
+snapshot atau melepas lock satu sesi aktif; admin melakukan retry job yang sama. Tidak ada exception/payload
+worker yang dikirim ke siswa. Profil partial PATCH mengunci akun sebelum merge field; consent leaderboard
+dan audit diubah atomik melalui endpoint privacy terpisah.
+
+## Impor Excel dan pool sumber
+
+WorkbookImportController → WorkbookImportService → WorkbookRepository/WorkbookParser/ImportFileStorage
+memisahkan HTTP, transaksi, parser POI dan filesystem. Upload menyimpan sumber privat serta enqueue job
+IMPORT_XLSX secara atomik; file sementara dibersihkan jika transaksi gagal atau upload terdeduplikasi.
+Worker memakai lease/token antrean yang sama dengan PDF. Format invalid gagal terminal, sedangkan error
+sementara memakai retry terbatas. Ekstraksi dilakukan di luar transaksi; penyimpanan staging memeriksa lease.
+
+Review kandidat dan penyimpanan bulk mengunci sumber/candidate/master, memeriksa expectedVersionId, dan
+membuat versi DRAFT tanpa menimpa published. Baseline workbook hanya menerima versi PUBLISHED yang immutable; edit draft lalu publish dengan ID sama tidak melewati pemeriksaan stale. Penyimpanan impor bulk diserialisasi agar urutan lock antar
+master tidak saling terbalik. Penambahan anggota sumber tidak mengubah isi master. Revisi konten manual
+mempertahankan difficulty; revisi Excel dapat mengubahnya melalui kandidat yang direview.
+
+QuestionPoolRepository menjadi port pemilihan yang dipakai ExamRepository. Katalog, detail, readiness admin
+dan kebutuhan pool petugas memakai function question_section_available, sehingga aturan opsi/kunci,
+taksonomi, sumber dan difficulty konsisten. View read-only menyatukan versi terbit terbaru yang valid.
+Pemilihan tetap mengutamakan exposure terlama dan pengacakan dalam kelompok; snapshot attempt tetap sumber
+utama ketika membaca soal sesi. Seluruh alur rinci dan batas format tersedia pada panduan learning API.

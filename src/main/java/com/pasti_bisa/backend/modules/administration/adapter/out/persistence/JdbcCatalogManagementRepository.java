@@ -125,6 +125,13 @@ public class JdbcCatalogManagementRepository implements CatalogManagementReposit
         ScoreCalculator.validatePolicy(new ScorePolicy(policy.id(),policy.method(),policy.code(),policy.version(),policy.scale(),json.readTree(ruleJson)));
         var used=new HashSet<UUID>();
         for(var section:body.sections()) {
+            require(section.questionSetIds().isEmpty()||section.sourceYear()==null,"AMBIGUOUS_SOURCE_FILTER","Use questionSetIds or legacy sourceYear, not both");
+            require(new HashSet<>(section.questionSetIds()).size()==section.questionSetIds().size(),"DUPLICATE_SOURCE","Source IDs must be distinct");
+            for(UUID source:section.questionSetIds())require(Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM question_set WHERE id=:id AND exam_type_id=:type AND status='ACTIVE')",p("id",source).addValue("type",master.examTypeId()),Boolean.class)),"INVALID_SOURCE_SCOPE","Source must be active and match blueprint exam type");
+            if(!section.difficultyQuotas().isEmpty()){
+                require(section.difficultyQuotas().stream().map(DifficultyAllocation::difficulty).distinct().count()==section.difficultyQuotas().size(),"DUPLICATE_DIFFICULTY","Use each difficulty once");
+                require(section.difficultyQuotas().stream().mapToInt(DifficultyAllocation::count).sum()==section.questionCount(),"INVALID_DIFFICULTY_ALLOCATION","Difficulty counts must sum to section questionCount");
+            }
             require(used.add(section.subtestId()),"OVERLAPPING_SECTIONS","Use one section per subtest to prevent overlapping pools");
             require(Boolean.TRUE.equals(jdbc.queryForObject("""
                 SELECT EXISTS(SELECT 1 FROM subtest s WHERE s.id=:subtest AND s.exam_type_id=:type AND s.active
@@ -135,7 +142,11 @@ public class JdbcCatalogManagementRepository implements CatalogManagementReposit
         jdbc.update("INSERT INTO blueprint_version(id,blueprint_id,version,duration_seconds,scoring_policy,scoring_policy_id) VALUES(:id,:master,:number,:duration,'{}',:policy)",p("id",versionId).addValue("master",id).addValue("number",number).addValue("duration",body.durationSeconds()).addValue("policy",policy.id()));
         int position=1;for(var section:body.sections()) {
             var filter=json.createObjectNode();if(section.topicId()!=null) filter.put("topicId",section.topicId().toString());if(section.sourceYear()!=null) filter.put("sourceYear",section.sourceYear());
-            jdbc.update("INSERT INTO blueprint_section(id,blueprint_version_id,subtest_id,position,item_count,filters) VALUES(gen_random_uuid(),:version,:subtest,:position,:count,:filter::jsonb)",p("version",versionId).addValue("subtest",section.subtestId()).addValue("position",position++).addValue("count",section.questionCount()).addValue("filter",json.writeValueAsString(filter)));
+            if(!section.difficultyQuotas().isEmpty())filter.set("difficultyQuotas",json.valueToTree(section.difficultyQuotas()));
+            if(section.repeatPolicy()!=null)filter.put("repeatPolicy",section.repeatPolicy());
+            UUID sectionId=UUID.randomUUID();
+            jdbc.update("INSERT INTO blueprint_section(id,blueprint_version_id,subtest_id,position,item_count,filters) VALUES(:id,:version,:subtest,:position,:count,:filter::jsonb)",p("id",sectionId).addValue("version",versionId).addValue("subtest",section.subtestId()).addValue("position",position++).addValue("count",section.questionCount()).addValue("filter",json.writeValueAsString(filter)));
+            for(UUID source:section.questionSetIds())jdbc.update("INSERT INTO blueprint_section_source(section_id,question_set_id) VALUES(:section,:source)",p("section",sectionId).addValue("source",source));
         }
         return version(id,versionId);
     }
@@ -143,21 +154,17 @@ public class JdbcCatalogManagementRepository implements CatalogManagementReposit
         master(id,false);
         var p=p("id",versionId).addValue("master",id);
         var sections=jdbc.query("""
-            SELECT s.id,s.position,s.subtest_id,t.name,s.item_count,(s.filters->>'topicId')::uuid AS topic_id,(s.filters->>'sourceYear')::int AS source_year,
-              CASE WHEN t.active AND e.active AND c.active AND (s.filters->>'topicId' IS NULL OR EXISTS(SELECT 1 FROM topic z WHERE z.id=(s.filters->>'topicId')::uuid AND z.active)) THEN
-              (SELECT count(*) FROM question q JOIN LATERAL(SELECT v.id,v.source_year FROM question_version v WHERE v.question_id=q.id AND v.status='PUBLISHED' ORDER BY version DESC LIMIT 1) v ON true
-               WHERE q.archived_at IS NULL AND q.subtest_id=s.subtest_id
-                 AND (q.topic_id IS NULL OR EXISTS(SELECT 1 FROM topic z WHERE z.id=q.topic_id AND z.active))
-                 AND (s.filters->>'topicId' IS NULL OR q.topic_id=(s.filters->>'topicId')::uuid)
-                 AND (s.filters->>'sourceYear' IS NULL OR v.source_year=(s.filters->>'sourceYear')::int)
-                 AND (SELECT count(*) FROM question_option o WHERE o.question_version_id=v.id) BETWEEN 2 AND 5
-                 AND (SELECT count(*) FROM question_option o WHERE o.question_version_id=v.id AND o.correct_key)=1
-                 AND (sp.method<>'OPTION_WEIGHT' OR EXISTS(SELECT 1 FROM question_option o WHERE o.question_version_id=v.id AND o.score_weight>0)))
-              ELSE 0 END AS available
+            SELECT s.id,s.position,s.subtest_id,t.name,s.item_count,s.filters,(s.filters->>'topicId')::uuid AS topic_id,(s.filters->>'sourceYear')::int AS source_year,
+              question_section_available(s.id) AS available
             FROM blueprint_section s JOIN subtest t ON t.id=s.subtest_id JOIN exam_type e ON e.id=t.exam_type_id JOIN exam_category c ON c.id=e.category_id
             JOIN blueprint_version bv ON bv.id=s.blueprint_version_id JOIN scoring_policy sp ON sp.id=bv.scoring_policy_id
             WHERE s.blueprint_version_id=:id ORDER BY s.position
-            """,p,(rs,row)->new BlueprintSection(rs.getObject("id",UUID.class),rs.getInt("position"),rs.getObject("subtest_id",UUID.class),rs.getString("name"),rs.getInt("item_count"),rs.getObject("topic_id",UUID.class),rs.getObject("source_year",Integer.class),rs.getLong("available")));
+            """,p,(rs,row)->{
+                var filter=json.readTree(rs.getString("filters"));var allocations=new ArrayList<DifficultyAllocation>();
+                if(filter.has("difficultyQuotas"))for(var allocation:filter.get("difficultyQuotas"))allocations.add(new DifficultyAllocation(allocation.get("difficulty").asString(),allocation.get("count").asInt()));
+                var sources=jdbc.query("SELECT question_set_id FROM blueprint_section_source WHERE section_id=:id ORDER BY question_set_id",p("id",rs.getObject("id",UUID.class)),(r,n)->r.getObject(1,UUID.class));
+                return new BlueprintSection(rs.getObject("id",UUID.class),rs.getInt("position"),rs.getObject("subtest_id",UUID.class),rs.getString("name"),rs.getInt("item_count"),rs.getObject("topic_id",UUID.class),rs.getObject("source_year",Integer.class),rs.getLong("available"),sources,allocations,filter.hasNonNull("repeatPolicy")?filter.get("repeatPolicy").asString():null);
+            });
         return jdbc.queryForObject("SELECT * FROM blueprint_version WHERE id=:id AND blueprint_id=:master",p,(rs,row)->new BlueprintVersion(versionId,rs.getInt("version"),rs.getString("status"),rs.getInt("duration_seconds"),rs.getObject("scoring_policy_id",UUID.class),sections,!sections.isEmpty()&&sections.stream().allMatch(s->s.available()>=s.questionCount())));
     }
     @Override public BlueprintDetail publish(UUID id,UUID versionId,PublishRequest body) {

@@ -36,10 +36,11 @@ public class JdbcJobQueue implements JobQueue {
     }
     @Override public void failed(Job job,Exception exception) {
         jdbc.update("""
-                UPDATE job SET status=CASE WHEN retry_count>=max_attempts THEN 'FAILED' ELSE 'RETRY_WAIT' END,
+                UPDATE job SET status=CASE WHEN :terminal OR retry_count>=max_attempts THEN 'FAILED' ELSE 'RETRY_WAIT' END,
                   run_after=now()+interval '10 seconds',lease_until=NULL,lease_token=NULL,last_error=:error
                 WHERE id=:id AND lease_token=:token
-                """,params(job).addValue("error",exception.getClass().getSimpleName()));
+                """,params(job).addValue("error",exception.getClass().getSimpleName())
+                    .addValue("terminal",job.type().equals("IMPORT_XLSX")&&exception instanceof com.pasti_bisa.backend.shared.web.BusinessException b&&b.status()<500));
     }
     @Override public void requireLease(Job job) {
         var owned=jdbc.query("SELECT id FROM job WHERE id=:id AND lease_token=:token AND status='PROCESSING' AND lease_until>now() FOR UPDATE",

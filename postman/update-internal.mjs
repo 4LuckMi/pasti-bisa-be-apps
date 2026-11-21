@@ -13,7 +13,7 @@ const variableByPath=path=>path.startsWith('/api/v1/admin/users/')?'managedUserI
 function requestBody(ep){
  let body=structuredClone(examples[ep.request]);if(!body)return undefined;
  const ids={categoryId:'categoryId',examTypeId:'examTypeId',subtestId:'subtestId',topicId:'topicId',scoringPolicyId:'policyId',expectedVersionId:'questionVersionId'};
- const walk=value=>{if(!value||typeof value!=='object')return;for(const [key,item]of Object.entries(value)){if(key==='reason')value[key]='{{operationReason}}';else if(ids[key])value[key]='{{'+ids[key]+'}}';else if(key==='expectedActiveVersionId')value[key]='__ACTIVE_VERSION_JSON__';else if(key==='expectedRevision')value[key]='__DRAFT_REVISION__';else if(key==='candidateIds')value[key]=['{{candidateId}}'];else walk(item);}};walk(body);
+ const walk=value=>{if(!value||typeof value!=='object')return;for(const [key,item]of Object.entries(value)){if(key==='reason')value[key]='{{operationReason}}';else if(ids[key])value[key]='{{'+ids[key]+'}}';else if(key==='questionSetIds')value[key]=['{{questionSetId}}'];else if(key==='expectedActiveVersionId')value[key]='__ACTIVE_VERSION_JSON__';else if(key==='expectedRevision')value[key]='__DRAFT_REVISION__';else if(key==='candidateIds')value[key]=['{{candidateId}}'];else walk(item);}};walk(body);
  if(ep.request==='PlanRequest')body.code='{{planFamilyCode}}';
  return {mode:'raw',raw:JSON.stringify(body,null,2).replace('"__ACTIVE_VERSION_JSON__"','{{expectedActiveVersionIdJson}}').replace('"__DRAFT_REVISION__"','{{draftRevision}}'),options:{raw:{language:'json'}}};
 }

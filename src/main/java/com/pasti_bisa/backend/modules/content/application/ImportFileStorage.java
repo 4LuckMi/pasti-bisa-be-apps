@@ -7,6 +7,7 @@ import com.pasti_bisa.backend.modules.content.application.dto.ContentDtos.Stored
 
 public interface ImportFileStorage {
     StoredUpload store(InputStream stream,String originalName) throws IOException;
+    StoredUpload storeWorkbook(InputStream stream,String originalName) throws IOException;
     Path resolve(String relativePath) throws IOException;
     void deleteUncommitted(StoredUpload upload) throws IOException;
 }
