@@ -30,6 +30,6 @@ public class AttemptQuestionService {
                 ? options.stream().anyMatch(option -> option.id().equals(selected) && option.correct()) : null;
         return new QuestionResponse(question.position(), question.stem(), responseOptions,
                 selected == null ? null : selected.toString(), question.flagged(), question.revision(), correct,
-                question.finalized() ? question.explanation() : null);
+                question.finalized() ? question.explanation() : null,question.scope());
     }
 }

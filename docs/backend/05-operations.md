@@ -75,6 +75,7 @@ scoring dan pemeriksaan expiry. Pemisahan antrean/kapasitas worker termasuk road
 | V4 | user_type default SISWA |
 | V5 | Sekolah, kelas dan skor target |
 | V6 | Mode/demo blueprint, idempotency hash/reason, metadata impor, lease token dan guard snapshot/answer/source |
+| V7 | Revision sesi/draft, keluarga/revisi harga immutable, ledger permintaan refund dan index audit |
 
 Migrasi berjalan otomatis saat startup aplikasi. File migration harus berada dalam JAR image terbaru.
 
@@ -99,7 +100,37 @@ Get-Content docs/provision-question-staff.sql | docker compose exec -T postgres 
 
 Script tidak membuat akun atau memberi PLATFORM_ADMIN. Unique role mencegah duplikasi. Jika role sudah ada,
 `ON CONFLICT DO NOTHING` dapat menghasilkan nol baris juga; verifikasi user_role sebelum menyimpulkan email salah.
-Login ulang untuk role baru pada session. API admin role-management belum tersedia.
+Login ulang setelah perubahan role; session lama dicabut oleh revision DB. Setelah admin pertama tersedia,
+gunakan API admin untuk role/status/pembuatan akun internal agar alasan dan pelakunya tercatat.
+
+### Bootstrap admin pertama
+
+Tidak ada akun/password admin otomatis. Operator memilih akun existing ACTIVE, lalu menjalankan:
+
+```powershell
+Get-Content docs/provision-platform-admin.sql | docker compose exec -T postgres psql -U pastisiap -d pastisiap -v admin_email='admin@example.com' -f -
+```
+
+Ganti email contoh dengan akun yang memang ditunjuk. Pastikan hasil INSERT mengembalikan ID yang dimaksud;
+tanpa baris berarti akun tidak ditemukan/nonaktif atau role sudah ada. SQL bootstrap ini tidak memberikan
+QUESTION_STAFF. Login ulang, lalu gunakan folder **Platform admin - complete APIs** pada Postman.
+`managedUserId` harus dipilih eksplisit; collection tidak mengisinya dengan admin yang sedang login.
+
+`POST /api/v1/admin/users` membuat INTERNAL dengan password NULL dan role internal yang dipilih. Akun tersebut
+masuk melalui Google verified email yang sama; belum ada pengiriman undangan atau pembuatan password oleh admin.
+Untuk akun password existing, gunakan `PUT /admin/users/{id}/roles`. User type dan role adalah konsep terpisah.
+
+### Menjalankan endpoint internal
+
+1. Dari repo backend jalankan `docker compose up --build -d`; V7 berjalan otomatis saat API mulai.
+2. Import ulang collection Postman, login akun berizin lalu ambil CSRF dari session/cookie yang sama.
+3. Petugas: taxonomy → upload/status/candidates → koreksi → save draft → GET draft/revision → edit/publish.
+4. Admin: taxonomy → scoring policy → blueprint → versi → readiness → publish. Kirim active version terakhir
+   sebagai expectedActiveVersionId; publikasi pertama mengirim null. Revisi harga memakai ID plan baru.
+5. Reconcile menghasilkan 503 PAYMENT_PROVIDER_NOT_CONFIGURED. Refund request 202/PENDING_PROVIDER merupakan
+   kasus operasional saja; tidak memindahkan uang. Jangan menganggap response tersebut sebagai refund sukses.
+
+Tidak perlu dependency eksternal baru untuk endpoint ini. Session tetap memori API; restart meminta login ulang.
 
 ## Pengujian
 
@@ -109,7 +140,7 @@ docker compose -p pastisiap-verify -f compose.verify.yaml down
 ```
 
 Suite memakai database tmpfs terpisah dan Maven/JDK 25 + OCR asli. Tidak menyentuh akun/database development.
-19 tes yang ada dijelaskan di roadmap; hasil pengujian sebelumnya tidak berarti semua skenario produksi lulus.
+28 tes yang ada dijelaskan di roadmap; hasil pengujian sebelumnya tidak berarti semua skenario produksi lulus.
 Untuk perubahan dokumentasi/annotation, verifikasi tambahan memeriksa semua operasi runtime terdokumentasi,
 semua contoh terhadap key DTO, referensi schema/link dan tidak adanya endpoint lama pada kontrak baru.
 
@@ -126,7 +157,7 @@ SSO Google harus diselesaikan lewat browser; Postman tidak menyelesaikan consent
 | 403 staff | Pastikan role QUESTION_STAFF, bukan hanya PLATFORM_ADMIN; login ulang |
 | 409 pool/quota | Periksa kode error, tanggal WIB, stok terbit dan exposure pengguna |
 | 409 revision | Fetch soal/navigator lagi dan gunakan revision terakhir |
-| FINALIZING berkepanjangan | Periksa worker, job status/retry/last_error; tidak ada retry API manual saat ini |
+| FINALIZING berkepanjangan | Periksa worker dan job; admin dapat retry job FAILED, bukan PROCESSING atau hasil yang sudah selesai |
 | Batch QUEUED | Pastikan worker hidup dan storage mount sama |
 | Batch FAILED | Periksa jobId/log extractor, PDF encrypted/limit/OCR dan file tersedia |
 | 500 | Cocokkan requestId response dengan log; jangan hanya membaca ringkasan startup |
@@ -169,6 +200,6 @@ npm install --prefix $renderRoot --no-save --package-lock=false --ignore-scripts
 node docs/backend/build-html.mjs
 ```
 
-Renderer memakai profil browser headless terpisah, memvalidasi 13 diagram dengan engine Mermaid,
+Renderer memakai profil browser headless terpisah, memvalidasi 14 diagram dengan engine Mermaid,
 menyimpan SVG dan menggabungkan seluruh bab menjadi HTML offline. Library renderer tidak diperlukan
 untuk membaca hasil HTML. Lokasi package/browser alternatif dapat diberikan sebagai dua argumen script.

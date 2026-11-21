@@ -43,7 +43,7 @@ flowchart TD
 | `adapter/out` | SQL bernama dan mapping DTO internal; disk/PDF/OCR | `JdbcExamRepository`, `LocalImportFileStorage`, `PdfBoxExtractor` |
 | `shared` | Security, CSRF, korelasi log, error API, clock/config | `SecurityConfiguration`, `ApiExceptionHandler` |
 
-Modul yang sudah berisi logic: `identity`, `exam`, `content`, `operations`, `system`.
+Modul yang sudah berisi logic: `identity`, `exam`, `content`, `operations`, `administration`, `system`.
 Catalog/read API dan scoring saat ini berada di `exam`; belum menjadi service atau modul assessment terpisah.
 Pola ini memisahkan tanggung jawab, tetapi belum merupakan isolasi modul yang sepenuhnya dipaksakan oleh build.
 Beberapa model aplikasi/domain masih memakai `JsonNode`, anotasi validasi atau exception HTTP bersama.
@@ -66,11 +66,37 @@ Kode role yang disiapkan: `CUSTOMER`, `QUESTION_STAFF`, `PLATFORM_ADMIN`.
 | Profil, katalog/read API, riwayat, quota, subscription, leaderboard, baca soal/asset | Session terautentikasi; endpoint data pribadi dibatasi akun/attempt terkait |
 | Start, resume/navigator, autosave, finalize, result/review | `CUSTOMER` melalui method security dan pemeriksaan kepemilikan |
 | Seluruh `/api/v1/staff/**` | `QUESTION_STAFF`; petugas bisa melihat daftar konten/impor petugas lain |
-| Admin | Kode role tersedia; API admin lengkap belum dibuat |
+| Seluruh `/api/v1/admin/**` | `PLATFORM_ADMIN`; perubahan sensitif beralasan dan diaudit |
 
 `PLATFORM_ADMIN` bukan superuser otomatis. Agar akun admin membuka konten, akun tersebut harus diberi
 `QUESTION_STAFF` secara eksplisit. Sejumlah read API lama hanya mengecek authenticated, belum role `CUSTOMER`;
 penyamaan policy read API dicatat sebagai pekerjaan penguatan akses.
+
+### Operasi admin dan pencabutan sesi
+
+`AdministrationController`/`CatalogManagementController` memvalidasi DTO eksplisit. Service mengatur
+transaksi dan mengakses port repository; SQL/mapping ada pada adapter JDBC. Petugas tetap memakai modul
+content. Tidak ada endpoint publik untuk memilih role internal. Akun internal baru memakai type INTERNAL,
+tanpa password buatan admin, lalu masuk dengan Google verified email yang sama. Alternatif: admin mengubah
+role akun existing yang sudah mempunyai metode autentikasi.
+
+```mermaid
+flowchart TD
+    request["Request perubahan role atau status"] --> role["Periksa PLATFORM_ADMIN"]
+    role --> lock["Serialisasi perubahan akses dalam transaksi"]
+    lock --> actor["Periksa ulang admin pelaku masih aktif"]
+    actor --> last{"Masih ada admin aktif setelah perubahan?"}
+    last -->|"Tidak"| denied["409 LAST_ACTIVE_ADMIN"]
+    last -->|"Ya"| change["Ubah akses dan naikkan auth_revision"]
+    change --> audit["Simpan alasan dan request ID dalam audit"]
+    audit --> commit["Commit transaksi"]
+    commit --> next["Request sesi lama ditolak 401"]
+```
+
+Password maupun Google session mengikat `auth_revision` saat login; `AccountSessionGuard` mengeceknya
+setiap request. Perubahan role/status/password/email di database menaikkan revision melalui trigger.
+Memulihkan status akun tidak menghidupkan sesi lama. GET CSRF dapat membuat session/token baru untuk login ulang.
+Sesi masih berada di memori API; persistensi multi-instance dan MFA tetap pekerjaan berikutnya.
 
 ### Login/register password
 

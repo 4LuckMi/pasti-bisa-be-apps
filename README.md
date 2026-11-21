@@ -10,12 +10,12 @@ Tersedia juga [versi HTML offline](docs/backend/backend-documentation.html) deng
 
 Backend sudah mencakup login/register, katalog, lifecycle tryout/practice, penyimpanan jawaban, scoring asinkron,
 bank soal terversi, serta upload PDF teks/scan dengan review kandidat. Riset, keputusan dan urutan implementasi
-tersedia di [rencana arsitektur](docs/learning-architecture-plan.md). Pembayaran dan pengelolaan blueprint lewat UI/API admin belum dikerjakan.
+tersedia di [rencana arsitektur](docs/learning-architecture-plan.md). Endpoint admin/petugas tersedia; UI admin dan integrasi gateway pembayaran belum dikerjakan.
 
 | Area | Status di repo saat ini |
 |---|---|
 | Runtime Java 25, Spring MVC, validasi, PostgreSQL | Setup tersedia |
-| Migrasi Flyway dan schema PRD | V1–V6; V6 menambahkan metadata impor dan guard lifecycle/snapshot |
+| Migrasi Flyway dan schema PRD | V1–V7; V7 menambahkan pencabutan sesi, revision draft/harga dan permintaan refund |
 | Clean architecture | `modules/<domain>/{domain,application,adapter}` dan `shared` |
 | Health | `GET /api/v1/health` dan Actuator health |
 | CSRF | `GET /api/v1/csrf` mengeluarkan token session untuk mutasi |
@@ -25,7 +25,8 @@ tersedia di [rencana arsitektur](docs/learning-architecture-plan.md). Pembayaran
 | Scoring | BINARY/OPTION_WEIGHT; indeks latihan terversi, bukan skor resmi/IRT; leaderboard kompetisi tidak diisi dari sesi acak |
 | Dummy | Profil `demo`: 4 kategori/katalog, 48 soal matematika contoh dan PDF contoh 2 soal |
 | API dan worker terpisah | Compose menjalankan PostgreSQL, API dan worker job persisten dengan lease/retry |
-| Pembayaran/admin | Skema dasar dan beberapa read API; belum ada integrasi gateway atau manajemen admin lengkap |
+| Admin | Pengguna/peran/status, taxonomy, paket/policy/blueprint terversi, readiness/publish, dashboard, audit dan retry job |
+| Keuangan | Daftar/detail order/langganan, revoke dan kasus refund PENDING_PROVIDER; gateway belum terintegrasi |
 
 Endpoint bisnis baru sebaiknya mengikuti kontrak prefix `/api/v1` dalam bagian “API & batas transaksi” PRD. Untuk menjaga integritas, attempt, kuota WIB, finalisasi, webhook payment, dan publikasi konten harus dibuat sebagai transaksi idempoten dengan constraint database. Jangan menganggap kolom/tabel yang sudah ada sebagai implementasi aturan bisnis tersebut.
 
@@ -37,7 +38,7 @@ Endpoint bisnis baru sebaiknya mengikuti kontrak prefix `/api/v1` dalam bagian �
 - Docker Desktop/Compose opsional, memakai `compose.yaml` dan `Dockerfile`.
 - Tesseract OCR dengan model bahasa Indonesia dan Inggris dipasang pada image backend. PDFBox membaca teks/render; worker menjalankan OCR pada halaman dengan teks minim, di luar thread request.
 - springdoc-openapi 3.2.x dipakai untuk Spring Boot 4.1.x; PDFBox 3.0.8 dipakai untuk ekstraksi/render PDF.
-- Spring Security memakai sesi server dan proteksi CSRF. Email/password dan Google OAuth tersedia. Registrasi publik selalu membuat user type `SISWA` dengan role `CUSTOMER`; role `QUESTION_STAFF` dan `PLATFORM_ADMIN` sudah menjadi kode role database, tetapi belum ada provisioning admin/petugas.
+- Spring Security memakai sesi server dan proteksi CSRF. Email/password dan Google OAuth tersedia. Registrasi publik selalu membuat user type `SISWA` dengan role `CUSTOMER`; admin dapat membuat akun internal SSO atau mengganti role akun existing. Bootstrap admin pertama dijelaskan pada [panduan operasional](docs/backend/05-operations.md#bootstrap-admin-pertama).
 - Google OAuth2/OIDC tersedia sebagai pilihan selain email/password. Atur `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET` dari Google Cloud Console; callback lokal default `http://localhost:8080/login/oauth2/code/google` harus didaftarkan sebagai Authorized redirect URI. `OAUTH_SUCCESS_REDIRECT` mengatur halaman tujuan setelah login berhasil (default `/`).
 - Springdoc menyediakan Swagger UI pada `/swagger-ui.html` dan dokumen OpenAPI pada `/api-docs`.
 
@@ -156,8 +157,9 @@ restart belum dikonfigurasi; dapat memakai Spring Session JDBC/Redis bila menjad
 | `PATCH` | `/api/v1/users/current/profile` | Memperbarui profil dan target belajar siswa |
 | `GET` | `/api/v1/tryouts?category=UTBK` | Katalog tryout, jumlah soal, dan ringkasan riwayat per paket |
 | `GET` | `/api/v1/practice/topics?category=UTBK` | Daftar topik latihan dan jumlah soal terbit |
+| `GET` | `/api/v1/practice/topics/{id}` | Detail topik, kesiapan stok, batas/default jumlah soal dan durasi per soal |
 | `GET` | `/api/v1/users/current/tryout-quota` | Kuota tryout harian berdasarkan tanggal WIB |
-| `GET` | `/api/v1/users/current/attempts` | Riwayat sesi tryout milik siswa |
+| `GET` | `/api/v1/users/current/attempts` | Riwayat tryout/latihan; filter `mode`, `tryoutId` atau `topicId`, serta `offset`/`limit` |
 | `GET` | `/api/v1/users/current/subscription` | Status dan periode langganan siswa |
 | `GET` | `/api/v1/leaderboard?category=UTBK` | Peringkat cohort aktif untuk siswa yang ikut leaderboard |
 | `GET` | `/api/v1/users/current/attempts/{attemptId}/questions/{position}` | Isi soal dalam sesi milik siswa; kunci dan pembahasan hanya setelah sesi dinilai |
@@ -219,7 +221,7 @@ Refactor DTO tidak mengubah skema database dan tidak memerlukan migration baru.
 
 ## Skema database dan Flyway
 
-Flyway menerapkan migration secara berurutan saat aplikasi mulai. `V1` membuat tabel inti, `V2` melengkapi domain PRD, `V3` menambahkan OAuth, `V4` menambahkan user type, `V5` melengkapi profil/target, dan `V6` menambahkan metadata impor, mode katalog/practice, request hash dan guard snapshot/jawaban. Migration lama dipertahankan; perubahan selanjutnya memakai V7 atau berikutnya.
+Flyway menerapkan migration secara berurutan saat aplikasi mulai. `V1` membuat tabel inti, `V2` melengkapi domain PRD, `V3` menambahkan OAuth, `V4` menambahkan user type, `V5` melengkapi profil/target, `V6` menambahkan lifecycle konten/sesi, dan `V7` menambahkan revision pencabutan sesi/draft/harga serta ledger permintaan refund. Migration lama dipertahankan; perubahan selanjutnya memakai V8 atau berikutnya.
 
 Dengan Docker Compose, jalankan atau bangun ulang API agar Flyway memproses migration yang ada di image:
 

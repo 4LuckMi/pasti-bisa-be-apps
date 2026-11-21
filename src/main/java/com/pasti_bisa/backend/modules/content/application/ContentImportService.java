@@ -56,8 +56,9 @@ public class ContentImportService {
     public List<TaxonomyResponse> taxonomy() { return repository.taxonomy(); }
     public List<ImportResponse> list(int offset,int limit) { return repository.imports(offset,limit); }
     public List<CandidateResponse> candidates(UUID id,int offset,int limit) { return repository.candidates(id,offset,limit); }
-    @Transactional public void correct(UUID id,UUID candidateId,QuestionContent content) {
+    @Transactional public void correct(String email,UUID id,UUID candidateId,QuestionContent content) {
         repository.correctCandidate(id,candidateId,content,QuestionValidator.publicationErrors(content.toDomain()));
+        repository.auditContent(repository.actor(email),"IMPORT_CANDIDATE_CORRECTED",candidateId);
     }
     @Transactional public QuestionResponse saveCandidate(String email,UUID batchId,UUID candidateId) {
         return repository.saveCandidate(repository.actor(email),batchId,candidateId);

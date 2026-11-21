@@ -69,9 +69,9 @@ public class ContentController {
     }
 
     @PatchMapping("/imports/{id}/candidates/{candidateId}")
-    public void correct(@PathVariable UUID id, @PathVariable UUID candidateId,
+    public void correct(Authentication auth,@PathVariable UUID id, @PathVariable UUID candidateId,
             @Valid @RequestBody QuestionContent body) {
-        content.correct(id, candidateId, body);
+        content.correct(auth.getName(),id, candidateId, body);
     }
 
     @PostMapping("/imports/{id}/candidates/{candidateId}/save")

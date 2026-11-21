@@ -167,11 +167,15 @@ public class JdbcContentRepository implements ContentRepository {
                     .addValue("position",position++).addValue("correct",option.correct()).addValue("weight",option.weight()==null?java.math.BigDecimal.ZERO:option.weight()));
     }
     @Override public QuestionResponse question(UUID id) {
+        return readQuestion(id,null);
+    }
+    @Override public QuestionResponse questionVersion(UUID id,UUID versionId) { return readQuestion(id,versionId); }
+    private QuestionResponse readQuestion(UUID id,UUID versionId) {
         var question=jdbc.queryForObject("""
                 SELECT q.id,q.code,q.subtest_id,q.topic_id,v.id AS version_id,v.version,v.status,v.source_year,v.source_title,v.source_page,
                        v.stem->>'text' AS stem,v.explanation,v.shuffle_allowed FROM question q
-                JOIN LATERAL (SELECT * FROM question_version WHERE question_id=q.id ORDER BY version DESC LIMIT 1) v ON TRUE WHERE q.id=:id
-                """,p("id",id),(rs,row)->new QuestionResponse(id,rs.getObject("version_id",UUID.class),rs.getString("code"),rs.getInt("version"),rs.getString("status"),
+                JOIN LATERAL (SELECT * FROM question_version WHERE question_id=q.id AND (:versionId::uuid IS NULL OR id=:versionId::uuid) ORDER BY version DESC LIMIT 1) v ON TRUE WHERE q.id=:id
+                """,p("id",id).addValue("versionId",versionId),(rs,row)->new QuestionResponse(id,rs.getObject("version_id",UUID.class),rs.getString("code"),rs.getInt("version"),rs.getString("status"),
                     rs.getObject("subtest_id",UUID.class),rs.getObject("topic_id",UUID.class),rs.getObject("source_year",Integer.class),rs.getString("source_title"),
                     rs.getObject("source_page",Integer.class),new QuestionContent(rs.getString("stem"),List.of(),rs.getString("explanation"),rs.getBoolean("shuffle_allowed"))));
         var options=jdbc.query("SELECT * FROM question_option WHERE question_version_id=:id ORDER BY original_position",p("id",question.versionId()),
@@ -221,7 +225,8 @@ public class JdbcContentRepository implements ContentRepository {
                 """,p("id",id));
     }
     private void audit(UUID actor,String action,UUID id) {
-        jdbc.update("INSERT INTO audit_event(id,actor_id,action,entity_type,entity_id) VALUES (gen_random_uuid(),:actor,:action,'CONTENT',:id)",
-                p("actor",actor).addValue("action",action).addValue("id",id));
+        jdbc.update("INSERT INTO audit_event(id,actor_id,action,entity_type,entity_id,reason,request_id) VALUES (gen_random_uuid(),:actor,:action,'CONTENT',:id,'CONTENT_WORKFLOW',:requestId)",
+                p("actor",actor).addValue("action",action).addValue("id",id).addValue("requestId",org.slf4j.MDC.get("requestId")));
     }
+    @Override public void auditContent(UUID actor,String action,UUID id) { audit(actor,action,id); }
 }

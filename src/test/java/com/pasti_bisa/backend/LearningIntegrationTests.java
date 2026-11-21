@@ -128,6 +128,75 @@ class LearningIntegrationTests {
         assertThat(browser.send("GET","/api/v1/practice/topics",null,200,null).get(0).get("question_count").asLong()).isGreaterThanOrEqualTo(12);
         assertThat(browser.send("GET","/api/v1/tryouts/"+tryout(),null,200,null).get("ready").asBoolean()).isTrue();
     }
+    @Test void practiceDetailsContextAndHistoryUseTopicIdentityAndStayPrivate() throws Exception {
+        var browser=new Browser().register(false);
+        UUID topic=DemoDataSeeder.id("UTBK:topic"),otherTopic=DemoDataSeeder.id("CPNS:topic");
+        var detail=browser.send("GET","/api/v1/practice/topics/"+topic,null,200,null);
+        assertThat(detail.get("category").asString()).isEqualTo("UTBK");
+        assertThat(detail.get("defaultQuestionCount").asInt()).isEqualTo(10);
+        assertThat(detail.get("maxQuestionCount").asInt()).isGreaterThanOrEqualTo(12);
+        assertThat(detail.get("secondsPerQuestion").asInt()).isEqualTo(120);
+        browser.send("GET","/api/v1/practice/topics/"+UUID.randomUUID(),null,404,null);
+        var practice=browser.send("POST","/api/v1/practice/attempts","{\"topicId\":\""+topic+"\",\"questionCount\":2}",200,UUID.randomUUID().toString());
+        String id=practice.get("attemptId").asString();
+        assertThat(practice.get("tryoutId").asString()).isNotEqualTo(topic.toString());
+        assertThat(practice.get("context").get("topicId").asString()).isEqualTo(topic.toString());
+        assertThat(practice.get("context").get("category").asString()).isEqualTo("UTBK");
+        assertThat(practice.get("context").get("sections").get(0).get("questionCount").asInt()).isEqualTo(2);
+        var question=browser.send("GET","/api/v1/users/current/attempts/"+id+"/questions/1",null,200,null);
+        assertThat(question.get("scope").get("topicId").asString()).isEqualTo(topic.toString());
+        assertThat(question.get("scope").get("subtestName").asString()).isNotBlank();
+        assertThat(question.get("explanation").isNull()).isTrue();
+        finish(browser,id);
+        var result=browser.send("GET","/api/v1/users/current/attempts/"+id+"/result",null,200,null);
+        assertThat(result.get("finalizedAt").isNull()).isFalse();
+        var other=browser.send("POST","/api/v1/practice/attempts","{\"topicId\":\""+otherTopic+"\",\"questionCount\":1}",200,UUID.randomUUID().toString());
+        finish(browser,other.get("attemptId").asString());
+        String tryoutAttempt=start(browser,UUID.randomUUID().toString());
+        browser.send("POST","/api/v1/users/current/attempts/"+tryoutAttempt+"/finalize","{\"abandon\":true}",200,null);drainJobs();
+        var history=browser.send("GET","/api/v1/users/current/attempts?mode=practice&topicId="+topic,null,200,null);
+        assertThat(history.size()).isEqualTo(1);
+        assertThat(history.get(0).get("id").asString()).isEqualTo(id);
+        assertThat(history.get(0).get("topic_id").asString()).isEqualTo(topic.toString());
+        assertThat(history.get(0).get("question_count").asInt()).isEqualTo(2);
+        assertThat(history.get(0).get("terminal_reason").asString()).isEqualTo("SUBMITTED");
+        var tryoutHistory=browser.send("GET","/api/v1/users/current/attempts?tryoutId="+tryout(),null,200,null);
+        assertThat(tryoutHistory.size()).isEqualTo(1);
+        assertThat(tryoutHistory.get(0).get("topic_id").isNull()).isTrue();
+        assertThat(tryoutHistory.get(0).get("terminal_reason").asString()).isEqualTo("ABANDONED");
+        assertThat(browser.send("GET","/api/v1/users/current/attempts?limit=1&offset=1",null,200,null).size()).isEqualTo(1);
+        assertThat(browser.send("GET","/api/v1/users/current/attempts?topicId="+UUID.randomUUID(),null,200,null).size()).isZero();
+        var stranger=new Browser().register(false);
+        assertThat(stranger.send("GET","/api/v1/users/current/attempts?topicId="+topic,null,200,null).size()).isZero();
+        browser.send("GET","/api/v1/users/current/attempts?mode=TRYOUT&topicId="+topic,null,400,null);
+        browser.send("GET","/api/v1/users/current/attempts?limit=101",null,400,null);
+        browser.send("GET","/api/v1/users/current/attempts?offset=-1",null,400,null);
+        browser.send("GET","/api/v1/users/current/attempts?mode=unknown",null,400,null);
+    }
+    @Test void catalogKeepsHistoryAcrossBlueprintVersions() throws Exception {
+        var browser=new Browser().register(false);
+        finish(browser,start(browser,UUID.randomUUID().toString()));
+        UUID previous=jdbc.queryForObject("SELECT active_version_id FROM blueprint WHERE id=?",UUID.class,tryout());
+        UUID next=UUID.randomUUID();
+        jdbc.update("""
+                INSERT INTO blueprint_version(id,blueprint_id,version,duration_seconds,scoring_policy,scoring_policy_id)
+                SELECT ?,blueprint_id,(SELECT max(version)+1 FROM blueprint_version WHERE blueprint_id=?),duration_seconds,scoring_policy,scoring_policy_id
+                FROM blueprint_version WHERE id=?
+                """,next,tryout(),previous);
+        jdbc.update("""
+                INSERT INTO blueprint_section(id,blueprint_version_id,subtest_id,position,item_count,filters)
+                SELECT gen_random_uuid(),?,subtest_id,position,item_count,filters FROM blueprint_section WHERE blueprint_version_id=?
+                """,next,previous);
+        jdbc.update("UPDATE blueprint_version SET status='ACTIVE' WHERE id=?",next);
+        try {
+            jdbc.update("UPDATE blueprint SET active_version_id=? WHERE id=?",next,tryout());
+            var catalog=browser.send("GET","/api/v1/tryouts?category=UTBK",null,200,null).get(0);
+            assertThat(catalog.get("blueprint_version_id").asString()).isEqualTo(next.toString());
+            assertThat(catalog.get("attempt_count").asInt()).isEqualTo(1);
+            assertThat(catalog.get("latest_score").isNull()).isFalse();
+            assertThat(browser.send("GET","/api/v1/users/current/attempts?tryoutId="+tryout(),null,200,null).size()).isEqualTo(1);
+        } finally { jdbc.update("UPDATE blueprint SET active_version_id=? WHERE id=?",previous,tryout()); }
+    }
     @Test void concurrentStartFreezesOneSnapshotAndConsumesOneQuota() throws Exception {
         var browser=new Browser().register(false);String key=UUID.randomUUID().toString();
         var one=CompletableFuture.supplyAsync(()->{try{return start(browser,key);}catch(Exception e){throw new RuntimeException(e);}});

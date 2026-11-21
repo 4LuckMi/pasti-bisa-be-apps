@@ -32,7 +32,7 @@ public class JdbcExamRepository implements ExamRepository {
     private final RowMapper<Attempt> attemptMapper = (rs, row) -> new Attempt(
             rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class), rs.getObject("blueprint_version_id", UUID.class),
             rs.getObject("blueprint_id", UUID.class), rs.getString("mode"), rs.getString("status"), rs.getString("request_hash"),
-            rs.getString("terminal_reason"), instant(rs, "started_at"), instant(rs, "deadline_at"));
+            rs.getString("terminal_reason"), instant(rs, "started_at"), instant(rs, "deadline_at"),instant(rs,"finalized_at"));
     private static final String ATTEMPT_SELECT = """
             SELECT a.*, bv.blueprint_id FROM attempt a JOIN blueprint_version bv ON bv.id = a.blueprint_version_id
             """;
@@ -65,7 +65,9 @@ public class JdbcExamRepository implements ExamRepository {
                        sp.scale, sp.rules, sp.code, sp.version
                 FROM blueprint b JOIN blueprint_version bv ON bv.id = b.active_version_id
                 JOIN scoring_policy sp ON sp.id = bv.scoring_policy_id
+                JOIN exam_type e ON e.id=b.exam_type_id JOIN exam_category c ON c.id=e.category_id
                 WHERE b.id = :id AND b.mode = 'TRYOUT' AND b.status IN ('ACTIVE','PUBLISHED')
+                  AND e.active AND c.active
                   AND bv.status IN ('ACTIVE','PUBLISHED') AND sp.status = 'ACTIVE'
                 """, p("id", tryoutId), (rs, row) -> new Blueprint(rs.getObject("id", UUID.class),
                     rs.getObject("blueprint_id", UUID.class), rs.getObject("exam_type_id", UUID.class), rs.getInt("duration_seconds"),
@@ -76,7 +78,8 @@ public class JdbcExamRepository implements ExamRepository {
     @Override public Blueprint practiceBlueprint(UUID topicId, int count) {
         var topic = jdbc.queryForObject("""
                 SELECT t.subtest_id, s.exam_type_id, t.name FROM topic t JOIN subtest s ON s.id = t.subtest_id
-                WHERE t.id = :id AND t.active AND s.active
+                JOIN exam_type e ON e.id=s.exam_type_id JOIN exam_category c ON c.id=e.category_id
+                WHERE t.id = :id AND t.active AND s.active AND e.active AND c.active
                 """, p("id", topicId), (rs, row) -> new PracticeTopic(rs.getObject("subtest_id", UUID.class),
                     rs.getObject("exam_type_id", UUID.class), rs.getString("name")));
         // Serialize blueprint creation across different users requesting the same topic.
@@ -143,6 +146,8 @@ public class JdbcExamRepository implements ExamRepository {
                 LEFT JOIN LATERAL (SELECT max(a.started_at) AS last_seen FROM attempt_item seen JOIN attempt a ON a.id=seen.attempt_id
                                    WHERE seen.question_id=q.id AND a.user_id=:userId) exposure ON TRUE
                 WHERE q.subtest_id=:subtestId AND q.archived_at IS NULL
+                  AND EXISTS(SELECT 1 FROM subtest s WHERE s.id=q.subtest_id AND s.active)
+                  AND (q.topic_id IS NULL OR EXISTS(SELECT 1 FROM topic t WHERE t.id=q.topic_id AND t.active))
                   AND (:topicId::uuid IS NULL OR q.topic_id=:topicId::uuid)
                   AND (:sourceYear::integer IS NULL OR version.source_year=:sourceYear::integer)
                   AND (NOT :excludeToday OR NOT EXISTS (
@@ -189,6 +194,23 @@ public class JdbcExamRepository implements ExamRepository {
                        COALESCE(answer.revision,0) AS revision FROM attempt_item item LEFT JOIN answer ON answer.attempt_item_id=item.id
                 WHERE item.attempt_id=:id ORDER BY item.position
                 """,p("id",id),(rs,row)->new Navigation(rs.getInt("position"),rs.getBoolean("answered"),rs.getBoolean("flagged"),rs.getInt("revision")));
+    }
+    @Override public CourseContext context(UUID versionId,boolean practice) {
+        var context=jdbc.queryForObject("""
+                SELECT b.title,c.code AS category,e.name AS exam_type,t.id AS topic_id,t.name AS topic_name
+                FROM blueprint_version v JOIN blueprint b ON b.id=v.blueprint_id
+                JOIN exam_type e ON e.id=b.exam_type_id JOIN exam_category c ON c.id=e.category_id
+                LEFT JOIN LATERAL (
+                    SELECT (filters->>'topicId')::uuid AS topic_id FROM blueprint_section
+                    WHERE blueprint_version_id=v.id AND :practice ORDER BY position LIMIT 1
+                ) scope ON TRUE LEFT JOIN topic t ON t.id=scope.topic_id WHERE v.id=:id
+                """,p("id",versionId).addValue("practice",practice),(rs,row)->new CourseContext(rs.getString("title"),rs.getString("category"),
+                    rs.getString("exam_type"),rs.getObject("topic_id",UUID.class),rs.getString("topic_name"),List.of()));
+        var sections=jdbc.query("""
+                SELECT section.position,section.subtest_id,s.name,section.item_count FROM blueprint_section section
+                JOIN subtest s ON s.id=section.subtest_id WHERE section.blueprint_version_id=:id ORDER BY section.position
+                """,p("id",versionId),(rs,row)->new SessionSection(rs.getInt("position"),rs.getObject("subtest_id",UUID.class),rs.getString("name"),rs.getInt("item_count")));
+        return new CourseContext(context.title(),context.category(),context.examType(),context.topicId(),context.topicName(),sections);
     }
     @Override public AnswerResponse saveAnswer(UUID attemptId,int position,AnswerRequest answer,Instant now) {
         var params=p("id",attemptId).addValue("position",position).addValue("optionId",answer.selectedOptionId())
@@ -264,19 +286,19 @@ public class JdbcExamRepository implements ExamRepository {
     }
     @Override public ResultResponse result(UUID id) {
         var rows=jdbc.query("""
-                SELECT a.status,a.terminal_reason,s.id AS score_id,s.policy_version,s.total_score,s.details,p.method
+                SELECT a.status,a.terminal_reason,a.finalized_at,s.id AS score_id,s.policy_version,s.total_score,s.details,p.method
                 FROM attempt a LEFT JOIN score_run s ON s.attempt_id=a.id
                 LEFT JOIN scoring_policy p ON p.id=s.scoring_policy_id WHERE a.id=:id ORDER BY s.computed_at DESC LIMIT 1
                 """,p("id",id),(rs,row)->new ResultRow(rs.getString("status"),rs.getString("terminal_reason"),rs.getObject("score_id",UUID.class),
-                    rs.getString("policy_version"),rs.getBigDecimal("total_score"),rs.getString("details"),rs.getString("method")));
+                    rs.getString("policy_version"),rs.getBigDecimal("total_score"),rs.getString("details"),rs.getString("method"),instant(rs,"finalized_at")));
         var result=rows.getFirst();
         List<SectionResult> sections=result.scoreId()==null?List.of():jdbc.query("SELECT * FROM score_section WHERE score_run_id=:id ORDER BY subtest_id",
                 p("id",result.scoreId()),(rs,row)->new SectionResult(rs.getObject("subtest_id",UUID.class),rs.getInt("correct_count"),rs.getInt("wrong_count"),
                     rs.getInt("empty_count"),rs.getBigDecimal("points"),rs.getBigDecimal("max_points"),rs.getBigDecimal("accuracy")));
         return new ResultResponse(id,result.status(),result.reason(),result.method(),result.version(),result.total(),
-                result.details()==null?null:json.readTree(result.details()),sections);
+                result.details()==null?null:json.readTree(result.details()),sections,result.finalizedAt());
     }
-    private record ResultRow(String status,String reason,UUID scoreId,String version,BigDecimal total,String details,String method) {}
+    private record ResultRow(String status,String reason,UUID scoreId,String version,BigDecimal total,String details,String method,Instant finalizedAt) {}
     @Override public TryoutDetail detail(UUID id) {
         Blueprint blueprint=blueprint(id);
         var fields=jdbc.queryForObject("""
@@ -289,6 +311,8 @@ public class JdbcExamRepository implements ExamRepository {
                       SELECT source_year FROM question_version WHERE question_id=q.id AND status='PUBLISHED' ORDER BY version DESC LIMIT 1
                     ) v ON TRUE
                     WHERE q.subtest_id=:subtestId AND q.archived_at IS NULL AND (:topicId::uuid IS NULL OR q.topic_id=:topicId::uuid)
+                      AND EXISTS(SELECT 1 FROM subtest s WHERE s.id=q.subtest_id AND s.active)
+                      AND (q.topic_id IS NULL OR EXISTS(SELECT 1 FROM topic t WHERE t.id=q.topic_id AND t.active))
                       AND (:year::integer IS NULL OR v.source_year=:year::integer)
                     """,p("subtestId",section.subtestId()).addValue("topicId",section.topicId()).addValue("year",section.sourceYear(),java.sql.Types.INTEGER),Long.class);
             String name=jdbc.queryForObject("SELECT name FROM subtest WHERE id=:id",p("id",section.subtestId()),String.class);

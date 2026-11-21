@@ -26,17 +26,21 @@ public class JdbcAttemptQuestionRepository implements AttemptQuestionRepository 
         return jdbc.queryForObject("""
                 SELECT item.question_version_id, item.position, item.option_order, version.stem, version.explanation,
                        answer.selected_option_id, answer.flagged, answer.revision,
+                       q.subtest_id,s.name AS subtest_name,q.topic_id,t.name AS topic_name,
                        EXISTS (SELECT 1 FROM score_run WHERE attempt_id = attempt.id) AS finalized
                 FROM attempt
                 JOIN app_user account ON account.id = attempt.user_id
                 JOIN attempt_item item ON item.attempt_id = attempt.id
                 JOIN question_version version ON version.id = item.question_version_id
+                JOIN question q ON q.id=item.question_id JOIN subtest s ON s.id=q.subtest_id
+                LEFT JOIN topic t ON t.id=q.topic_id
                 LEFT JOIN answer ON answer.attempt_item_id = item.id
                 WHERE attempt.id = :attemptId AND account.email_canonical = :email AND item.position = :position
                 """, params(query), (rs, row) -> new QuestionRow(
                     rs.getObject("question_version_id", UUID.class), rs.getInt("position"), parseJson(rs.getString("stem")),
                     parseJson(rs.getString("option_order")), rs.getObject("selected_option_id", UUID.class),
-                    rs.getBoolean("flagged"), rs.getInt("revision"), rs.getBoolean("finalized"), rs.getString("explanation")));
+                    rs.getBoolean("flagged"), rs.getInt("revision"), rs.getBoolean("finalized"), rs.getString("explanation"),
+                    new QuestionScope(rs.getObject("subtest_id",UUID.class),rs.getString("subtest_name"),rs.getObject("topic_id",UUID.class),rs.getString("topic_name"))));
     }
 
     @Override

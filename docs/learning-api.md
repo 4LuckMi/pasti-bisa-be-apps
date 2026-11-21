@@ -64,6 +64,7 @@ Semua path di bawah berawalan `/api/v1` dan membutuhkan role `CUSTOMER`.
 |---|---|---|
 | GET | `/tryouts`, `/tryouts/{id}` | Katalog dan kesiapan stok per section |
 | GET | `/practice/topics` | Pilihan topik terbit |
+| GET | `/practice/topics/{id}` | Detail topik, `ready`, `defaultQuestionCount`, `maxQuestionCount`, `secondsPerQuestion` |
 | POST | `/attempts` | `{ "tryoutId": "uuid" }`, wajib `Idempotency-Key` |
 | POST | `/practice/attempts` | `{ "topicId": "uuid", "questionCount": 3 }`, wajib key |
 | GET | `/users/current/attempts/active` | Resume sesi atau body kosong jika tidak ada |
@@ -77,6 +78,23 @@ Semua path di bawah berawalan `/api/v1` dan membutuhkan role `CUSTOMER`.
 `POOL_NOT_READY` tidak membuat attempt atau memotong kuota. Pemilihan hanya memakai versi terbit
 dalam subtes/topik/tahun yang cocok; mengutamakan belum dilihat lalu paparan tertua. Soal yang sudah
 dilihat pada hari WIB yang sama dikeluarkan dari pool tryout baru. Urutan opsi hanya diacak bila diizinkan.
+
+## Kontrak untuk frontend tryout dan latihan
+
+Riwayat menerima `mode=TRYOUT&tryoutId={id}` atau `mode=PRACTICE&topicId={id}`, dengan
+`offset=0&limit=20` (default limit 100, maksimal 100). Filter yang bertentangan mendapat
+`400 INVALID_HISTORY_FILTER`. Response tetap array dan selalu dibatasi ke akun yang login.
+`tryout_id` pada latihan merupakan ID blueprint internal; gunakan `topic_id` untuk membuka detail topik.
+Ringkasan katalog tryout mencakup seluruh versi blueprint, termasuk versi yang sudah tidak aktif.
+
+Session membawa `context` (judul, kategori, jenis ujian, topik dan section dari versi sesi yang dibekukan),
+serta `finalizedAt`. Soal membawa `scope` untuk nama subtes/topik. Result juga membawa `finalizedAt`,
+sehingga frontend tidak perlu mencari waktu selesai di halaman riwayat. Bedakan `terminalReason`:
+`SUBMITTED`, `TIMED_OUT`, dan `ABANDONED`. Pada riwayat, nama field tetap snake_case (`terminal_reason`).
+
+Detail topik menentukan jumlah soal awal/batas stok: default maksimal 10, batas maksimal 50 atau stok
+terbit yang tersedia, dan 120 detik per soal. Stok tetap divalidasi kembali secara transaksional saat start.
+Penyesuaian kontrak ini tidak menambah tabel atau migrasi database.
 
 ## Upload dan publikasi petugas
 
@@ -116,7 +134,30 @@ Semua path berikut membutuhkan `QUESTION_STAFF` (role admin saja tidak otomatis 
 | POST | `/questions/{id}/versions`, `/questions/{id}/publish`, `/questions/{id}/archive` |
 
 List impor/kandidat/master mendukung `offset` dan `limit` 1–100. Master juga menerima `subtestId` dan `search`.
-Tidak ada API admin untuk membuat katalog/blueprint pada perubahan ini; fixture mengisi contoh blueprint.
+API admin kini dapat membuat katalog/blueprint terversi; fixture tetap tersedia untuk contoh awal.
+
+## Endpoint internal tambahan
+
+Semua endpoint admin membutuhkan `PLATFORM_ADMIN`, petugas membutuhkan `QUESTION_STAFF`. Daftar lengkap
+beserta contoh tiap key ada pada [referensi API](backend/03-api-reference.md) dan collection Postman terbaru.
+
+| Ruang | Endpoint utama | Perilaku |
+|---|---|---|
+| Petugas | `GET /staff/question-bank`, `/dashboard`, `/pool-requirements` | Filter lengkap, total pagination dan kebutuhan pasokan |
+| Petugas | `GET /staff/questions/{id}/versions`, `/versions/{versionId}`, `/draft`; `PUT /draft` | Versi historis; edit DRAFT dengan expectedVersionId/expectedRevision |
+| Petugas | `GET /staff/import-history`, `/audit`; `POST /staff/imports/{id}/retry`, `/save` | History tersaring, audit konten, retry gagal dan kandidat terpilih menjadi draft |
+| Admin | `/admin/users`, `/users/{id}`, `/users/{id}/roles`, `/users/{id}/status`, `/roles` | Akun internal/dukungan/peran/status; alasan dan audit; admin terakhir dijaga |
+| Admin | `/admin/taxonomy`, `/categories`, `/exam-types`, `/subtests`, `/topics` | Hierarki terkontrol; parent dan kode stabil |
+| Admin | `/admin/plans`, `/plans/{id}/versions`, `/plans/{id}/availability`, `/scoring-policies` | Harga/manfaat/policy terversi |
+| Admin | `/admin/blueprints`, `/blueprints/{id}/versions`, `/versions/{versionId}/readiness`, `/publish` | Komposisi versi baru, validasi pool, publish tanpa menimpa attempt lama |
+| Admin | `/admin/dashboard`, `/orders`, `/orders/{id}`, `/subscriptions`, `/jobs`, `/audit` | Ringkasan dan metadata operasional tersensor |
+| Admin | `POST /admin/jobs/{id}/retry`, `/subscriptions/{id}/revoke` | Retry FAILED saja; pencabutan grant beralasan |
+| Admin | `POST /admin/orders/{id}/reconcile`, `/refunds` | Reconcile 503 sampai gateway tersedia; refund 202 hanya PENDING_PROVIDER |
+
+List internal baru memakai `{items,total,offset,limit}` (maksimal 100); list lama tetap array.
+Semua mutasi memerlukan CSRF. Perubahan role/status mencabut sesi password maupun Google lama;
+pemulihan status tetap memerlukan login baru. Bootstrap admin pertama dijelaskan pada
+[panduan operasional](backend/05-operations.md#bootstrap-admin-pertama).
 
 ## Batas pemrosesan dan troubleshooting
 

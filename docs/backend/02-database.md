@@ -2,7 +2,7 @@
 
 [Indeks dokumentasi](README.md) · [Kamus kolom lengkap](database-dictionary.md)
 
-Skema aplikasi terdiri dari 40 tabel pada migrasi V1–V6, di luar `flyway_schema_history`.
+Skema aplikasi terdiri dari 41 tabel pada migrasi V1–V7, di luar `flyway_schema_history`.
 ERD di bawah memakai nama camelCase untuk keterbacaan; nama tabel SQL padanannya adalah snake_case.
 Diagram menunjukkan relasi utama, sedangkan seluruh foreign key/composite constraint ada pada kamus tabel.
 
@@ -217,7 +217,8 @@ Contoh filter section yang dipahami use case saat ini:
 {"topicId":"00000000-0000-4000-8000-000000000021","sourceYear":2026}
 ```
 
-Kedua field opsional. Filter lain ditolak saat start. Konfigurasi filter belum dibuat lewat API admin.
+Kedua field opsional. Filter lain ditolak saat start. API admin versi blueprint menerima topik/tahun
+secara eksplisit dan menolak section di luar jenis ujian yang dipilih atau subtes berulang.
 
 Contoh policy/rincian skor:
 
@@ -338,6 +339,20 @@ dapat menonaktifkan guard, sehingga operasi langsung ke database harus dibatasi 
 - Skor dan bobot NUMERIC/BigDecimal; jangan menghitung ulang score resmi di browser.
 - JSONB dipakai untuk konten fleksibel, filter, payload dan detail; identitas/relasi utama tetap kolom/FK.
 - Array list kosong sah. Nilai NULL punya makna berbeda dengan 0 atau string kosong.
-- Migrasi V1–V6 immutable. Tambahkan V7+ untuk perubahan schema berikutnya; jangan memakai ddl-auto=update.
+- Migrasi V1–V7 immutable. Tambahkan V8+ untuk perubahan schema berikutnya; jangan memakai ddl-auto=update.
+
+## Tambahan V7 untuk operasi internal
+
+| Struktur | Invarian |
+|---|---|
+| `app_user.auth_revision` | Revision persisten; role/status/password/email berubah mencabut session lama |
+| `question_version.editor_revision` | Update draft wajib membawa version ID dan revision; hanya DRAFT dapat diedit |
+| `plan.family_code` + `revision` | Harga/manfaat immutable; revisi lama nonaktif untuk penjualan dan order lama tetap snapshot |
+| `refund_request` | FK order/pelaku, nominal/currency, key unik per order dan status PENDING_PROVIDER; belum payout |
+
+Refund mengunci order sebelum memeriksa akumulasi request pending/processing/succeeded, sehingga dua
+permintaan tidak dapat melampaui nilai paid. Dashboard hanya mengurangi refund SUCCEEDED dengan completed_at;
+kasus PENDING_PROVIDER tidak dihitung sebagai uang dikembalikan. Tidak ada endpoint menandai paid/refund sukses
+secara manual. Mutasi audit hanya append pada level aplikasi; kredensial provider tidak disimpan di audit.
 - Pemindahan disk ke object storage dapat dilakukan lewat port storage, namun pengaturan URL/ACL, backup
   dan migrasi file yang sudah ada tetap perlu dikerjakan secara eksplisit.

@@ -21,14 +21,18 @@ public final class ExamDtos {
     public record AnswerResponse(int position, UUID selectedOptionId, boolean flagged, int revision, Instant receivedAt) {}
     public record Navigation(int position, boolean answered, boolean flagged, int revision) {}
     public record SessionResponse(UUID attemptId, UUID tryoutId, String mode, String status, String terminalReason,
-            Instant serverNow, Instant startedAt, Instant deadlineAt, List<Navigation> questions) {}
+            Instant serverNow, Instant startedAt, Instant deadlineAt, List<Navigation> questions,
+            Instant finalizedAt, CourseContext context) {}
+    public record SessionSection(int position,UUID subtestId,String name,int questionCount) {}
+    public record CourseContext(String title,String category,String examType,UUID topicId,String topicName,List<SessionSection> sections) {}
     public record SectionResponse(UUID id, UUID subtestId, String name, int position, int questionCount, long available) {}
     public record TryoutDetail(UUID id, String title, String category, int durationSeconds, String scoringMethod,
             BigDecimal scale, boolean demo, boolean ready, List<SectionResponse> sections) {}
     public record SectionResult(UUID subtestId, int correct, int wrong, int empty, BigDecimal points,
             BigDecimal maxPoints, BigDecimal accuracy) {}
     public record ResultResponse(UUID attemptId, String status, String terminalReason, String method, String policyVersion,
-            BigDecimal totalScore, @Schema(type = "object", implementation = Object.class) JsonNode details, List<SectionResult> sections) {}
+            BigDecimal totalScore, @Schema(type = "object", implementation = Object.class) JsonNode details, List<SectionResult> sections,
+            Instant finalizedAt) {}
 
     public record Blueprint(UUID id, UUID blueprintId, UUID examTypeId, int durationSeconds, UUID policyId,
             String method, BigDecimal scale, JsonNode rules, String policyCode, int policyVersion) {}
@@ -36,5 +40,5 @@ public final class ExamDtos {
     public record PoolItem(UUID questionId, UUID versionId, boolean shuffleAllowed) {}
     public record Option(UUID id, String code, boolean correct, BigDecimal weight) {}
     public record Attempt(UUID id, UUID userId, UUID blueprintVersionId, UUID blueprintId, String mode, String status,
-            String requestHash, String terminalReason, Instant startedAt, Instant deadlineAt) {}
+            String requestHash, String terminalReason, Instant startedAt, Instant deadlineAt, Instant finalizedAt) {}
 }

@@ -1,5 +1,29 @@
 # Katalog, bank soal, tryout, practice, dan impor PDF
 
+## Tahap endpoint internal — 20 November 2026
+
+Acuan diperiksa ulang: PRD PastiSiap v2 pada workspace chat desain dan Figma
+`CG4pwdhDxG6PdCup6leOEm`, frame Bank Soal `79:200`, Upload `101:15398`,
+Riwayat `101:17240`, Dashboard Admin `79:30`, Pengguna `79:930`/`79:1139`,
+Transaksi `79:1288`/`79:1493`, Peran `101:17702`, Audit `101:17948`.
+PRD terbaru mengutamakan PDF; rancangan CSV/reviewer terpisah yang diarsipkan tidak dijadikan kontrak baru.
+
+Urutan implementasi:
+
+1. Migrasi V7 menambah revision pencabutan sesi, revision editor, keluarga/revisi harga dan ledger permintaan refund.
+2. Guard sesi lintas password/Google, role terpisah, admin aktif terakhir dan audit beralasan.
+3. Endpoint admin pengguna/peran, taxonomy, harga/policy/blueprint terversi, readiness/publish, finance reads dan operasi.
+4. Endpoint petugas pencarian terstruktur, versi historis, edit draft, bulk save kandidat, history, retry dan audit konten.
+5. Uji HTTP/PostgreSQL terpisah, rebuild API/worker, perbarui OpenAPI/Postman dan dokumentasi.
+
+Controller memakai DTO eksplisit; service mengatur transaksi; port repository berada pada application,
+adapter JDBC hanya di persistence. PageResponse dan MutationReason merupakan kontrak bersama.
+Tidak ada admin otomatis atau kredensial internal bawaan. Bootstrap awal melalui akun existing yang dipilih operator.
+
+Integrasi provider pembayaran belum dipilih: reconcile mengembalikan 503 yang eksplisit; refund request
+berstatus PENDING_PROVIDER dan belum memindahkan uang. Sumber lampiran kunci terpisah, retry per halaman,
+asset authoring, regrade/cohort dan UI admin merupakan pekerjaan terpisah yang belum diklaim selesai.
+
 ## Acuan dan temuan riset
 
 PRD PastiSiap v2.0 (16 November 2026), dibaca dari `PastiSiap-PRD.md` milik chat

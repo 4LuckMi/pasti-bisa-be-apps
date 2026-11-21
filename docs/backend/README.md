@@ -1,9 +1,9 @@
 # Dokumentasi teknis backend PastiSiap
 
-Snapshot implementasi: **19 November 2026**. Dokumentasi ini menjelaskan perilaku kode yang ada di repo,
+Snapshot implementasi: **20 November 2026**. Dokumentasi ini menjelaskan perilaku kode yang ada di repo,
 bukan menganggap seluruh fitur PRD sudah selesai. Prefix akun aktif adalah `/api/v1/users/current`.
 
-**[Buka dokumentasi HTML lengkap](backend-documentation.html)** untuk membaca seluruh bab dengan 13 diagram
+**[Buka dokumentasi HTML lengkap](backend-documentation.html)** untuk membaca seluruh bab dengan 14 diagram
 yang sudah dirender, navigasi bab, dan tombol Cetak/Simpan PDF. HTML dapat dibaca offline tanpa plugin.
 
 ## Peta dokumen
@@ -19,7 +19,7 @@ yang sudah dirender, navigasi bab, dan tombol Cetak/Simpan PDF. HTML dapat dibac
 | [Operasional dan pengujian](05-operations.md) | Docker, konfigurasi, Flyway, Postman, troubleshooting, deployment | Engineer, QA |
 | [OpenAPI lengkap](openapi.json) | Kontrak API yang diperkaya dengan auth/error, termasuk endpoint security/infrastruktur | Integrasi, generator client |
 | [Snapshot OpenAPI runtime](openapi-runtime.json) | Hasil langsung `/api-docs`; sebagian endpoint filter Security tidak muncul di sini | Audit kontrak |
-| [Metadata skema](database-schema.json) | Metadata tabel/constraint dari PostgreSQL V6; tidak memuat baris pengguna | Audit skema |
+| [Metadata skema](database-schema.json) | Metadata 41 tabel/321 kolom dari PostgreSQL V7; tidak memuat baris pengguna | Audit skema |
 
 Mulai dari arsitektur untuk gambaran besar; frontend dapat langsung membaca referensi endpoint dan kamus DTO.
 Diagram Mermaid disertakan di Markdown agar dapat dipelihara bersama kode; versi SVG tersedia pada
@@ -35,9 +35,14 @@ maupun Google OAuth2/OIDC; mutasi memakai CSRF.
 Flow yang tersedia: register/login → pilih katalog/topik → start/resume → simpan jawaban → finalize → worker scoring
 → hasil/review. Petugas mempunyai flow PDF → kandidat → koreksi → draft → publish → versi baru/arsip.
 
+Admin mempunyai 40 endpoint untuk dashboard, pengguna/peran/status, taxonomy, paket/policy/blueprint
+terversi, transaksi/langganan, audit dan job. Petugas mendapat 11 endpoint tambahan untuk pencarian
+terstruktur, versi historis, edit draft, bulk save, history dan retry. Total runtime: 90 operasi controller.
+Pembayaran/refund aktual masih memerlukan adapter provider; permintaan refund baru berupa kasus PENDING_PROVIDER.
+
 ## Acuan dan batas dokumentasi
 
-- Acuan utama: controller, DTO, service, adapter persistence, konfigurasi dan migrasi V1–V6 pada repo ini.
+- Acuan utama: controller, DTO, service, adapter persistence, konfigurasi dan migrasi V1–V7 pada repo ini.
 - Contoh JSON memakai data sintetis. UUID, cookie, token dan nilai contoh bukan kredensial atau ID dari akun nyata.
 - Tidak ada envelope sukses tunggal. Beberapa endpoint mengembalikan objek, array, body kosong atau binary.
 - Field legacy seperti `question_count` tetap snake_case; DTO baru kebanyakan camelCase. Dokumentasi mempertahankan kontrak aktual.
