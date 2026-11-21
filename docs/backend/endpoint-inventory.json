@@ -136,12 +136,12 @@
     "group": "Profil dan read API siswa",
     "auth": "session",
     "response": "TryoutResponse",
-    "description": "Membaca paket TRYOUT aktif, jumlah soal dan riwayat ringkas untuk versi blueprint aktif.",
+    "description": "Membaca paket TRYOUT aktif, jumlah soal dan riwayat ringkas lintas versi dalam keluarga blueprint yang sama.",
     "status": 200,
     "array": true,
     "category": true,
     "notes": [
-      "Array kosong valid. Riwayat ringkas tidak menghitung seluruh versi blueprint lama dari paket yang sama.",
+      "Array kosong valid. attempt_count dan latest_score tetap mencakup sesi versi blueprint sebelumnya; blueprint_version_id menunjuk versi aktif.",
       "Beberapa key sengaja snake_case, sesuai DTO legacy."
     ],
     "index": 9,
@@ -182,6 +182,23 @@
   },
   {
     "method": "get",
+    "path": "/api/v1/practice/topics/{id}",
+    "title": "Detail topik dan batas latihan",
+    "group": "Profil dan read API siswa",
+    "auth": "session",
+    "response": "PracticeTopicDetail",
+    "description": "Membaca satu topik dengan scope, stok terbit dan pilihan jumlah/durasi latihan.",
+    "status": 200,
+    "notes": [
+      "questionCount adalah stok global. maxQuestionCount=min(stok,50); defaultQuestionCount=min(stok,10). Jika stok nol keduanya 0 dan ready=false.",
+      "secondsPerQuestion saat ini 120. UI memilih bilangan bulat 1..maxQuestionCount lalu mengirimnya ke StartPracticeRequest.",
+      "id adalah topic ID, bukan ID blueprint practice internal."
+    ],
+    "index": 12,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
     "path": "/api/v1/users/current/tryout-quota",
     "title": "Kuota harian WIB",
     "group": "Profil dan read API siswa",
@@ -192,7 +209,7 @@
     "notes": [
       "Practice tidak memakai kuota ini. Gratis dan Premium memakai batas teknis yang sama pada implementasi saat ini."
     ],
-    "index": 12,
+    "index": 13,
     "runtimeController": true
   },
   {
@@ -202,15 +219,21 @@
     "group": "Profil dan read API siswa",
     "auth": "session",
     "response": "AttemptHistoryResponse",
-    "description": "Maksimal 100 attempt terbaru milik akun, termasuk TRYOUT dan PRACTICE.",
+    "description": "Riwayat milik akun, dengan filter mode/paket/topik dan pagination offset/limit.",
     "status": 200,
     "array": true,
+    "page": true,
+    "errors": [
+      "400 INVALID_HISTORY_FILTER"
+    ],
     "notes": [
-      "Belum ada parameter pagination/filter per paket pada endpoint ini.",
-      "details adalah string berisi JSON atau null; berbeda dengan object details pada endpoint result.",
+      "Query opsional: mode=TRYOUT/PRACTICE, tryoutId atau topicId, offset>=0, limit=1..100 (default 100). Array response lama tetap dipertahankan.",
+      "Untuk riwayat latihan kirim mode=PRACTICE&topicId=<uuid>; jangan membandingkan tryout_id internal dengan ID topik. Paket tryout difilter memakai tryoutId dan mencakup seluruh versi.",
+      "tryoutId dan topicId tidak boleh dikirim bersamaan; mode harus cocok dengan filter. Filter selalu diterapkan sesudah pembatasan akun sehingga data pengguna lain tidak terbuka.",
+      "terminal_reason membedakan SUBMITTED, ABANDONED dan TIMED_OUT walaupun status telah COMPLETED. details tetap string JSON/null.",
       "total_score dan finalized_at dapat null untuk sesi yang belum selesai."
     ],
-    "index": 13,
+    "index": 14,
     "runtimeController": true
   },
   {
@@ -227,7 +250,7 @@
       "Tanpa langganan mengembalikan []. Contoh item aktif bersifat ilustrasi; belum ada API pembelian/grant.",
       "Bukan satu objek boolean premium; active dibaca server dari interval grant yang tidak dicabut."
     ],
-    "index": 14,
+    "index": 15,
     "runtimeController": true
   },
   {
@@ -245,7 +268,7 @@
       "Array kosong adalah respons normal tanpa cohort/entry yang diprovisikan. Contoh item hanya ilustrasi kontrak.",
       "Sesi acak tidak otomatis ditambahkan ke leaderboard."
     ],
-    "index": 15,
+    "index": 16,
     "runtimeController": true
   },
   {
@@ -273,7 +296,7 @@
       "Jika sesi aktif ada, response bisa berupa sesi berbeda dari paket yang diminta. Selalu baca attemptId/mode/status response.",
       "Pool kurang rollback seluruh start dan tidak memakai kuota; start berhasil memakai satu kuota."
     ],
-    "index": 16,
+    "index": 17,
     "runtimeController": true
   },
   {
@@ -315,7 +338,23 @@
           "flagged": false,
           "revision": 0
         }
-      ]
+      ],
+      "finalizedAt": null,
+      "context": {
+        "title": "Latihan Aritmetika Dasar Contoh",
+        "category": "UTBK",
+        "examType": "Tes Numerik Contoh",
+        "topicId": "00000000-0000-4000-8000-000000000005",
+        "topicName": "Aritmetika Dasar Contoh",
+        "sections": [
+          {
+            "position": 1,
+            "subtestId": "00000000-0000-4000-8000-000000000004",
+            "name": "Penalaran Numerik Contoh",
+            "questionCount": 3
+          }
+        ]
+      }
     },
     "errors": [
       "400 IDEMPOTENCY_KEY_REQUIRED",
@@ -324,9 +363,9 @@
     ],
     "notes": [
       "questionCount wajib dikirim 1–50. Durasi saat ini questionCount × 120 detik; tidak mengambil quota tryout.",
-      "Satu sesi aktif dibagi dengan tryout. tryoutId response adalah ID blueprint internal practice."
+      "Satu sesi aktif dibagi dengan tryout. tryoutId response tetap ID blueprint internal demi kompatibilitas; link kembali ke detail latihan menggunakan context.topicId."
     ],
-    "index": 17,
+    "index": 18,
     "runtimeController": true
   },
   {
@@ -341,7 +380,7 @@
     "notes": [
       "Jika tidak ada sesi, HTTP 200 dengan body kosong. Client perlu memeriksa body sebelum parsing JSON."
     ],
-    "index": 18,
+    "index": 19,
     "runtimeController": true
   },
   {
@@ -351,12 +390,14 @@
     "group": "Lifecycle tryout dan practice",
     "auth": "customer",
     "response": "SessionResponse",
-    "description": "Membaca deadline server, status dan daftar nomor/flag/revision milik pengguna.",
+    "description": "Membaca deadline server, status, navigator dan konteks sesi milik pengguna.",
     "status": 200,
     "notes": [
+      "context menyediakan title/category/examType, topicId/topicName untuk practice, serta nama/jumlah soal subtes versi blueprint sesi. Frontend tidak perlu menebak kategori atau memanggil detail katalog terbaru.",
+      "finalizedAt berasal dari attempt dan null sebelum finalize; hasil tidak perlu mencari timestamp di 100 history terbaru.",
       "GET ini dapat mengubah sesi kedaluwarsa menjadi FINALIZING dan membuat job scoring."
     ],
-    "index": 19,
+    "index": 20,
     "runtimeController": true
   },
   {
@@ -373,7 +414,7 @@
       "Sebelum score tersedia, options[].correct, correct dan explanation bernilai null. Tidak mengirim score_weight.",
       "Setelah scoring, correct null juga dapat berarti soal belum dijawab. Response siswa tidak berisi sumber PDF/kunci file."
     ],
-    "index": 20,
+    "index": 21,
     "runtimeController": true
   },
   {
@@ -392,7 +433,7 @@
       "404 asset tidak ditemukan dapat memiliki body kosong, bukan ApiError. File IMPORT_SOURCE selalu dikecualikan.",
       "Tidak ada endpoint upload/attach asset baru pada flow siswa."
     ],
-    "index": 21,
+    "index": 22,
     "runtimeController": true
   },
   {
@@ -415,7 +456,7 @@
       "selectedOptionId null berarti mengosongkan pilihan. flagged tidak dikirim/null dianggap false.",
       "Update parsial flagged saja tetap dapat mengosongkan pilihan; kirim selectedOptionId yang ingin dipertahankan."
     ],
-    "index": 22,
+    "index": 23,
     "runtimeController": true
   },
   {
@@ -456,14 +497,30 @@
           "flagged": false,
           "revision": 0
         }
-      ]
+      ],
+      "finalizedAt": null,
+      "context": {
+        "title": "Tryout UTBK - Contoh",
+        "category": "UTBK",
+        "examType": "Tes Numerik Contoh",
+        "topicId": null,
+        "topicName": null,
+        "sections": [
+          {
+            "position": 1,
+            "subtestId": "00000000-0000-4000-8000-000000000004",
+            "name": "Penalaran Numerik Contoh",
+            "questionCount": 3
+          }
+        ]
+      }
     },
     "notes": [
       "Body boleh kosong atau {}; abandon false/null berarti submit. abandon true berarti keluar/abandon.",
       "Jika deadline lewat, terminalReason TIMED_OUT mengalahkan parameter abandon.",
       "Status normal berikutnya FINALIZING, bukan nilai langsung. Request berulang tidak membuat hasil/job ganda."
     ],
-    "index": 23,
+    "index": 24,
     "runtimeController": true
   },
   {
@@ -479,7 +536,7 @@
       "Sebelum hasil: totalScore/method/policyVersion/details null dan sections kosong. Jangan menganggap null sebagai nilai nol.",
       "status bisa IN_PROGRESS/FINALIZING/COMPLETED. Belum ada status API FAILED khusus scoring; telusuri job/log jika lama."
     ],
-    "index": 24,
+    "index": 25,
     "runtimeController": true
   },
   {
@@ -520,7 +577,13 @@
         "flagged": false,
         "revision": 1,
         "correct": true,
-        "explanation": "Dua ditambah tiga sama dengan lima."
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "scope": {
+          "subtestId": "00000000-0000-4000-8000-000000000004",
+          "subtestName": "Penalaran Numerik Contoh",
+          "topicId": "00000000-0000-4000-8000-000000000005",
+          "topicName": "Aritmetika Dasar Contoh"
+        }
       }
     ],
     "errors": [
@@ -529,7 +592,7 @@
     "notes": [
       "Array ini bukan master soal terbaru. Jumlah contoh dipersingkat menjadi satu item untuk keterbacaan."
     ],
-    "index": 25,
+    "index": 26,
     "runtimeController": true
   },
   {
@@ -544,9 +607,9 @@
     "array": true,
     "notes": [
       "Satu subtes dengan beberapa topik muncul beberapa baris. topicId/topicName boleh null jika subtes belum mempunyai topik.",
-      "Belum tersedia taxonomy CRUD."
+      "Pengelolaan taxonomy tersedia melalui endpoint admin, terpisah dari izin petugas."
     ],
-    "index": 26,
+    "index": 27,
     "runtimeController": true
   },
   {
@@ -587,7 +650,7 @@
       "Maksimal 25MB, request 26MB. PDF invalid/encrypted/page limit dapat baru gagal pada worker; 202 bukan jaminan konten valid.",
       "Checksum sama dalam uploader/subtest/topic yang sama mengembalikan batch lama, termasuk bila sourceTitle/sourceYear input berbeda. Tidak otomatis membuat ulang batch yang FAILED."
     ],
-    "index": 27,
+    "index": 28,
     "runtimeController": true
   },
   {
@@ -604,7 +667,7 @@
     "notes": [
       "Bukan hanya unggahan akun sendiri. Daftar berupa array tanpa total count/pagination envelope."
     ],
-    "index": 28,
+    "index": 29,
     "runtimeController": true
   },
   {
@@ -620,7 +683,7 @@
       "READY berarti semua kandidat dinilai lengkap oleh validator; belum otomatis terbit.",
       "Batch status dan jobStatus berbeda. Batch FAILED dapat bersamaan dengan job RETRY_WAIT."
     ],
-    "index": 29,
+    "index": 30,
     "runtimeController": true
   },
   {
@@ -638,7 +701,7 @@
       "extractedContent bisa belum lengkap dan tidak memenuhi batas request QuestionContent; tampilkan error untuk perbaikan.",
       "sourceItemNo adalah nomor asal yang dinormalisasi per halaman untuk dedup, tidak selalu nomor cetak asli PDF."
     ],
-    "index": 30,
+    "index": 31,
     "runtimeController": true
   },
   {
@@ -659,7 +722,7 @@
       "Hasil ekstraksi asli tetap tersimpan. Kandidat yang sudah menjadi master tidak dapat dikoreksi lewat endpoint ini.",
       "Bean validation body berlaku; kunci/pembahasan yang belum valid tetap ditandai oleh validator publikasi."
     ],
-    "index": 31,
+    "index": 32,
     "runtimeController": true
   },
   {
@@ -675,7 +738,7 @@
       "Request berulang pada kandidat yang sudah disimpan mengembalikan master yang sama.",
       "Save bukan publish; draft belum lengkap masih dapat dibuat, kemudian publish menolak konten tidak lengkap."
     ],
-    "index": 32,
+    "index": 33,
     "runtimeController": true
   },
   {
@@ -693,7 +756,7 @@
       "200 binary; Content-Disposition attachment; filename=source.pdf; Cache-Control no-store.",
       "Semua QUESTION_STAFF dapat membaca batch yang valid, bukan hanya uploader. File tidak tersedia dapat menghasilkan error internal yang harus dilacak log."
     ],
-    "index": 33,
+    "index": 34,
     "runtimeController": true
   },
   {
@@ -743,7 +806,7 @@
     "notes": [
       "subtestId/topicId harus satu lingkup aktif. Konten body harus memenuhi validasi request; aturan lengkap publikasi tetap diperiksa saat publish."
     ],
-    "index": 34,
+    "index": 35,
     "runtimeController": true
   },
   {
@@ -761,7 +824,7 @@
       "Filter opsional subtestId dan search. Search mencocokkan kode atau stem pada versi yang tersimpan.",
       "Versi terbaru yang dikembalikan bisa DRAFT walaupun versi PUBLISHED lama masih dipakai sesi baru."
     ],
-    "index": 35,
+    "index": 36,
     "runtimeController": true
   },
   {
@@ -776,7 +839,7 @@
     "notes": [
       "Bukan endpoint untuk memilih nomor versi historis. Detail by ID masih dapat dibaca setelah archive."
     ],
-    "index": 36,
+    "index": 37,
     "runtimeController": true
   },
   {
@@ -822,9 +885,9 @@
     },
     "notes": [
       "Endpoint ini tidak idempoten: pengiriman ulang membuat versi berikutnya lagi.",
-      "Tidak ada endpoint update draft di tempat pada implementasi sekarang; publish selalu menargetkan versi terbaru."
+      "Edit draft memakai PUT /staff/questions/{id}/draft dengan version ID dan revision; publish menargetkan versi terbaru."
     ],
-    "index": 37,
+    "index": 38,
     "runtimeController": true
   },
   {
@@ -874,7 +937,7 @@
       "Wajib tepat satu opsi correct, kode opsi unik A–E, 2–5 opsi, pembahasan dan source title.",
       "Jika versi terbaru sudah PUBLISHED, respons versi yang sama. Draft baru tidak otomatis diterbitkan worker."
     ],
-    "index": 38,
+    "index": 39,
     "runtimeController": true
   },
   {
@@ -890,7 +953,7 @@
       "200 body kosong. Pengulangan tidak mengubah timestamp arsip yang sudah ada.",
       "Snapshot sesi lama tetap dapat dibaca; tidak menghapus versi/hasil. Belum ada endpoint unarchive."
     ],
-    "index": 39,
+    "index": 40,
     "runtimeController": true
   },
   {
@@ -909,7 +972,7 @@
       "Tidak ada body JSON request. Selesaikan login dan consent dalam browser; bukan request credential password ke backend.",
       "Cookie/state OAuth harus tetap pada browser/session yang sama."
     ],
-    "index": 40,
+    "index": 41,
     "runtimeController": false
   },
   {
@@ -928,7 +991,7 @@
       "Parameter code/state dibuat provider/Spring, bukan nilai yang dibuat frontend secara manual.",
       "Sukses membuat session lalu redirect. Gagal OAuth mengikuti handler/redirect Security, tidak selalu ApiError JSON."
     ],
-    "index": 41,
+    "index": 42,
     "runtimeController": false
   },
   {
@@ -947,7 +1010,7 @@
     "notes": [
       "Status tidak sehat dapat memberi HTTP 503. Endpoint /api/v1/health hanya status aplikasi sederhana."
     ],
-    "index": 42,
+    "index": 43,
     "runtimeController": false
   },
   {
@@ -965,7 +1028,7 @@
       "Dapat kosong karena contributor info tidak seluruhnya aktif. Tidak dijamin mengembalikan info.app sebagai JSON.",
       "Di luar prefix /api/, request anonim dapat mengikuti redirect OAuth atau respons Security berbeda, tergantung profil."
     ],
-    "index": 43,
+    "index": 44,
     "runtimeController": false
   },
   {
@@ -1001,7 +1064,7 @@
     "notes": [
       "Bukan API data siswa. Host/links mengikuti deployment. Penjagaan anonim sama seperti /actuator/info."
     ],
-    "index": 44,
+    "index": 45,
     "runtimeController": false
   },
   {
@@ -1019,7 +1082,7 @@
     "notes": [
       "Resource HTML/JS/CSS internal Swagger tidak diinventarisasi satu per satu. UI memakai cookie/CSRF yang sama; bukan bypass security."
     ],
-    "index": 45,
+    "index": 46,
     "runtimeController": false
   },
   {
@@ -1045,7 +1108,856 @@
       "Contoh struktur dipersingkat; file runtime lengkap ada pada openapi-runtime.json.",
       "Endpoint filter logout/OAuth dan Actuator dilengkapi pada openapi.json dokumentasi ini."
     ],
-    "index": 46,
+    "index": 47,
     "runtimeController": false
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/questions/{id}/draft",
+    "title": "Baca atau simpan draft",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "DraftView",
+    "description": "GET latest question + editor revision. PUT hanya DRAFT nonarsip; expectedVersionId dan expectedRevision wajib cocok. Opsi diganti atomik, revision naik sekali; konflik 409 REVISION_CONFLICT.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 48,
+    "runtimeController": true
+  },
+  {
+    "method": "put",
+    "path": "/api/v1/staff/questions/{id}/draft",
+    "title": "Baca atau simpan draft",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "DraftView",
+    "description": "GET latest question + editor revision. PUT hanya DRAFT nonarsip; expectedVersionId dan expectedRevision wajib cocok. Opsi diganti atomik, revision naik sekali; konflik 409 REVISION_CONFLICT.",
+    "status": 200,
+    "request": "DraftRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 49,
+    "runtimeController": true
+  },
+  {
+    "method": "put",
+    "path": "/api/v1/admin/users/{id}/roles",
+    "title": "Ganti role akun",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "AdminUserResponse",
+    "description": "Mengganti seluruh himpunan role. Registrasi publik tidak bisa memakai endpoint ini. Perubahan menaikkan auth_revision dan mencabut sesi lama; satu admin aktif wajib dipertahankan, termasuk permintaan bersamaan.",
+    "status": 200,
+    "request": "RolesRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 50,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/questions/{id}/versions",
+    "title": "Riwayat versi master",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "VersionSummary",
+    "description": "Metadata versi/revisi/editor/timestamp, terbaru dahulu.",
+    "status": 200,
+    "array": true,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 51,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/imports/{id}/save",
+    "title": "Simpan kandidat terpilih sebagai draft",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "candidateIds maksimal 100, satu batch, transaksi semua atau rollback. Replay kandidat tersimpan mengembalikan master sama. Tidak otomatis publish.",
+    "status": 200,
+    "request": "SaveCandidatesRequest",
+    "array": true,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 52,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/staff/imports/{id}/retry",
+    "title": "Retry impor gagal",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "ImportResponse",
+    "description": "Hanya job FAILED setelah retry otomatis habis. Memakai job/batch/file yang sama tanpa duplikasi. Belum mendukung retry per halaman/lampiran kunci terpisah.",
+    "status": 200,
+    "request": "MutationReason",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 53,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/users",
+    "title": "Daftar atau buat akun internal",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseAdminUserResponse",
+    "description": "GET mencari nama/email/UUID, status dan periode dengan pagination. POST membuat akun INTERNAL tanpa password, dengan email yang akan dipakai Google SSO; tidak mengirim undangan email. Email duplikat ditolak.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 54,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/users",
+    "title": "Daftar atau buat akun internal",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "AdminUserResponse",
+    "description": "GET mencari nama/email/UUID, status dan periode dengan pagination. POST membuat akun INTERNAL tanpa password, dengan email yang akan dipakai Google SSO; tidak mengirim undangan email. Email duplikat ditolak.",
+    "status": 201,
+    "request": "InternalUserRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 55,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/topics",
+    "title": "Buat topik",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Parent subtes harus ada.",
+    "status": 201,
+    "request": "TopicRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 56,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/subtests",
+    "title": "Buat subtes",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Parent jenis ujian harus ada.",
+    "status": 201,
+    "request": "SubtestRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 57,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/subscriptions/{id}/revoke",
+    "title": "Cabut hak langganan",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "AdminSubscriptionResponse",
+    "description": "Mencabut seluruh grant dari subscription dan memberi status REVOKED, dengan alasan/audit. Ini tindakan akses, bukan refund keuangan.",
+    "status": 200,
+    "request": "MutationReason",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 58,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/scoring-policies",
+    "title": "Daftar atau buat policy skor",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponsePolicyResponse",
+    "description": "POST code yang sama membentuk version berikutnya. Hanya BINARY/OPTION_WEIGHT, SUM/HALF_UP dan aturan yang didukung kalkulator; policy yang dirujuk tidak ditimpa.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 59,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/scoring-policies",
+    "title": "Daftar atau buat policy skor",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PolicyResponse",
+    "description": "POST code yang sama membentuk version berikutnya. Hanya BINARY/OPTION_WEIGHT, SUM/HALF_UP dan aturan yang didukung kalkulator; policy yang dirujuk tidak ditimpa.",
+    "status": 201,
+    "request": "PolicyRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 60,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/plans",
+    "title": "Daftar atau buat keluarga paket",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponsePlanResponse",
+    "description": "GET pagination/pencarian nama/family code. POST membuat revisi pertama; harga minor unit integer dan manfaat eksplisit.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 61,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/plans",
+    "title": "Daftar atau buat keluarga paket",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PlanResponse",
+    "description": "GET pagination/pencarian nama/family code. POST membuat revisi pertama; harga minor unit integer dan manfaat eksplisit.",
+    "status": 201,
+    "request": "PlanRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 62,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/plans/{id}/versions",
+    "title": "Buat revisi harga baru",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PlanResponse",
+    "description": "Harus berasal dari revisi terakhir dan family code sama. Versi lama nonaktif untuk penjualan; field harga/manfaat lama tidak ditimpa.",
+    "status": 201,
+    "request": "PlanRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 63,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/orders/{id}/refunds",
+    "title": "Catat permintaan refund",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "RefundResponse",
+    "description": "202 PENDING_PROVIDER hanya mencatat kasus; belum memindahkan uang, merevoke grant atau menandai REFUNDED. Hanya order PAID; jumlah kumulatif reserved/succeeded tidak melebihi nilai order. Key scoped ke order, replay nominal sama mengembalikan request lama.",
+    "status": 202,
+    "request": "RefundRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "idempotency": true,
+    "index": 64,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/orders/{id}/reconcile",
+    "title": "Rekonsiliasi belum dikonfigurasi",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "ApiError",
+    "description": "Resource order diperiksa. Selalu 503 PAYMENT_PROVIDER_NOT_CONFIGURED sampai adapter gateway dipilih/diimplementasikan. Tidak mengubah order menjadi PAID.",
+    "status": 503,
+    "request": "MutationReason",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "example": {
+      "code": "PAYMENT_PROVIDER_NOT_CONFIGURED",
+      "message": "Gateway reconciliation is unavailable until a payment provider is configured; order status was not changed",
+      "fieldErrors": {},
+      "requestId": "example-request-id"
+    },
+    "index": 65,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/jobs/{id}/retry",
+    "title": "Retry job gagal",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "JobResponse",
+    "description": "Hanya FAILED dan jenis IMPORT_PDF/SCORE_ATTEMPT. Reset attempts/lease dan antrekan ID yang sama; PROCESSING/QUEUED/SUCCEEDED ditolak. Bukan regrade hasil selesai.",
+    "status": 200,
+    "request": "MutationReason",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 66,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/exam-types",
+    "title": "Buat jenis ujian",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Parent kategori harus ada.",
+    "status": 201,
+    "request": "ExamTypeRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 67,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/categories",
+    "title": "Buat kategori",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Kode stabil, nama dan status aktif.",
+    "status": 201,
+    "request": "CategoryRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 68,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/blueprints",
+    "title": "Daftar atau buat paket tryout",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseBlueprintResponse",
+    "description": "Hanya mode TRYOUT; blueprint internal latihan tidak dikelola melalui endpoint admin ini.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 69,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/blueprints",
+    "title": "Daftar atau buat paket tryout",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "BlueprintResponse",
+    "description": "Hanya mode TRYOUT; blueprint internal latihan tidak dikelola melalui endpoint admin ini.",
+    "status": 201,
+    "request": "BlueprintRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 70,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/blueprints/{id}/versions",
+    "title": "Buat komposisi draft baru",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "BlueprintVersion",
+    "description": "Durasi 60–86400 detik, policy aktif dan section dalam jenis ujian yang sama. Satu section per subtes mencegah overlap. Filter topik/tahun eksplisit. Tidak mengubah versi terbit.",
+    "status": 201,
+    "request": "BlueprintVersionRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 71,
+    "runtimeController": true
+  },
+  {
+    "method": "post",
+    "path": "/api/v1/admin/blueprints/{id}/versions/{versionId}/publish",
+    "title": "Terbitkan versi blueprint",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "BlueprintDetail",
+    "description": "Pool kurang ditolak. expectedActiveVersionId=null untuk publikasi pertama; sesudahnya kirim active version terakhir agar konflik penulisan terdeteksi. Versi/sesi lama tetap immutable.",
+    "status": 200,
+    "request": "PublishRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 72,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/users/{id}/status",
+    "title": "Suspend atau pulihkan akun",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "AdminUserResponse",
+    "description": "ACTIVE/SUSPENDED dengan alasan. Sesi lama tidak hidup kembali setelah restore; pengguna harus login lagi. Jawaban/snapshot ujian tidak diubah. Admin aktif terakhir dilindungi.",
+    "status": 200,
+    "request": "StatusRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 73,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/topics/{id}",
+    "title": "Perbarui topik",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Parent immutable; nonaktifkan tanpa menghapus soal dan sesi lama.",
+    "status": 200,
+    "request": "TopicRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 74,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/subtests/{id}",
+    "title": "Perbarui subtes",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Parent dan kode immutable untuk mencegah pemindahan bank soal lintas ujian.",
+    "status": 200,
+    "request": "SubtestRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 75,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/plans/{id}/availability",
+    "title": "Buka atau hentikan penjualan",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PlanResponse",
+    "description": "Hanya revisi terakhir dapat diaktifkan; tidak mengubah snapshot order/akses yang sudah dibeli.",
+    "status": 200,
+    "request": "ActiveRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 76,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/exam-types/{id}",
+    "title": "Perbarui jenis ujian",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Parent dan kode immutable; buat master baru untuk pindah lingkup.",
+    "status": 200,
+    "request": "ExamTypeRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 77,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/categories/{id}",
+    "title": "Perbarui kategori",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyItem",
+    "description": "Nama/status dapat berubah; kode stabil tidak diganti.",
+    "status": 200,
+    "request": "CategoryRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 78,
+    "runtimeController": true
+  },
+  {
+    "method": "patch",
+    "path": "/api/v1/admin/blueprints/{id}/status",
+    "title": "Aktifkan atau arsip katalog",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "BlueprintDetail",
+    "description": "Reaktivasi memerlukan active version dan stok cukup. Archive menghentikan start baru; sesi/history lama tetap dapat dibaca.",
+    "status": 200,
+    "request": "BlueprintStatusRequest",
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 79,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/questions/{id}/versions/{versionId}",
+    "title": "Baca versi soal tertentu",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "StaffQuestionResponse",
+    "description": "Versi wajib milik question yang dituju; konten/kunci/pembahasan historis untuk petugas saja.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 80,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/question-bank",
+    "title": "Cari master dengan pagination",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "PageResponseQuestionSummary",
+    "description": "Filter search, categoryId, examTypeId, subtestId, topicId, sourceYear, status, batchId. Default 10 per halaman; total dan ringkasan versi terbaru. Versi terbit lama masih bisa dipakai walau versi terbaru draft.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 81,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/pool-requirements",
+    "title": "Kebutuhan stok blueprint",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "PageResponsePoolRequirement",
+    "description": "Ringkasan section versi terakhir tiap blueprint nonarsip, filter topik/tahun dan jumlah terbit. Ini indikator pasokan; readiness admin melakukan pemeriksaan opsi/scope lebih lengkap.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 82,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/import-history",
+    "title": "Cari riwayat unggahan",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "PageResponseImportSummary",
+    "description": "Pagination total dengan search nama berkas/sumber/UUID, subtestId, uploaderId dan status. Seluruh ruang konten sesuai izin petugas.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 83,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/dashboard",
+    "title": "Ringkasan bank soal",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "StaffDashboard",
+    "description": "Jumlah soal published/draft/arsip dan impor. Tidak menyertakan akun customer/transaksi.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 84,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/staff/audit",
+    "title": "Audit ruang konten",
+    "group": "Petugas soal lanjutan",
+    "auth": "staff",
+    "response": "PageResponseContentAudit",
+    "description": "Hanya entity_type CONTENT; tidak mengirim audit pengguna atau keuangan.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 85,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/users/{id}",
+    "title": "Detail akun untuk dukungan",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "UserDetail",
+    "description": "Wajib query reason; akses detail dicatat. Profil/target dan hitungan sesi/order tidak menyertakan hash password, token atau identitas rahasia provider.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 86,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/users/{id}/attempts",
+    "title": "Riwayat sesi untuk dukungan",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseUserAttempt",
+    "description": "Wajib query reason; daftar ringkasan sesi pengguna, tanpa isi soal/jawaban. Akses dicatat.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 87,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/taxonomy",
+    "title": "Hierarki kategori lengkap",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "TaxonomyTree",
+    "description": "Kategori, jenis ujian, subtes dan topik, termasuk nonaktif. Admin melihat metadata, bukan isi/kunci soal.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 88,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/subscriptions",
+    "title": "Daftar langganan dan grant",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseAdminSubscriptionResponse",
+    "description": "Filter userId/status/periode; grant menyertakan sumber order dan waktu revoke. Tidak menyediakan pemberian Premium tanpa pembayaran terverifikasi.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 89,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/roles",
+    "title": "Matriks peran",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "RoleDefinition",
+    "description": "CUSTOMER, QUESTION_STAFF dan PLATFORM_ADMIN beserta izin operasional. Admin tidak otomatis memiliki akses kunci/PDF.",
+    "status": 200,
+    "array": true,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 90,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/plans/{id}",
+    "title": "Detail revisi harga",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PlanResponse",
+    "description": "Harga/manfaat/periode dari ID revisi tertentu.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 91,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/orders",
+    "title": "Daftar transaksi",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseOrderResponse",
+    "description": "Filter status, userId, pencarian UUID/email/referensi provider dan periode created_at. Menampilkan snapshot order, bukan harga paket terbaru.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 92,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/orders/{id}",
+    "title": "Detail transaksi",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "OrderDetail",
+    "description": "Order, metadata event pembayaran tersensor, dan refund requests. Tidak mengirim payload provider, rekening atau kredensial.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 93,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/jobs",
+    "title": "Daftar job tersensor",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseJobResponse",
+    "description": "Metadata antrean/attempt/error code dan lease; tanpa payload, seed atau path storage. Status/jenis/UUID dan periode bisa difilter.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 94,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/dashboard",
+    "title": "Ringkasan operasional",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "Dashboard",
+    "description": "Jumlah akun ACTIVE saat dibaca, akun baru/sesi selesai dalam [from,to), pool, impor, job, metadata storage dan gross/refund/net per mata uang. Gross memakai created_at order PAID/REFUNDED; refund memakai completed_at SUCCEEDED. Bukan laporan settlement gateway; tidak mencampur mata uang.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 95,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/blueprints/{id}",
+    "title": "Detail blueprint dan versinya",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "BlueprintDetail",
+    "description": "Semua versi dan section; ready bersifat stok global, bukan jaminan pool personal setelah pengecualian hari yang sama.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 96,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/blueprints/{id}/versions/{versionId}/readiness",
+    "title": "Cek kebutuhan pool",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "BlueprintVersion",
+    "description": "Stok soal terbit/nonarsip, scope aktif dan opsi/kunci/bobot diperiksa. Tidak mengirim isi soal atau kunci.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 97,
+    "runtimeController": true
+  },
+  {
+    "method": "get",
+    "path": "/api/v1/admin/audit",
+    "title": "Audit operasional",
+    "group": "Admin platform",
+    "auth": "admin",
+    "response": "PageResponseAuditResponse",
+    "description": "Pagination append-only pada aplikasi; status memfilter entity_type, userId memfilter actor, search memfilter action/UUID objek/requestId, from/to membatasi occurred_at. Tidak ada endpoint edit/hapus audit.",
+    "status": 200,
+    "array": false,
+    "notes": [
+      "Mutasi memerlukan CSRF dari cookie session yang sama. Respons list baru memakai {items,total,offset,limit}; list legacy tetap kompatibel."
+    ],
+    "index": 98,
+    "runtimeController": true
   }
 ]

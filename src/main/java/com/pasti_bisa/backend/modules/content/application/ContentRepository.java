@@ -23,9 +23,11 @@ public interface ContentRepository {
     QuestionResponse saveCandidate(UUID actor,UUID batchId,UUID candidateId);
     QuestionResponse createQuestion(UUID actor,CreateQuestionRequest request,UUID candidateId,Integer sourcePage);
     QuestionResponse question(UUID questionId);
+    QuestionResponse questionVersion(UUID questionId,UUID versionId);
     List<QuestionResponse> questions(UUID subtestId,String search,int offset,int limit);
     QuestionResponse newVersion(UUID actor,UUID questionId,QuestionContent content);
     QuestionResponse publish(UUID actor,UUID questionId);
     void archive(UUID actor,UUID questionId);
     String sourcePath(UUID batchId);
+    void auditContent(UUID actor,String action,UUID id);
 }

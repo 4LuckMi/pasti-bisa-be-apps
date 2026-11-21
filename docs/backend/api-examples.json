@@ -141,7 +141,13 @@
     "started_at": "2026-11-19T07:00:00Z",
     "finalized_at": "2026-11-19T07:05:00Z",
     "total_score": 33.3333,
-    "details": "{\"label\":\"Indeks latihan PastiSiap; bukan skor resmi\",\"correct\":1,\"wrong\":0,\"empty\":2}"
+    "details": "{\"label\":\"Indeks latihan PastiSiap; bukan skor resmi\",\"correct\":1,\"wrong\":0,\"empty\":2}",
+    "topic_id": null,
+    "topic_name": null,
+    "category": "UTBK",
+    "terminal_reason": "SUBMITTED",
+    "question_count": 3,
+    "duration_seconds": 5400
   },
   "StartTryoutRequest": {
     "tryoutId": "00000000-0000-4000-8000-000000000002"
@@ -184,7 +190,23 @@
         "flagged": false,
         "revision": 0
       }
-    ]
+    ],
+    "finalizedAt": null,
+    "context": {
+      "title": "Tryout UTBK - Contoh",
+      "category": "UTBK",
+      "examType": "Tes Numerik Contoh",
+      "topicId": null,
+      "topicName": null,
+      "sections": [
+        {
+          "position": 1,
+          "subtestId": "00000000-0000-4000-8000-000000000004",
+          "name": "Penalaran Numerik Contoh",
+          "questionCount": 3
+        }
+      ]
+    }
   },
   "OptionResponse": {
     "id": "00000000-0000-4000-8000-000000000011",
@@ -221,7 +243,13 @@
     "flagged": false,
     "revision": 0,
     "correct": null,
-    "explanation": null
+    "explanation": null,
+    "scope": {
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "subtestName": "Penalaran Numerik Contoh",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "topicName": "Aritmetika Dasar Contoh"
+    }
   },
   "AnswerRequest": {
     "selectedOptionId": "00000000-0000-4000-8000-000000000012",
@@ -270,7 +298,8 @@
         "maxPoints": 3,
         "accuracy": 33.3333
       }
-    ]
+    ],
+    "finalizedAt": "2026-11-19T07:05:00Z"
   },
   "TaxonomyResponse": {
     "categoryId": "00000000-0000-4000-8000-000000000024",
@@ -420,5 +449,913 @@
     "message": "Fetch the latest question before saving again",
     "fieldErrors": {},
     "requestId": "00000000-0000-4000-8000-000000000099"
+  },
+  "SessionSection": {
+    "position": 1,
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "name": "Penalaran Numerik Contoh",
+    "questionCount": 3
+  },
+  "CourseContext": {
+    "title": "Tryout UTBK - Contoh",
+    "category": "UTBK",
+    "examType": "Tes Numerik Contoh",
+    "topicId": null,
+    "topicName": null,
+    "sections": [
+      {
+        "position": 1,
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "name": "Penalaran Numerik Contoh",
+        "questionCount": 3
+      }
+    ]
+  },
+  "QuestionScope": {
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "subtestName": "Penalaran Numerik Contoh",
+    "topicId": "00000000-0000-4000-8000-000000000005",
+    "topicName": "Aritmetika Dasar Contoh"
+  },
+  "PracticeTopicDetail": {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "topic": "Aritmetika Dasar Contoh",
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "subtestCode": "NUMERIK",
+    "subtest": "Penalaran Numerik Contoh",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "examType": "Tes Numerik Contoh",
+    "category": "UTBK",
+    "questionCount": 12,
+    "defaultQuestionCount": 10,
+    "maxQuestionCount": 12,
+    "secondsPerQuestion": 120,
+    "ready": true
+  },
+  "MutationReason": {
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "StatusRequest": {
+    "status": "SUSPENDED",
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "RolesRequest": {
+    "roles": [
+      "QUESTION_STAFF"
+    ],
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "InternalUserRequest": {
+    "email": "petugas-baru@example.com",
+    "displayName": "Petugas Contoh",
+    "roles": [
+      "QUESTION_STAFF"
+    ],
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "RefundRequest": {
+    "amountMinor": 10000,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "CategoryRequest": {
+    "code": "UTBK",
+    "name": "Ujian Tulis Berbasis Komputer",
+    "active": true,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "ExamTypeRequest": {
+    "categoryId": "00000000-0000-4000-8000-000000000024",
+    "code": "TPS",
+    "name": "Tes Potensi Skolastik",
+    "active": true,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "SubtestRequest": {
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "code": "NUMERIK",
+    "name": "Penalaran Numerik",
+    "active": true,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "TopicRequest": {
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "name": "Aritmetika",
+    "active": true,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "PlanBenefits": {
+    "fullLeaderboard": true
+  },
+  "PlanRequest": {
+    "code": "PREMIUM_1_MONTH",
+    "name": "Premium 1 bulan",
+    "months": 1,
+    "amountMinor": 39000,
+    "currency": "IDR",
+    "benefits": {
+      "fullLeaderboard": true
+    },
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "ActiveRequest": {
+    "active": false,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "ScoreRules": {
+    "correctPoints": 1,
+    "wrongPoints": 0,
+    "emptyPoints": 0
+  },
+  "PolicyRequest": {
+    "code": "BINARY_100",
+    "method": "BINARY",
+    "scale": 100,
+    "rules": {
+      "correctPoints": 1,
+      "wrongPoints": 0,
+      "emptyPoints": 0
+    },
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "BlueprintRequest": {
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "code": "TRYOUT_UTBK_01",
+    "title": "Tryout UTBK 01",
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "SectionRequest": {
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "questionCount": 3,
+    "topicId": "00000000-0000-4000-8000-000000000005",
+    "sourceYear": 2026
+  },
+  "BlueprintVersionRequest": {
+    "durationSeconds": 5400,
+    "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+    "sections": [
+      {
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "questionCount": 3,
+        "topicId": "00000000-0000-4000-8000-000000000005",
+        "sourceYear": 2026
+      }
+    ],
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "PublishRequest": {
+    "expectedActiveVersionId": null,
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "BlueprintStatusRequest": {
+    "status": "ARCHIVED",
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "DraftRequest": {
+    "expectedVersionId": "00000000-0000-4000-8000-000000000008",
+    "expectedRevision": 0,
+    "content": {
+      "stemText": "Berapa hasil 2 + 3?",
+      "options": [
+        {
+          "code": "A",
+          "text": "4",
+          "correct": false,
+          "weight": 0
+        },
+        {
+          "code": "B",
+          "text": "5",
+          "correct": true,
+          "weight": 1
+        }
+      ],
+      "explanation": "Dua ditambah tiga sama dengan lima.",
+      "shuffleAllowed": false
+    },
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "SaveCandidatesRequest": {
+    "candidateIds": [
+      "00000000-0000-4000-8000-000000000022"
+    ],
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh"
+  },
+  "AdminUserResponse": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "email": "petugas@example.com",
+    "displayName": "Petugas Contoh",
+    "userType": "INTERNAL",
+    "status": "ACTIVE",
+    "roles": [
+      "QUESTION_STAFF"
+    ],
+    "createdAt": "2026-11-20T07:00:00Z",
+    "updatedAt": "2026-11-20T07:00:00Z"
+  },
+  "RefundResponse": {
+    "id": "00000000-0000-4000-8000-000000000080",
+    "orderId": "00000000-0000-4000-8000-000000000081",
+    "amountMinor": 10000,
+    "currency": "IDR",
+    "status": "PENDING_PROVIDER",
+    "createdAt": "2026-11-20T07:00:00Z",
+    "completedAt": null
+  },
+  "BlueprintResponse": {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "examTypeId": "00000000-0000-4000-8000-000000000025",
+    "code": "TRYOUT_UTBK_01",
+    "title": "Tryout UTBK 01",
+    "status": "ACTIVE",
+    "activeVersionId": "00000000-0000-4000-8000-000000000003"
+  },
+  "BlueprintSection": {
+    "id": "00000000-0000-4000-8000-000000000023",
+    "position": 1,
+    "subtestId": "00000000-0000-4000-8000-000000000004",
+    "subtestName": "Penalaran Numerik",
+    "questionCount": 3,
+    "topicId": "00000000-0000-4000-8000-000000000005",
+    "sourceYear": 2026,
+    "available": 12
+  },
+  "PolicyResponse": {
+    "id": "00000000-0000-4000-8000-000000000070",
+    "code": "BINARY_100",
+    "version": 1,
+    "method": "BINARY",
+    "scale": 100,
+    "rules": {
+      "correctPoints": 1,
+      "wrongPoints": 0,
+      "emptyPoints": 0
+    },
+    "status": "ACTIVE"
+  },
+  "DraftView": {
+    "question": {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "versionId": "00000000-0000-4000-8000-000000000008",
+      "code": "Q-00000000-0000-4000-8000-000000000007",
+      "version": 1,
+      "status": "DRAFT",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "sourceYear": 2026,
+      "sourceTitle": "Contoh PDF PastiSiap",
+      "sourcePage": 1,
+      "content": {
+        "stemText": "Berapa hasil 2 + 3?",
+        "options": [
+          {
+            "code": "A",
+            "text": "4",
+            "correct": false,
+            "weight": 0
+          },
+          {
+            "code": "B",
+            "text": "5",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "explanation": "Dua ditambah tiga sama dengan lima.",
+        "shuffleAllowed": false
+      }
+    },
+    "revision": 0
+  },
+  "VersionSummary": {
+    "id": "00000000-0000-4000-8000-000000000008",
+    "version": 1,
+    "status": "DRAFT",
+    "revision": 0,
+    "createdBy": "00000000-0000-4000-8000-000000000001",
+    "createdAt": "2026-11-20T07:00:00Z"
+  },
+  "JobResponse": {
+    "id": "00000000-0000-4000-8000-000000000082",
+    "type": "IMPORT_PDF",
+    "status": "FAILED",
+    "attempts": 5,
+    "maxAttempts": 5,
+    "runAfter": "2026-11-20T07:00:00Z",
+    "leaseUntil": null,
+    "errorCode": "EXTRACTION_FAILED",
+    "createdAt": "2026-11-20T07:00:00Z"
+  },
+  "Revenue": {
+    "currency": "IDR",
+    "paidGrossMinor": 50000,
+    "refundedMinor": 0,
+    "netMinor": 50000,
+    "pendingOrders": 1
+  },
+  "BlueprintVersion": {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "version": 1,
+    "status": "ACTIVE",
+    "durationSeconds": 5400,
+    "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+    "sections": [
+      {
+        "id": "00000000-0000-4000-8000-000000000023",
+        "position": 1,
+        "subtestId": "00000000-0000-4000-8000-000000000004",
+        "subtestName": "Penalaran Numerik",
+        "questionCount": 3,
+        "topicId": "00000000-0000-4000-8000-000000000005",
+        "sourceYear": 2026,
+        "available": 12
+      }
+    ],
+    "ready": true
+  },
+  "QuestionSummary": {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "code": "Q-EXAMPLE",
+    "versionId": "00000000-0000-4000-8000-000000000008",
+    "version": 1,
+    "status": "DRAFT",
+    "revision": 0,
+    "category": "UTBK",
+    "examType": "TPS",
+    "subtest": "Penalaran Numerik",
+    "topic": "Aritmetika",
+    "sourceYear": 2026,
+    "sourceTitle": "Sumber contoh",
+    "stemPreview": "Berapa hasil satu tambah satu?",
+    "batchId": null
+  },
+  "TaxonomyItem": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "parentId": "00000000-0000-4000-8000-000000000090",
+    "code": "EXAMPLE",
+    "name": "Nama contoh",
+    "active": true
+  },
+  "AdminSubscriptionResponse": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "userId": "00000000-0000-4000-8000-000000000090",
+    "startsAt": "2026-11-20T07:00:00Z",
+    "endsAt": "2026-11-20T07:00:00Z",
+    "status": "ACTIVE",
+    "grants": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "orderId": "00000000-0000-4000-8000-000000000090",
+        "startsAt": "2026-11-20T07:00:00Z",
+        "endsAt": "2026-11-20T07:00:00Z",
+        "revokedAt": "2026-11-20T07:00:00Z"
+      }
+    ]
+  },
+  "GrantResponse": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "orderId": "00000000-0000-4000-8000-000000000090",
+    "startsAt": "2026-11-20T07:00:00Z",
+    "endsAt": "2026-11-20T07:00:00Z",
+    "revokedAt": "2026-11-20T07:00:00Z"
+  },
+  "PlanResponse": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "code": "EXAMPLE",
+    "familyCode": "PREMIUM_1_MONTH",
+    "revision": 1,
+    "name": "Nama contoh",
+    "months": 1,
+    "amountMinor": 1,
+    "currency": "IDR",
+    "benefits": {
+      "fullLeaderboard": true
+    },
+    "active": true
+  },
+  "BlueprintDetail": {
+    "blueprint": {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "examTypeId": "00000000-0000-4000-8000-000000000025",
+      "code": "TRYOUT_UTBK_01",
+      "title": "Tryout UTBK 01",
+      "status": "ACTIVE",
+      "activeVersionId": "00000000-0000-4000-8000-000000000003"
+    },
+    "versions": [
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "version": 1,
+        "status": "ACTIVE",
+        "durationSeconds": 5400,
+        "scoringPolicyId": "00000000-0000-4000-8000-000000000070",
+        "sections": [
+          {
+            "id": "00000000-0000-4000-8000-000000000023",
+            "position": 1,
+            "subtestId": "00000000-0000-4000-8000-000000000004",
+            "subtestName": "Penalaran Numerik",
+            "questionCount": 3,
+            "topicId": "00000000-0000-4000-8000-000000000005",
+            "sourceYear": 2026,
+            "available": 12
+          }
+        ],
+        "ready": true
+      }
+    ]
+  },
+  "PageResponseQuestionSummary": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000007",
+        "code": "Q-EXAMPLE",
+        "versionId": "00000000-0000-4000-8000-000000000008",
+        "version": 1,
+        "status": "DRAFT",
+        "revision": 0,
+        "category": "UTBK",
+        "examType": "TPS",
+        "subtest": "Penalaran Numerik",
+        "topic": "Aritmetika",
+        "sourceYear": 2026,
+        "sourceTitle": "Sumber contoh",
+        "stemPreview": "Berapa hasil satu tambah satu?",
+        "batchId": null
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponsePoolRequirement": {
+    "items": [
+      {
+        "blueprintId": "00000000-0000-4000-8000-000000000090",
+        "blueprintTitle": "Tryout contoh",
+        "versionId": "00000000-0000-4000-8000-000000000090",
+        "version": 1,
+        "position": 1,
+        "subtestId": "00000000-0000-4000-8000-000000000090",
+        "subtestName": "Penalaran Numerik",
+        "required": 1,
+        "publishedAvailable": 1
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PoolRequirement": {
+    "blueprintId": "00000000-0000-4000-8000-000000000090",
+    "blueprintTitle": "Tryout contoh",
+    "versionId": "00000000-0000-4000-8000-000000000090",
+    "version": 1,
+    "position": 1,
+    "subtestId": "00000000-0000-4000-8000-000000000090",
+    "subtestName": "Penalaran Numerik",
+    "required": 1,
+    "publishedAvailable": 1
+  },
+  "ImportSummary": {
+    "batch": {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "status": "READY",
+      "fileId": "00000000-0000-4000-8000-000000000021",
+      "subtestId": "00000000-0000-4000-8000-000000000004",
+      "topicId": "00000000-0000-4000-8000-000000000005",
+      "sourceTitle": "Contoh PDF PastiSiap",
+      "sourceYear": 2026,
+      "pageCount": 1,
+      "candidateCount": 2,
+      "validCount": 2,
+      "invalidCount": 0,
+      "errorCode": null,
+      "jobStatus": "SUCCEEDED",
+      "jobErrorCode": null,
+      "createdAt": "2026-11-19T07:00:00Z"
+    },
+    "originalName": "soal-contoh.pdf",
+    "uploaderId": "00000000-0000-4000-8000-000000000090"
+  },
+  "PageResponseImportSummary": {
+    "items": [
+      {
+        "batch": {
+          "id": "00000000-0000-4000-8000-000000000020",
+          "status": "READY",
+          "fileId": "00000000-0000-4000-8000-000000000021",
+          "subtestId": "00000000-0000-4000-8000-000000000004",
+          "topicId": "00000000-0000-4000-8000-000000000005",
+          "sourceTitle": "Contoh PDF PastiSiap",
+          "sourceYear": 2026,
+          "pageCount": 1,
+          "candidateCount": 2,
+          "validCount": 2,
+          "invalidCount": 0,
+          "errorCode": null,
+          "jobStatus": "SUCCEEDED",
+          "jobErrorCode": null,
+          "createdAt": "2026-11-19T07:00:00Z"
+        },
+        "originalName": "soal-contoh.pdf",
+        "uploaderId": "00000000-0000-4000-8000-000000000090"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "StaffDashboard": {
+    "publishedQuestions": 1,
+    "draftQuestions": 1,
+    "archivedQuestions": 1,
+    "imports": 1,
+    "importsNeedingInput": 1,
+    "failedImports": 1
+  },
+  "ContentAudit": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "actorId": "00000000-0000-4000-8000-000000000090",
+    "action": "USER_STATUS_CHANGED",
+    "entityId": "00000000-0000-4000-8000-000000000090",
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh",
+    "requestId": "example-request-id",
+    "occurredAt": "2026-11-20T07:00:00Z"
+  },
+  "PageResponseContentAudit": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "actorId": "00000000-0000-4000-8000-000000000090",
+        "action": "USER_STATUS_CHANGED",
+        "entityId": "00000000-0000-4000-8000-000000000090",
+        "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh",
+        "requestId": "example-request-id",
+        "occurredAt": "2026-11-20T07:00:00Z"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponseAdminUserResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "email": "petugas@example.com",
+        "displayName": "Petugas Contoh",
+        "userType": "INTERNAL",
+        "status": "ACTIVE",
+        "roles": [
+          "QUESTION_STAFF"
+        ],
+        "createdAt": "2026-11-20T07:00:00Z",
+        "updatedAt": "2026-11-20T07:00:00Z"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "SupportProfile": {
+    "schoolName": "Contoh",
+    "schoolGrade": "Contoh",
+    "targetKind": "Contoh",
+    "institution": "Contoh",
+    "program": "Contoh",
+    "targetScore": 1
+  },
+  "UserDetail": {
+    "account": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "email": "petugas@example.com",
+      "displayName": "Petugas Contoh",
+      "userType": "INTERNAL",
+      "status": "ACTIVE",
+      "roles": [
+        "QUESTION_STAFF"
+      ],
+      "createdAt": "2026-11-20T07:00:00Z",
+      "updatedAt": "2026-11-20T07:00:00Z"
+    },
+    "profile": {
+      "schoolName": "Contoh",
+      "schoolGrade": "Contoh",
+      "targetKind": "Contoh",
+      "institution": "Contoh",
+      "program": "Contoh",
+      "targetScore": 1
+    },
+    "attemptCount": 1,
+    "orderCount": 1
+  },
+  "PageResponseUserAttempt": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "title": "Tryout contoh",
+        "mode": "TRYOUT",
+        "status": "ACTIVE",
+        "terminalReason": "SUBMITTED",
+        "startedAt": "2026-11-20T07:00:00Z",
+        "finalizedAt": "2026-11-20T07:00:00Z",
+        "score": 1
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "UserAttempt": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "title": "Tryout contoh",
+    "mode": "TRYOUT",
+    "status": "ACTIVE",
+    "terminalReason": "SUBMITTED",
+    "startedAt": "2026-11-20T07:00:00Z",
+    "finalizedAt": "2026-11-20T07:00:00Z",
+    "score": 1
+  },
+  "TaxonomyTree": {
+    "categories": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "parentId": "00000000-0000-4000-8000-000000000090",
+        "code": "EXAMPLE",
+        "name": "Nama contoh",
+        "active": true
+      }
+    ],
+    "examTypes": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "parentId": "00000000-0000-4000-8000-000000000090",
+        "code": "EXAMPLE",
+        "name": "Nama contoh",
+        "active": true
+      }
+    ],
+    "subtests": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "parentId": "00000000-0000-4000-8000-000000000090",
+        "code": "EXAMPLE",
+        "name": "Nama contoh",
+        "active": true
+      }
+    ],
+    "topics": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "parentId": "00000000-0000-4000-8000-000000000090",
+        "code": "EXAMPLE",
+        "name": "Nama contoh",
+        "active": true
+      }
+    ]
+  },
+  "PageResponseAdminSubscriptionResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "userId": "00000000-0000-4000-8000-000000000090",
+        "startsAt": "2026-11-20T07:00:00Z",
+        "endsAt": "2026-11-20T07:00:00Z",
+        "status": "ACTIVE",
+        "grants": [
+          {
+            "id": "00000000-0000-4000-8000-000000000090",
+            "orderId": "00000000-0000-4000-8000-000000000090",
+            "startsAt": "2026-11-20T07:00:00Z",
+            "endsAt": "2026-11-20T07:00:00Z",
+            "revokedAt": "2026-11-20T07:00:00Z"
+          }
+        ]
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "PageResponsePolicyResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000070",
+        "code": "BINARY_100",
+        "version": 1,
+        "method": "BINARY",
+        "scale": 100,
+        "rules": {
+          "correctPoints": 1,
+          "wrongPoints": 0,
+          "emptyPoints": 0
+        },
+        "status": "ACTIVE"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "RoleDefinition": {
+    "code": "EXAMPLE",
+    "name": "Nama contoh",
+    "permissions": [
+      "OWN_PROFILE"
+    ]
+  },
+  "PageResponsePlanResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "code": "EXAMPLE",
+        "familyCode": "PREMIUM_1_MONTH",
+        "revision": 1,
+        "name": "Nama contoh",
+        "months": 1,
+        "amountMinor": 1,
+        "currency": "IDR",
+        "benefits": {
+          "fullLeaderboard": true
+        },
+        "active": true
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "OrderResponse": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "userId": "00000000-0000-4000-8000-000000000090",
+    "userEmail": "pengguna@example.com",
+    "planId": "00000000-0000-4000-8000-000000000090",
+    "planCode": "Contoh",
+    "months": 1,
+    "amountMinor": 1,
+    "currency": "IDR",
+    "status": "ACTIVE",
+    "provider": "EXAMPLE_PROVIDER",
+    "providerOrderId": "example-order-001",
+    "createdAt": "2026-11-20T07:00:00Z",
+    "expiresAt": "2026-11-20T07:00:00Z"
+  },
+  "PageResponseOrderResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "userId": "00000000-0000-4000-8000-000000000090",
+        "userEmail": "pengguna@example.com",
+        "planId": "00000000-0000-4000-8000-000000000090",
+        "planCode": "Contoh",
+        "months": 1,
+        "amountMinor": 1,
+        "currency": "IDR",
+        "status": "ACTIVE",
+        "provider": "EXAMPLE_PROVIDER",
+        "providerOrderId": "example-order-001",
+        "createdAt": "2026-11-20T07:00:00Z",
+        "expiresAt": "2026-11-20T07:00:00Z"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "OrderDetail": {
+    "order": {
+      "id": "00000000-0000-4000-8000-000000000090",
+      "userId": "00000000-0000-4000-8000-000000000090",
+      "userEmail": "pengguna@example.com",
+      "planId": "00000000-0000-4000-8000-000000000090",
+      "planCode": "Contoh",
+      "months": 1,
+      "amountMinor": 1,
+      "currency": "IDR",
+      "status": "ACTIVE",
+      "provider": "EXAMPLE_PROVIDER",
+      "providerOrderId": "example-order-001",
+      "createdAt": "2026-11-20T07:00:00Z",
+      "expiresAt": "2026-11-20T07:00:00Z"
+    },
+    "events": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "provider": "EXAMPLE_PROVIDER",
+        "providerEventId": "example-event-001",
+        "amountMinor": 1,
+        "verified": true,
+        "signatureStatus": "VERIFIED",
+        "receivedAt": "2026-11-20T07:00:00Z"
+      }
+    ],
+    "refunds": [
+      {
+        "id": "00000000-0000-4000-8000-000000000080",
+        "orderId": "00000000-0000-4000-8000-000000000081",
+        "amountMinor": 10000,
+        "currency": "IDR",
+        "status": "PENDING_PROVIDER",
+        "createdAt": "2026-11-20T07:00:00Z",
+        "completedAt": null
+      }
+    ]
+  },
+  "PaymentEventResponse": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "provider": "EXAMPLE_PROVIDER",
+    "providerEventId": "example-event-001",
+    "amountMinor": 1,
+    "verified": true,
+    "signatureStatus": "VERIFIED",
+    "receivedAt": "2026-11-20T07:00:00Z"
+  },
+  "PageResponseJobResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000082",
+        "type": "IMPORT_PDF",
+        "status": "FAILED",
+        "attempts": 5,
+        "maxAttempts": 5,
+        "runAfter": "2026-11-20T07:00:00Z",
+        "leaseUntil": null,
+        "errorCode": "EXTRACTION_FAILED",
+        "createdAt": "2026-11-20T07:00:00Z"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "Dashboard": {
+    "generatedAt": "2026-11-20T07:00:00Z",
+    "from": "2026-11-20T07:00:00Z",
+    "to": "2026-11-20T07:00:00Z",
+    "activeAccounts": 1,
+    "newAccounts": 1,
+    "completedSessions": 1,
+    "publishedQuestions": 1,
+    "failedJobs": 1,
+    "pendingImports": 1,
+    "storedFiles": 1,
+    "storedBytes": 1,
+    "revenue": [
+      {
+        "currency": "IDR",
+        "paidGrossMinor": 50000,
+        "refundedMinor": 0,
+        "netMinor": 50000,
+        "pendingOrders": 1
+      }
+    ],
+    "paymentProviderConfigured": false
+  },
+  "PageResponseBlueprintResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "examTypeId": "00000000-0000-4000-8000-000000000025",
+        "code": "TRYOUT_UTBK_01",
+        "title": "Tryout UTBK 01",
+        "status": "ACTIVE",
+        "activeVersionId": "00000000-0000-4000-8000-000000000003"
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
+  },
+  "AuditResponse": {
+    "id": "00000000-0000-4000-8000-000000000090",
+    "actorId": "00000000-0000-4000-8000-000000000090",
+    "action": "USER_STATUS_CHANGED",
+    "entityType": "USER",
+    "entityId": "00000000-0000-4000-8000-000000000090",
+    "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh",
+    "requestId": "example-request-id",
+    "occurredAt": "2026-11-20T07:00:00Z",
+    "before": {},
+    "after": {}
+  },
+  "JsonNode": {},
+  "PageResponseAuditResponse": {
+    "items": [
+      {
+        "id": "00000000-0000-4000-8000-000000000090",
+        "actorId": "00000000-0000-4000-8000-000000000090",
+        "action": "USER_STATUS_CHANGED",
+        "entityType": "USER",
+        "entityId": "00000000-0000-4000-8000-000000000090",
+        "reason": "Pemeriksaan operasional berdasarkan tiket dukungan contoh",
+        "requestId": "example-request-id",
+        "occurredAt": "2026-11-20T07:00:00Z",
+        "before": {},
+        "after": {}
+      }
+    ],
+    "total": 1,
+    "offset": 0,
+    "limit": 20
   }
 }

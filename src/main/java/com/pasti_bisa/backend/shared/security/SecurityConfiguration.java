@@ -61,13 +61,17 @@ public class SecurityConfiguration {
 			DaoAuthenticationProvider daoProvider,
 			ObjectProvider<ClientRegistrationRepository> oauthClients,
 			ApiSecurityErrorHandler apiErrors,
+			AccountSecurityState accountStates,
 			@Value("${pastisiap.auth.success-redirect:/}") String successRedirect) throws Exception {
 		http
+				.addFilterBefore(new AccountSessionGuard(accountStates,apiErrors),org.springframework.security.web.access.intercept.AuthorizationFilter.class)
 				.authenticationProvider(daoProvider)
 				.securityContext(context -> context.securityContextRepository(securityContextRepository))
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/health", "/api/v1/csrf", "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/oauth2/**", "/login/oauth2/**").permitAll()
 						.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+						.requestMatchers("/api/v1/admin/**").hasRole("PLATFORM_ADMIN")
+						.requestMatchers("/api/v1/staff/**").hasRole("QUESTION_STAFF")
 						.anyRequest().authenticated())
 				.exceptionHandling(errors -> errors
 						.defaultAuthenticationEntryPointFor(apiErrors,
@@ -82,7 +86,10 @@ public class SecurityConfiguration {
 		if (oauthClients.getIfAvailable() != null) {
 			http.oauth2Login(oauth -> oauth
 						.userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService))
-						.defaultSuccessUrl(successRedirect, true));
+						.successHandler((request,response,authentication)->{
+							AccountSessionGuard.bind(request,authentication,accountStates);
+							new org.springframework.security.web.DefaultRedirectStrategy().sendRedirect(request,response,successRedirect);
+						}));
 		}
 		return http.build();
 	}

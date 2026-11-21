@@ -138,7 +138,8 @@ public class ExamService {
     public TryoutDetail detail(UUID id) { return repository.detail(id); }
     private SessionResponse session(Attempt attempt) {
         return new SessionResponse(attempt.id(),attempt.blueprintId(),attempt.mode(),attempt.status(),attempt.terminalReason(),
-                clock.instant(),attempt.startedAt(),attempt.deadlineAt(),repository.navigation(attempt.id()));
+                clock.instant(),attempt.startedAt(),attempt.deadlineAt(),repository.navigation(attempt.id()),attempt.finalizedAt(),
+                repository.context(attempt.blueprintVersionId(),"PRACTICE".equals(attempt.mode())));
     }
     public static String hash(String value) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8))); }

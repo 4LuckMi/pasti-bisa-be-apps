@@ -14,65 +14,71 @@
   {
     "id": "diagram-03",
     "file": "01-architecture.md",
+    "title": "Operasi admin dan pencabutan sesi",
+    "source": "flowchart TD\n    request[\"Request perubahan role atau status\"] --> role[\"Periksa PLATFORM_ADMIN\"]\n    role --> lock[\"Serialisasi perubahan akses dalam transaksi\"]\n    lock --> actor[\"Periksa ulang admin pelaku masih aktif\"]\n    actor --> last{\"Masih ada admin aktif setelah perubahan?\"}\n    last -->|\"Tidak\"| denied[\"409 LAST_ACTIVE_ADMIN\"]\n    last -->|\"Ya\"| change[\"Ubah akses dan naikkan auth_revision\"]\n    change --> audit[\"Simpan alasan dan request ID dalam audit\"]\n    audit --> commit[\"Commit transaksi\"]\n    commit --> next[\"Request sesi lama ditolak 401\"]"
+  },
+  {
+    "id": "diagram-04",
+    "file": "01-architecture.md",
     "title": "Login/register password",
     "source": "flowchart TD\n    clientStart[\"Client membuka session\"] --> csrf[\"GET CSRF dan simpan cookie\"]\n    csrf --> action{\"Register atau login?\"}\n    action -->|\"Register\"| createAccount[\"Validasi DTO, email unik, hash BCrypt\"]\n    createAccount --> saveUser[\"Simpan SISWA, CUSTOMER dan profil\"]\n    saveUser --> authenticate[\"AuthenticationManager memverifikasi password\"]\n    action -->|\"Login\"| authenticate\n    authenticate --> valid{\"Kredensial valid?\"}\n    valid -->|\"Tidak\"| denied[\"401 INVALID_CREDENTIALS\"]\n    valid -->|\"Ya\"| session[\"Rotasi session ID dan simpan SecurityContext\"]\n    session --> response[\"User DTO dan cookie session\"]"
   },
   {
-    "id": "diagram-04",
+    "id": "diagram-05",
     "file": "01-architecture.md",
     "title": "Google OAuth2/OIDC",
     "source": "sequenceDiagram\n    actor siswa as Siswa\n    participant browser as Browser\n    participant api as API\n    participant google as Google\n    participant db as PostgreSQL\n    siswa->>browser: Klik login Google\n    browser->>api: GET /oauth2/authorization/google\n    api-->>browser: Redirect authorization\n    browser->>google: Login dan consent\n    google-->>browser: Redirect callback dengan code dan state\n    browser->>api: GET /login/oauth2/code/google\n    api->>google: Tukar code dan validasi OIDC\n    api->>db: Cari provider-subject, link email verified atau buat CUSTOMER\n    api-->>browser: Cookie session dan redirect sukses"
   },
   {
-    "id": "diagram-05",
+    "id": "diagram-06",
     "file": "01-architecture.md",
     "title": "Start tryout/practice",
     "source": "flowchart TD\n    request[\"POST start dan Idempotency-Key\"] --> lockUser[\"Lock akun pengguna\"]\n    lockUser --> replay{\"Key pernah digunakan?\"}\n    replay -->|\"Ya, body berbeda\"| conflict[\"409 IDEMPOTENCY_CONFLICT\"]\n    replay -->|\"Ya, body sama\"| existing[\"Kembalikan attempt yang sama\"]\n    replay -->|\"Belum\"| active{\"Masih ada sesi aktif?\"}\n    active -->|\"Ya\"| resume[\"Resume atau finalisasi sesi kedaluwarsa\"]\n    active -->|\"Tidak\"| quota{\"Tryout dan kuota habis?\"}\n    quota -->|\"Ya\"| quotaError[\"409 DAILY_QUOTA_EXHAUSTED\"]\n    quota -->|\"Tidak\"| pool[\"Validasi blueprint, policy, scope dan pool\"]\n    pool --> enough{\"Soal dan opsi lengkap?\"}\n    enough -->|\"Tidak\"| rollback[\"Rollback tanpa attempt atau pemotongan kuota\"]\n    enough -->|\"Ya\"| freeze[\"Simpan attempt dan snapshot urutan versi/opsi\"]\n    freeze --> consume[\"Tryout memakai satu kuota; practice tidak\"]\n    consume --> commit[\"Commit dan kirim SessionResponse\"]"
   },
   {
-    "id": "diagram-06",
+    "id": "diagram-07",
     "file": "01-architecture.md",
     "title": "Autosave, deadline dan penilaian",
     "source": "sequenceDiagram\n    participant client as Client\n    participant api as API\n    participant db as PostgreSQL\n    participant worker as Worker\n    client->>api: PUT jawaban dengan expectedRevision\n    api->>db: Lock attempt, validasi deadline dan opsi\n    db-->>api: Revision baru atau konflik\n    api-->>client: AnswerResponse atau 409\n    client->>api: POST finalize\n    api->>db: FINALIZING dan enqueue SCORE_ATTEMPT satu transaksi\n    api-->>client: SessionResponse FINALIZING\n    worker->>db: Claim job dan lock attempt\n    worker->>db: Simpan score_run, score_section, COMPLETED\n    client->>api: Poll result\n    api-->>client: Hasil COMPLETED dan review tersedia"
   },
   {
-    "id": "diagram-07",
+    "id": "diagram-08",
     "file": "01-architecture.md",
     "title": "PDF menjadi bank soal",
     "source": "flowchart TD\n    upload[\"Petugas upload PDF dan metadata\"] --> validate[\"Role, MIME, ekstensi, signature, batas ukuran, scope\"]\n    validate --> disk[\"Disk privat UUID dan checksum SHA-256\"]\n    disk --> batch[\"Transaksi metadata batch dan job IMPORT_PDF\"]\n    batch --> accepted[\"202 dan batch ID\"]\n    batch -.-> worker[\"Worker claim job\"]\n    worker --> text{\"Teks halaman mencukupi?\"}\n    text -->|\"Ya\"| extract[\"PDFBox ekstraksi teks\"]\n    text -->|\"Tidak\"| ocr[\"Render dan Tesseract ind+eng\"]\n    extract --> parse[\"Parser template eksplisit\"]\n    ocr --> parse\n    parse --> candidates[\"Kandidat, sumber halaman dan validationErrors\"]\n    candidates --> review[\"Petugas review dan koreksi\"]\n    review --> draft[\"Save sebagai question version DRAFT\"]\n    draft --> valid{\"Konten lengkap untuk publish?\"}\n    valid -->|\"Tidak\"| review\n    valid -->|\"Ya\"| publish[\"PUBLISHED dan masuk pool sesi baru\"]"
   },
   {
-    "id": "diagram-08",
+    "id": "diagram-09",
     "file": "01-architecture.md",
     "title": "Worker dan batas transaksi",
     "source": "flowchart LR\n    queued[\"QUEUED atau RETRY_WAIT\"] --> claim[\"FOR UPDATE SKIP LOCKED dan lease token\"]\n    claim --> processing[\"PROCESSING\"]\n    processing --> success[\"SUCCEEDED\"]\n    processing --> retry{\"Gagal dan percobaan tersisa?\"}\n    retry -->|\"Ya\"| queued\n    retry -->|\"Tidak\"| failed[\"FAILED\"]\n    processing -.->|\"Lease kedaluwarsa\"| claim"
   },
   {
-    "id": "diagram-09",
+    "id": "diagram-10",
     "file": "02-database.md",
     "title": "Identity dan profil",
     "source": "erDiagram\n    appUser ||--o{ userRole : mempunyai\n    appUser ||--|| userProfile : dibuatTrigger\n    appUser ||--o{ oauthAccount : ditautkan\n    target o|--o{ userProfile : dipilih\n    appUser ||--o{ passwordResetToken : skemaSaja\n    appUser ||--o{ emailVerificationToken : skemaSaja\n    appUser {\n        uuid id PK\n        string emailCanonical UK\n        string passwordHash\n        string userType\n        string status\n    }\n    userRole {\n        uuid userId PK,FK\n        string roleCode PK\n    }\n    userProfile {\n        uuid userId PK,FK\n        uuid targetId FK\n        string schoolName\n        int targetScore\n        boolean leaderboardOptIn\n    }\n    oauthAccount {\n        string provider PK\n        string providerSubject PK\n        uuid userId FK\n    }"
   },
   {
-    "id": "diagram-10",
+    "id": "diagram-11",
     "file": "02-database.md",
     "title": "Konten, asal file dan versi",
     "source": "erDiagram\n    examCategory ||--o{ examType : kategori\n    examType ||--o{ subtest : lingkup\n    subtest ||--o{ topic : topik\n    subtest ||--o{ question : berisi\n    topic o|--o{ question : dikelompokkan\n    question ||--o{ questionVersion : versi\n    questionVersion ||--o{ questionOption : opsi\n    storedFile ||--o{ importBatch : sumber\n    importBatch ||--o{ importCandidate : kandidat\n    importCandidate o|--o| question : asalKandidat\n    questionVersion ||--o{ questionAsset : assetVersi\n    storedFile ||--o{ questionAsset : fileAsset\n    questionVersion {\n        uuid id PK\n        uuid questionId FK\n        int version\n        jsonb stem\n        string explanation\n        string status\n        string sourceTitle\n        int sourcePage\n    }\n    questionOption {\n        uuid id PK\n        uuid questionVersionId FK\n        string optionCode\n        jsonb content\n        boolean correctKey\n        decimal scoreWeight\n    }\n    importCandidate {\n        uuid id PK\n        uuid batchId FK\n        int sourcePage\n        int sourceItemNo\n        jsonb extractedContent\n        jsonb draftContent\n        jsonb validationErrors\n    }"
   },
   {
-    "id": "diagram-11",
+    "id": "diagram-12",
     "file": "02-database.md",
     "title": "Blueprint, snapshot, jawaban dan hasil",
     "source": "erDiagram\n    blueprint ||--o{ blueprintVersion : versi\n    blueprintVersion ||--o{ blueprintSection : section\n    scoringPolicy ||--o{ blueprintVersion : menilai\n    appUser ||--o{ attempt : mengerjakan\n    blueprintVersion ||--o{ attempt : dibekukan\n    attempt ||--o{ attemptItem : nomor\n    questionVersion ||--o{ attemptItem : versiSoal\n    blueprintSection ||--o{ attemptItem : lingkup\n    attemptItem ||--o| answer : jawabanTerakhir\n    questionOption o|--o{ answer : pilihan\n    attempt ||--o{ scoreRun : hasil\n    scoringPolicy ||--o{ scoreRun : policy\n    scoreRun ||--o{ scoreSection : rincian\n    appUser ||--o{ quotaDay : kuotaWib\n    attempt ||--o| quotaUsage : memakaiKuota\n    attempt {\n        uuid id PK\n        uuid userId FK\n        uuid blueprintVersionId FK\n        string mode\n        string status\n        string idempotencyKey\n        string requestHash\n        datetime deadlineAt\n        string terminalReason\n    }\n    attemptItem {\n        uuid id PK\n        uuid attemptId FK\n        uuid questionVersionId FK\n        int position\n        jsonb optionOrder\n    }\n    answer {\n        uuid attemptItemId PK,FK\n        uuid selectedOptionId FK\n        int revision\n        boolean flagged\n        datetime receivedAt\n    }"
   },
   {
-    "id": "diagram-12",
+    "id": "diagram-13",
     "file": "02-database.md",
     "title": "Lifecycle yang dipakai service",
     "source": "stateDiagram-v2\n    [*] --> IN_PROGRESS: Start berhasil\n    IN_PROGRESS --> FINALIZING: Submit atau abandon atau deadline\n    FINALIZING --> COMPLETED: Worker menyimpan hasil\n    COMPLETED --> [*]"
   },
   {
-    "id": "diagram-13",
+    "id": "diagram-14",
     "file": "02-database.md",
     "title": "Commerce dan kompetisi yang masih sebagian",
     "source": "erDiagram\n    plan ||--o{ purchaseOrder : paket\n    appUser ||--o{ purchaseOrder : membeli\n    purchaseOrder o|--o{ paymentEvent : event\n    purchaseOrder ||--o| entitlementGrant : grantOrder\n    subscription o|--o{ entitlementGrant : interval\n    appUser ||--o{ subscription : langganan\n    blueprintVersion ||--o{ examForm : formTetap\n    examForm ||--o{ examFormItem : soalTetap\n    examForm ||--o{ leaderboardCohort : kompetisi\n    scoringPolicy ||--o{ leaderboardCohort : policySama\n    leaderboardCohort ||--o{ leaderboardEntry : peringkat\n    scoreRun ||--o{ leaderboardEntry : skor"

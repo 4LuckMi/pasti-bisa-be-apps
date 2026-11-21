@@ -13,6 +13,14 @@ import com.pasti_bisa.backend.modules.identity.adapter.out.persistence.JdbcUserR
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+	@ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+	ResponseEntity<ApiError> handleParameterType(Exception exception,HttpServletRequest request) {
+		return error(request,exception,400,"INVALID_REQUEST","Path or query parameter has an invalid type",Map.of());
+	}
+	@ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+	ResponseEntity<ApiError> handleIntegrity(Exception exception,HttpServletRequest request) {
+		return error(request,exception,409,"DATA_CONFLICT","Resource conflicts with an existing reference or immutable version",Map.of());
+	}
 
 	@ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
 	ResponseEntity<ApiError> handleMalformedJson(Exception exception, HttpServletRequest request) {

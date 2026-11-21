@@ -12,6 +12,7 @@ public final class AttemptQuestionDtos {
 
     public record OptionResponse(String id, String code,
             @Schema(type = "object", implementation = Object.class) JsonNode content, Boolean correct) {}
+    public record QuestionScope(UUID subtestId,String subtestName,UUID topicId,String topicName) {}
 
     @Schema(name = "AttemptQuestionResponse")
     public record QuestionResponse(
@@ -22,7 +23,8 @@ public final class AttemptQuestionDtos {
             boolean flagged,
             int revision,
             Boolean correct,
-            String explanation) {}
+            String explanation,
+            QuestionScope scope) {}
 
     // Database projections stay internal; services control which fields reach the response.
     public record QuestionRow(
@@ -34,7 +36,8 @@ public final class AttemptQuestionDtos {
             boolean flagged,
             int revision,
             boolean finalized,
-            String explanation) {}
+            String explanation,
+            QuestionScope scope) {}
 
     public record OptionRow(UUID id, String code, JsonNode content, boolean correct) {}
     public record AssetFile(String relativePath, String mimeType) {}

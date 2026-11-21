@@ -10,7 +10,7 @@ const operations=doc=>Object.entries(doc.paths).flatMap(([url,ops])=>methods.fil
 const schemaRef=value=>value.$ref?.startsWith('#/components/schemas/')?spec.components.schemas[value.$ref.split('/').at(-1)]:null;
 for(const key of operations(raw))assert(inventory.some(x=>x.method.toUpperCase()+' '+x.path===key),'Undocumented runtime '+key);
 assert.equal(new Set(operations(spec)).size,inventory.length);
-assert.equal(new Set(db.columns.map(c=>c.table_name)).size,40);
+assert.equal(new Set(db.columns.map(c=>c.table_name)).size,41);
 assert(!operations(spec).some(x=>/\/me(?:\/|$)/.test(x)),'Legacy URL in docs');
 function walk(value){if(!value||typeof value!=='object')return;if(value.$ref){assert(value.$ref.startsWith('#/'),'External unresolved ref');const parts=value.$ref.slice(2).split('/');let found=spec;for(const p of parts)found=found?.[p];assert(found,'Unresolved '+value.$ref);}for(const child of Object.values(value))walk(child);}
 walk(spec);

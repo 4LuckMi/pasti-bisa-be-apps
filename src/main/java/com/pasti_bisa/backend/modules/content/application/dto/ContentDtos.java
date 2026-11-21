@@ -16,7 +16,7 @@ public final class ContentDtos {
             @Min(1900) @Max(2200) Integer sourceYear) {}
     public record OptionDraft(@NotBlank @Pattern(regexp="[A-E]") String code,@NotBlank @Size(max=10000) String text,
             boolean correct,@NotNull @DecimalMin("0") @DecimalMax("1000") BigDecimal weight) {}
-    public record QuestionContent(@NotBlank @Size(max=20000) String stemText,@NotNull @Size(min=2,max=5) List<@Valid OptionDraft> options,
+    public record QuestionContent(@NotBlank @Size(max=20000) String stemText,@NotNull @Size(min=2,max=5) List<@NotNull @Valid OptionDraft> options,
             @Size(max=20000) String explanation,boolean shuffleAllowed) {
         public com.pasti_bisa.backend.modules.content.domain.ContentModels.Question toDomain() {
             return new com.pasti_bisa.backend.modules.content.domain.ContentModels.Question(stemText,

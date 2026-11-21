@@ -47,13 +47,13 @@ class StudentDtoTests {
         var query = new QuestionQuery(UUID.randomUUID(), 1, "student@example.com");
         when(repository.findOptions(versionId)).thenReturn(List.of(new OptionRow(optionId, "A", json.readTree("{}"), true)));
         when(repository.findQuestion(query)).thenReturn(new QuestionRow(versionId, 1, json.readTree("{}"),
-                json.readTree("[]"), optionId, false, 1, false, "Explanation"));
+                json.readTree("[]"), optionId, false, 1, false, "Explanation",new QuestionScope(UUID.randomUUID(),"Subtest",null,null)));
         var active = service.question(query);
         assertThat(active.options().getFirst().correct()).isNull();
         assertThat(active.explanation()).isNull();
         assertThat(active.correct()).isNull();
         when(repository.findQuestion(query)).thenReturn(new QuestionRow(versionId, 1, json.readTree("{}"),
-                json.readTree("[]"), optionId, false, 1, true, "Explanation"));
+                json.readTree("[]"), optionId, false, 1, true, "Explanation",new QuestionScope(UUID.randomUUID(),"Subtest",null,null)));
         var finalized = service.question(query);
         assertThat(finalized.options().getFirst().correct()).isTrue();
         assertThat(finalized.correct()).isTrue();

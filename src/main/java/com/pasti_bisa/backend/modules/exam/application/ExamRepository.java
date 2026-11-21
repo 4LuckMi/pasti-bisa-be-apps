@@ -25,6 +25,7 @@ public interface ExamRepository {
     void insertItem(UUID attemptId, UUID sectionId, PoolItem item, int position, List<String> optionOrder);
     void consumeQuota(UUID userId, UUID attemptId, LocalDate day);
     List<Navigation> navigation(UUID attemptId);
+    CourseContext context(UUID blueprintVersionId,boolean practice);
     AnswerResponse saveAnswer(UUID attemptId, int position, AnswerRequest answer, Instant now);
     void finalizeAttempt(UUID id, String reason, Instant now);
     List<UUID> expired(Instant now);

@@ -2,7 +2,7 @@
 
 [Indeks](README.md) · [ERD dan model data](02-database.md) · [Metadata JSON](database-schema.json)
 
-Snapshot schema public V6, 19 November 2026: **40 tabel**, **306 kolom**. Metadata diambil tanpa baris pengguna/kredensial. flyway_schema_history tidak dimasukkan.
+Snapshot schema public V7, 20 November 2026: **41 tabel**, **321 kolom**. Metadata diambil tanpa baris pengguna/kredensial. flyway_schema_history tidak dimasukkan.
 
 Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadang juga mempunyai index; keduanya ditampilkan untuk audit. Foreign key composite jangan disederhanakan menjadi FK tunggal saat mengubah schema.
 
@@ -19,11 +19,11 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | [blueprint_section](#blueprint-section) | Aktif | Kebutuhan/filter pool per section. |
 | [blueprint_version](#blueprint-version) | Aktif | Durasi dan policy konfigurasi terversi. |
 | [email_verification_token](#email-verification-token) | Schema saja | Hash/expiry token; endpoint/mail belum ada. |
-| [entitlement_grant](#entitlement-grant) | Read + schema | Grant order; creation/refund workflow belum ada. |
-| [exam_category](#exam-category) | Aktif/read + fixture | Kategori taksonomi; belum CRUD admin. |
+| [entitlement_grant](#entitlement-grant) | Read/revoke admin | Grant order; creation/payment workflow belum ada. |
+| [exam_category](#exam-category) | Aktif/admin | Kategori taksonomi dengan kode stabil. |
 | [exam_form](#exam-form) | Schema saja | Form tetap untuk cohort sebanding mendatang. |
 | [exam_form_item](#exam-form-item) | Schema saja | Daftar soal/posisi form tetap. |
-| [exam_type](#exam-type) | Aktif/read + fixture | Jenis ujian dalam kategori. |
+| [exam_type](#exam-type) | Aktif/admin | Jenis ujian dalam kategori; parent immutable. |
 | [import_batch](#import-batch) | Aktif | Lingkup, status dan statistik batch PDF. |
 | [import_candidate](#import-candidate) | Aktif | Ekstraksi/koreksi/flag dan hubungan master. |
 | [job](#job) | Aktif | Antrean persisten dengan dedup/retry/lease token. |
@@ -31,23 +31,24 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | [leaderboard_entry](#leaderboard-entry) | Read + schema | Peringkat yang bisa dibaca; ranking worker belum dibuat. |
 | [oauth_account](#oauth-account) | Aktif | Relasi provider-subject ke akun. |
 | [password_reset_token](#password-reset-token) | Schema saja | Hash/expiry token; endpoint/mail belum ada. |
-| [payment_event](#payment-event) | Schema saja | Event provider dan verifikasi signature mendatang. |
-| [plan](#plan) | Schema saja | Paket/harga/benefit untuk commerce mendatang. |
-| [purchase_order](#purchase-order) | Schema saja | Snapshot order dan idempotency checkout mendatang. |
+| [payment_event](#payment-event) | Read admin + schema | Metadata provider tersensor; verifikasi signature mendatang. |
+| [plan](#plan) | Admin terversi | Keluarga harga/manfaat immutable dan revisi penjualan. |
+| [purchase_order](#purchase-order) | Read admin + schema | Snapshot order; checkout/gateway belum tersedia. |
 | [question](#question) | Aktif | Keluarga soal dan archive/provenance kandidat. |
 | [question_asset](#question-asset) | Read + schema | Asset privat versi; belum upload/attach authoring API. |
 | [question_option](#question-option) | Aktif | Opsi/kunci/bobot per versi. |
-| [question_version](#question-version) | Aktif | Konten, sumber dan status versi soal. |
+| [question_version](#question-version) | Aktif | Konten/sumber/status versi; editor_revision untuk edit draft. |
 | [quota_day](#quota-day) | Aktif | Counter start tryout tanggal WIB. |
 | [quota_usage](#quota-usage) | Aktif | Satu pemakaian kuota per attempt. |
+| [refund_request](#refund-request) | Kasus operasional | Permintaan idempoten PENDING_PROVIDER; tidak memindahkan uang. |
 | [score_run](#score-run) | Aktif | Hasil, policyVersion, correctionVersion dan input hash. |
 | [score_section](#score-section) | Aktif | Rincian hasil per subtes. |
 | [scoring_policy](#scoring-policy) | Aktif | Konfigurasi scoring terversi. |
 | [stored_file](#stored-file) | Aktif | Metadata file; binary tetap disk privat. |
-| [subscription](#subscription) | Read + schema | Interval langganan; belum purchase/grant workflow. |
-| [subtest](#subtest) | Aktif/read + fixture | Subtes dalam jenis ujian. |
+| [subscription](#subscription) | Read/revoke admin | Interval langganan dan pencabutan grant; belum purchase/grant workflow. |
+| [subtest](#subtest) | Aktif/admin | Subtes dalam jenis ujian; parent immutable. |
 | [target](#target) | Aktif | Tujuan institusi/program; belum master institusi resmi. |
-| [topic](#topic) | Aktif/read + fixture | Topik dalam subtes. |
+| [topic](#topic) | Aktif/admin | Topik dalam subtes; parent immutable. |
 | [user_profile](#user-profile) | Aktif | Profil siswa, sekolah/kelas, target dan consent/opt-in. |
 | [user_role](#user-role) | Aktif | Role many-to-many berbasis kode; tidak menciptakan superuser otomatis. |
 
@@ -97,9 +98,11 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | created_at | timestamp with time zone | Tidak | now() | Timestamp lifecycle sesuai konteks tabel. |
 | updated_at | timestamp with time zone | Tidak | now() | Timestamp lifecycle sesuai konteks tabel. |
 | user_type | character varying(32) | Tidak | 'SISWA'::character varying | Tipe produk, default SISWA. |
+| auth_revision | bigint | Tidak | 0 | Field auth_revision pada app_user; tipe/batas dijaga definisi di bawah. |
 
 ### Constraint
 
+- `app_user_auth_revision_check`: `CHECK ((auth_revision >= 0))`
 - `app_user_email_canonical_key`: `UNIQUE (email_canonical)`
 - `app_user_pkey`: `PRIMARY KEY (id)`
 - `app_user_status_check`: `CHECK (((status)::text = ANY ((ARRAY['ACTIVE'::character varying, 'SUSPENDED'::character varying, 'PENDING_VERIFICATION'::character varying])::text[])))`
@@ -111,6 +114,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 ### Trigger
 
+- `account_session_revision`: `CREATE TRIGGER account_session_revision BEFORE UPDATE ON public.app_user FOR EACH ROW EXECUTE FUNCTION invalidate_account_sessions()`
 - `app_user_create_profile`: `CREATE TRIGGER app_user_create_profile AFTER INSERT ON public.app_user FOR EACH ROW EXECUTE FUNCTION create_user_profile()`
 
 <a id="attempt"></a>
@@ -225,6 +229,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 - `audit_actor_time_idx`: `CREATE INDEX audit_actor_time_idx ON public.audit_event USING btree (actor_id, occurred_at DESC)`
 - `audit_entity_time_idx`: `CREATE INDEX audit_entity_time_idx ON public.audit_event USING btree (entity_type, entity_id, occurred_at DESC)`
 - `audit_event_pkey`: `CREATE UNIQUE INDEX audit_event_pkey ON public.audit_event USING btree (id)`
+- `audit_time_idx`: `CREATE INDEX audit_time_idx ON public.audit_event USING btree (occurred_at DESC, id DESC)`
 
 <a id="blueprint"></a>
 ## blueprint
@@ -353,7 +358,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="entitlement-grant"></a>
 ## entitlement_grant
 
-**Read + schema** — Grant order; creation/refund workflow belum ada.
+**Read/revoke admin** — Grant order; creation/payment workflow belum ada.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -388,7 +393,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="exam-category"></a>
 ## exam_category
 
-**Aktif/read + fixture** — Kategori taksonomi; belum CRUD admin.
+**Aktif/admin** — Kategori taksonomi dengan kode stabil.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -471,7 +476,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="exam-type"></a>
 ## exam_type
 
-**Aktif/read + fixture** — Jenis ujian dalam kategori.
+**Aktif/admin** — Jenis ujian dalam kategori; parent immutable.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -712,7 +717,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="payment-event"></a>
 ## payment_event
 
-**Schema saja** — Event provider dan verifikasi signature mendatang.
+**Read admin + schema** — Metadata provider tersensor; verifikasi signature mendatang.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -741,7 +746,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="plan"></a>
 ## plan
 
-**Schema saja** — Paket/harga/benefit untuk commerce mendatang.
+**Admin terversi** — Keluarga harga/manfaat immutable dan revisi penjualan.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -753,23 +758,32 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | currency | character(3) | Tidak | — | Field currency pada plan; tipe/batas dijaga definisi di bawah. |
 | benefits | jsonb | Tidak | — | Field benefits pada plan; tipe/batas dijaga definisi di bawah. |
 | active | boolean | Tidak | true | Field active pada plan; tipe/batas dijaga definisi di bawah. |
+| family_code | character varying(80) | Tidak | — | Field family_code pada plan; tipe/batas dijaga definisi di bawah. |
+| revision | integer | Tidak | 1 | Revision jawaban terakhir. |
 
 ### Constraint
 
 - `plan_amount_minor_check`: `CHECK ((amount_minor >= 0))`
 - `plan_code_key`: `UNIQUE (code)`
+- `plan_family_revision_unique`: `UNIQUE (family_code, revision)`
 - `plan_months_check`: `CHECK ((months > 0))`
 - `plan_pkey`: `PRIMARY KEY (id)`
+- `plan_revision_check`: `CHECK ((revision > 0))`
 
 ### Index
 
 - `plan_code_key`: `CREATE UNIQUE INDEX plan_code_key ON public.plan USING btree (code)`
+- `plan_family_revision_unique`: `CREATE UNIQUE INDEX plan_family_revision_unique ON public.plan USING btree (family_code, revision)`
 - `plan_pkey`: `CREATE UNIQUE INDEX plan_pkey ON public.plan USING btree (id)`
+
+### Trigger
+
+- `plan_price_version_guard`: `CREATE TRIGGER plan_price_version_guard BEFORE DELETE OR UPDATE ON public.plan FOR EACH ROW EXECUTE FUNCTION protect_plan_price_version()`
 
 <a id="purchase-order"></a>
 ## purchase_order
 
-**Schema saja** — Snapshot order dan idempotency checkout mendatang.
+**Read admin + schema** — Snapshot order; checkout/gateway belum tersedia.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -903,7 +917,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="question-version"></a>
 ## question_version
 
-**Aktif** — Konten, sumber dan status versi soal.
+**Aktif** — Konten/sumber/status versi; editor_revision untuk edit draft.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -920,10 +934,12 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 | created_at | timestamp with time zone | Tidak | now() | Timestamp lifecycle sesuai konteks tabel. |
 | source_title | character varying(180) | Ya | — | Field source_title pada question_version; tipe/batas dijaga definisi di bawah. |
 | source_page | integer | Ya | — | Field source_page pada question_version; tipe/batas dijaga definisi di bawah. |
+| editor_revision | bigint | Tidak | 0 | Field editor_revision pada question_version; tipe/batas dijaga definisi di bawah. |
 
 ### Constraint
 
 - `question_version_created_by_fkey`: `FOREIGN KEY (created_by) REFERENCES app_user(id)`
+- `question_version_editor_revision_check`: `CHECK ((editor_revision >= 0))`
 - `question_version_pkey`: `PRIMARY KEY (id)`
 - `question_version_question_id_fkey`: `FOREIGN KEY (question_id) REFERENCES question(id)`
 - `question_version_question_id_id_unique`: `UNIQUE (question_id, id)`
@@ -986,6 +1002,40 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 
 - `quota_usage_pkey`: `CREATE UNIQUE INDEX quota_usage_pkey ON public.quota_usage USING btree (attempt_id)`
 - `quota_usage_user_day_idx`: `CREATE INDEX quota_usage_user_day_idx ON public.quota_usage USING btree (user_id, day_wib)`
+
+<a id="refund-request"></a>
+## refund_request
+
+**Kasus operasional** — Permintaan idempoten PENDING_PROVIDER; tidak memindahkan uang.
+
+| Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
+|---|---|---|---|---|
+| id | uuid | Tidak | — | UUID identitas record. Lihat primary key. |
+| order_id | uuid | Tidak | — | Referensi identitas; lihat foreign key di bawah. |
+| requested_by | uuid | Tidak | — | Field requested_by pada refund_request; tipe/batas dijaga definisi di bawah. |
+| amount_minor | bigint | Tidak | — | Nilai uang minor unit, bukan float. |
+| currency | character(3) | Tidak | — | Field currency pada refund_request; tipe/batas dijaga definisi di bawah. |
+| status | character varying(24) | Tidak | 'PENDING_PROVIDER'::character varying | Status resource; service hanya memakai subset yang dijelaskan pada arsitektur. |
+| reason | character varying(500) | Tidak | — | Field reason pada refund_request; tipe/batas dijaga definisi di bawah. |
+| idempotency_key | character varying(128) | Tidak | — | Key client scoped per pengguna/order. |
+| request_id | character varying(100) | Ya | — | Referensi identitas; lihat foreign key di bawah. |
+| created_at | timestamp with time zone | Tidak | now() | Timestamp lifecycle sesuai konteks tabel. |
+| completed_at | timestamp with time zone | Ya | — | Timestamp lifecycle sesuai konteks tabel. |
+
+### Constraint
+
+- `refund_request_amount_minor_check`: `CHECK ((amount_minor > 0))`
+- `refund_request_order_id_fkey`: `FOREIGN KEY (order_id) REFERENCES purchase_order(id)`
+- `refund_request_order_id_idempotency_key_key`: `UNIQUE (order_id, idempotency_key)`
+- `refund_request_pkey`: `PRIMARY KEY (id)`
+- `refund_request_requested_by_fkey`: `FOREIGN KEY (requested_by) REFERENCES app_user(id)`
+- `refund_request_status_check`: `CHECK (((status)::text = ANY ((ARRAY['PENDING_PROVIDER'::character varying, 'PROCESSING'::character varying, 'SUCCEEDED'::character varying, 'FAILED'::character varying, 'CANCELLED'::character varying])::text[])))`
+
+### Index
+
+- `refund_order_status_idx`: `CREATE INDEX refund_order_status_idx ON public.refund_request USING btree (order_id, status)`
+- `refund_request_order_id_idempotency_key_key`: `CREATE UNIQUE INDEX refund_request_order_id_idempotency_key_key ON public.refund_request USING btree (order_id, idempotency_key)`
+- `refund_request_pkey`: `CREATE UNIQUE INDEX refund_request_pkey ON public.refund_request USING btree (id)`
 
 <a id="score-run"></a>
 ## score_run
@@ -1118,7 +1168,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="subscription"></a>
 ## subscription
 
-**Read + schema** — Interval langganan; belum purchase/grant workflow.
+**Read/revoke admin** — Interval langganan dan pencabutan grant; belum purchase/grant workflow.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -1145,7 +1195,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="subtest"></a>
 ## subtest
 
-**Aktif/read + fixture** — Subtes dalam jenis ujian.
+**Aktif/admin** — Subtes dalam jenis ujian; parent immutable.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -1193,7 +1243,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 <a id="topic"></a>
 ## topic
 
-**Aktif/read + fixture** — Topik dalam subtes.
+**Aktif/admin** — Topik dalam subtes; parent immutable.
 
 | Kolom | Tipe PostgreSQL | NULL | Default | Makna/catatan |
 |---|---|---|---|---|
@@ -1262,3 +1312,7 @@ Constraint dan index ditulis sebagai definisi PostgreSQL aktual. PK/unique kadan
 ### Index
 
 - `user_role_pkey`: `CREATE UNIQUE INDEX user_role_pkey ON public.user_role USING btree (user_id, role_code)`
+
+### Trigger
+
+- `role_session_revision`: `CREATE TRIGGER role_session_revision AFTER INSERT OR DELETE OR UPDATE ON public.user_role FOR EACH ROW EXECUTE FUNCTION invalidate_role_sessions()`

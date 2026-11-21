@@ -29,12 +29,14 @@ public class IdentityController {
 	private final IdentityService identities;
 	private final AuthenticationManager authenticationManager;
 	private final SecurityContextRepository securityContextRepository;
+	private final com.pasti_bisa.backend.shared.security.AccountSecurityState accountStates;
 
 	public IdentityController(IdentityService identities, AuthenticationManager authenticationManager,
-			SecurityContextRepository securityContextRepository) {
+			SecurityContextRepository securityContextRepository, com.pasti_bisa.backend.shared.security.AccountSecurityState accountStates) {
 		this.identities = identities;
 		this.authenticationManager = authenticationManager;
 		this.securityContextRepository = securityContextRepository;
+		this.accountStates=accountStates;
 	}
 
 	@PostMapping("/auth/register")
@@ -65,6 +67,7 @@ public class IdentityController {
 		SecurityContext context = SecurityContextHolder.createEmptyContext();
 		context.setAuthentication(authentication);
 		SecurityContextHolder.setContext(context);
+		com.pasti_bisa.backend.shared.security.AccountSessionGuard.bind(request,authentication,accountStates);
 		securityContextRepository.saveContext(context, request, response);
 		return new AuthResponse(UserProfileResponse.from(identities.getProfile(authentication.getName())));
 	}
